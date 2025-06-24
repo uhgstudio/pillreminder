@@ -1,8 +1,15 @@
 package com.example.pillreminder
 
+import android.app.AlarmManager
+import android.content.Context
+import android.content.Intent
+import android.net.Uri
+import android.os.Build
 import android.os.Bundle
+import android.provider.Settings
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
@@ -29,6 +36,7 @@ import com.example.pillreminder.ui.home.HomeScreen
 import com.example.pillreminder.ui.home.HomeViewModel
 import com.example.pillreminder.ui.pill.AddPillScreen
 import com.example.pillreminder.ui.pill.AddPillViewModel
+import com.example.pillreminder.ui.pill.EditPillScreen
 import com.example.pillreminder.ui.theme.PillReminderTheme
 import com.example.pillreminder.ui.pillDetail.PillDetailScreen
 import com.example.pillreminder.ui.pillDetail.PillDetailViewModel
@@ -36,13 +44,29 @@ import com.example.pillreminder.ui.alarms.AlarmsScreen
 import com.example.pillreminder.ui.alarms.AlarmsViewModel
 import com.example.pillreminder.ui.addAlarm.AddAlarmScreen
 import com.example.pillreminder.ui.addAlarm.AddAlarmViewModel
+import com.example.pillreminder.ui.addAlarm.EditAlarmScreen
+import com.example.pillreminder.ui.addAlarm.EditAlarmViewModel
 import com.example.pillreminder.ui.calendar.CalendarScreen
 import com.example.pillreminder.ui.calendar.CalendarViewModel
 import androidx.compose.ui.res.stringResource
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 
 class MainActivity : ComponentActivity() {
+    private val exactAlarmPermissionLauncher = registerForActivityResult(
+        ActivityResultContracts.StartActivityForResult()
+    ) { }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        // 정확한 알람 권한 확인 및 요청
+        checkExactAlarmPermission()
+
+        // 알람에서 전달된 데이터 처리
+        val alarmId = intent.getStringExtra("ALARM_ID")
+        val pillId = intent.getStringExtra("PILL_ID")
+        
         setContent {
             PillReminderTheme {
                 Surface(
@@ -105,8 +129,8 @@ class MainActivity : ComponentActivity() {
                                 HomeScreen(
                                     viewModel = homeViewModel,
                                     onAddPillClick = { navController.navigate("add_pill") },
-                                    onPillClick = { pillId -> 
-                                        navController.navigate("pill_detail/$pillId")
+                                    onPillClick = { pill -> 
+                                        navController.navigate("pill_detail/${pill.id}")
                                     }
                                 )
                             }
@@ -120,6 +144,30 @@ class MainActivity : ComponentActivity() {
                             }
                             
                             composable(
+                                "edit_pill/{pillId}",
+                                arguments = listOf(navArgument("pillId") { type = NavType.StringType })
+                            ) { backStackEntry ->
+                                val addPillViewModel: AddPillViewModel = viewModel()
+                                val pillDetailViewModel: PillDetailViewModel = viewModel()
+                                val pillId = backStackEntry.arguments?.getString("pillId") ?: ""
+                                
+                                // Pill 객체를 가져오기 위한 상태
+                                val pill by pillDetailViewModel.pill.collectAsState()
+                                
+                                LaunchedEffect(pillId) {
+                                    pillDetailViewModel.loadPill(pillId)
+                                }
+                                
+                                pill?.let { currentPill ->
+                                    EditPillScreen(
+                                        pill = currentPill,
+                                        viewModel = addPillViewModel,
+                                        onNavigateUp = { navController.navigateUp() }
+                                    )
+                                }
+                            }
+                            
+                            composable(
                                 "pill_detail/{pillId}",
                                 arguments = listOf(navArgument("pillId") { type = NavType.StringType })
                             ) { backStackEntry ->
@@ -130,6 +178,12 @@ class MainActivity : ComponentActivity() {
                                     onNavigateUp = { navController.navigateUp() },
                                     onAddAlarmClick = { pillId ->
                                         navController.navigate("add_alarm/$pillId")
+                                    },
+                                    onEditPillClick = { pillId ->
+                                        navController.navigate("edit_pill/$pillId")
+                                    },
+                                    onAlarmClick = { alarmId ->
+                                        navController.navigate("edit_alarm/$alarmId")
                                     }
                                 )
                             }
@@ -137,17 +191,33 @@ class MainActivity : ComponentActivity() {
                             composable("alarms") {
                                 val alarmsViewModel: AlarmsViewModel = viewModel()
                                 AlarmsScreen(
-                                    viewModel = alarmsViewModel
+                                    viewModel = alarmsViewModel,
+                                    onAddAlarmClick = { pillId ->
+                                        navController.navigate("add_alarm/$pillId")
+                                    }
                                 )
                             }
                             
                             composable(
                                 "add_alarm/{pillId}",
                                 arguments = listOf(navArgument("pillId") { type = NavType.StringType })
-                            ) {
+                            ) { backStackEntry ->
                                 val addAlarmViewModel: AddAlarmViewModel = viewModel()
                                 AddAlarmScreen(
                                     viewModel = addAlarmViewModel,
+                                    pillId = backStackEntry.arguments?.getString("pillId") ?: "",
+                                    onNavigateUp = { navController.navigateUp() }
+                                )
+                            }
+                            
+                            composable(
+                                "edit_alarm/{alarmId}",
+                                arguments = listOf(navArgument("alarmId") { type = NavType.StringType })
+                            ) { backStackEntry ->
+                                val editAlarmViewModel: EditAlarmViewModel = viewModel()
+                                EditAlarmScreen(
+                                    viewModel = editAlarmViewModel,
+                                    alarmId = backStackEntry.arguments?.getString("alarmId") ?: "",
                                     onNavigateUp = { navController.navigateUp() }
                                 )
                             }
@@ -161,6 +231,19 @@ class MainActivity : ComponentActivity() {
                         }
                     }
                 }
+            }
+        }
+    }
+
+    private fun checkExactAlarmPermission() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+            val alarmManager = getSystemService(Context.ALARM_SERVICE) as AlarmManager
+            if (!alarmManager.canScheduleExactAlarms()) {
+                // 권한 요청 인텐트 생성
+                val intent = Intent(Settings.ACTION_REQUEST_SCHEDULE_EXACT_ALARM).apply {
+                    data = Uri.parse("package:$packageName")
+                }
+                exactAlarmPermissionLauncher.launch(intent)
             }
         }
     }

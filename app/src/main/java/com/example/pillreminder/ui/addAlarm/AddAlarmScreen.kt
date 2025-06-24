@@ -15,6 +15,7 @@ import java.time.DayOfWeek
 @Composable
 fun AddAlarmScreen(
     viewModel: AddAlarmViewModel,
+    pillId: String,
     onNavigateUp: () -> Unit
 ) {
     var hour by remember { mutableStateOf(8) }
@@ -49,15 +50,27 @@ fun AddAlarmScreen(
                 modifier = Modifier.fillMaxWidth(),
                 onClick = { showTimePicker = true }
             ) {
-                Row(
+                Column(
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(16.dp),
-                    horizontalArrangement = Arrangement.Center
+                    horizontalAlignment = androidx.compose.ui.Alignment.CenterHorizontally
                 ) {
                     Text(
+                        text = "알람 시간",
+                        style = MaterialTheme.typography.titleMedium
+                    )
+                    Spacer(modifier = Modifier.height(8.dp))
+                    Text(
                         text = String.format("%02d:%02d", hour, minute),
-                        style = MaterialTheme.typography.displayMedium
+                        style = MaterialTheme.typography.displayMedium,
+                        color = MaterialTheme.colorScheme.primary
+                    )
+                    Spacer(modifier = Modifier.height(4.dp))
+                    Text(
+                        text = "탭하여 시간 변경",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                 }
             }
@@ -87,6 +100,14 @@ fun AddAlarmScreen(
                 }
             }
 
+            if (selectedDays.isEmpty()) {
+                Text(
+                    text = "최소 하나의 요일을 선택해주세요",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.error
+                )
+            }
+
             Spacer(modifier = Modifier.weight(1f))
 
             // 저장 버튼
@@ -94,7 +115,7 @@ fun AddAlarmScreen(
                 onClick = {
                     if (selectedDays.isNotEmpty()) {
                         viewModel.saveAlarm(
-                            pillId = "", // TODO: Pass pillId from navigation
+                            pillId = pillId,
                             hour = hour,
                             minute = minute,
                             repeatDays = selectedDays,
@@ -112,6 +133,8 @@ fun AddAlarmScreen(
 
     if (showTimePicker) {
         TimePickerDialog(
+            initialHour = hour,
+            initialMinute = minute,
             onDismissRequest = { showTimePicker = false },
             onConfirm = { selectedHour, selectedMinute ->
                 hour = selectedHour
@@ -128,60 +151,44 @@ private fun DayButton(
     selected: Boolean,
     onSelectedChange: (Boolean) -> Unit
 ) {
-    FilledTonalButton(
-        onClick = { onSelectedChange(!selected) },
-        colors = ButtonDefaults.filledTonalButtonColors(
-            containerColor = if (selected) {
-                MaterialTheme.colorScheme.primaryContainer
-            } else {
-                MaterialTheme.colorScheme.surfaceVariant
-            }
-        )
-    ) {
-        Text(day.name.take(1))
+    val dayName = when (day) {
+        DayOfWeek.MONDAY -> "월"
+        DayOfWeek.TUESDAY -> "화"
+        DayOfWeek.WEDNESDAY -> "수"
+        DayOfWeek.THURSDAY -> "목"
+        DayOfWeek.FRIDAY -> "금"
+        DayOfWeek.SATURDAY -> "토"
+        DayOfWeek.SUNDAY -> "일"
     }
+
+    FilterChip(
+        onClick = { onSelectedChange(!selected) },
+        label = { Text(dayName) },
+        selected = selected,
+        modifier = Modifier.size(width = 40.dp, height = 32.dp)
+    )
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun TimePickerDialog(
+    initialHour: Int,
+    initialMinute: Int,
     onDismissRequest: () -> Unit,
     onConfirm: (hour: Int, minute: Int) -> Unit
 ) {
-    var selectedHour by remember { mutableStateOf(8) }
-    var selectedMinute by remember { mutableStateOf(0) }
+    val timePickerState = rememberTimePickerState(
+        initialHour = initialHour,
+        initialMinute = initialMinute,
+        is24Hour = true
+    )
 
     AlertDialog(
         onDismissRequest = onDismissRequest,
-        title = { Text(stringResource(R.string.dialog_set_alarm_time)) },
-        text = {
-            Column {
-                // 시간 선택
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceEvenly
-                ) {
-                    // 시간
-                    NumberPicker(
-                        value = selectedHour,
-                        onValueChange = { selectedHour = it },
-                        range = 0..23
-                    )
-
-                    Text(":")
-
-                    // 분
-                    NumberPicker(
-                        value = selectedMinute,
-                        onValueChange = { selectedMinute = it },
-                        range = 0..59
-                    )
-                }
-            }
-        },
         confirmButton = {
             TextButton(
                 onClick = {
-                    onConfirm(selectedHour, selectedMinute)
+                    onConfirm(timePickerState.hour, timePickerState.minute)
                 }
             ) {
                 Text(stringResource(R.string.btn_save))
@@ -191,38 +198,12 @@ private fun TimePickerDialog(
             TextButton(onClick = onDismissRequest) {
                 Text(stringResource(R.string.btn_cancel))
             }
+        },
+        text = {
+            TimePicker(
+                state = timePickerState,
+                modifier = Modifier.padding(16.dp)
+            )
         }
     )
-}
-
-@Composable
-private fun NumberPicker(
-    value: Int,
-    onValueChange: (Int) -> Unit,
-    range: IntRange
-) {
-    Column {
-        IconButton(
-            onClick = {
-                val newValue = if (value >= range.last) range.first else value + 1
-                onValueChange(newValue)
-            }
-        ) {
-            Text("▲")
-        }
-
-        Text(
-            text = String.format("%02d", value),
-            style = MaterialTheme.typography.titleLarge
-        )
-
-        IconButton(
-            onClick = {
-                val newValue = if (value <= range.first) range.last else value - 1
-                onValueChange(newValue)
-            }
-        ) {
-            Text("▼")
-        }
-    }
 } 

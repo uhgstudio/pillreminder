@@ -10,9 +10,7 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
-import androidx.compose.material.icons.filled.Camera
 import androidx.compose.material.icons.filled.Image
-import androidx.compose.material.icons.filled.PhotoLibrary
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -26,38 +24,38 @@ import androidx.core.content.FileProvider
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import com.example.pillreminder.R
+import com.example.pillreminder.data.model.Pill
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import com.google.accompanist.permissions.isGranted
 import com.google.accompanist.permissions.rememberPermissionState
 import java.io.File
-import java.util.UUID
 
 @OptIn(ExperimentalPermissionsApi::class, ExperimentalMaterial3Api::class)
 @Composable
-fun AddPillScreen(
+fun EditPillScreen(
+    pill: Pill,
     viewModel: AddPillViewModel,
-    pillToEdit: com.example.pillreminder.data.model.Pill? = null,
     onNavigateUp: () -> Unit
 ) {
     val context = LocalContext.current
-    var showImageSelectionDialog by remember { mutableStateOf(false) }
     var currentPhotoUri by remember { mutableStateOf<Uri?>(null) }
-    var name by remember { mutableStateOf(pillToEdit?.name ?: "") }
-    var memo by remember { mutableStateOf(pillToEdit?.memo ?: "") }
+    var name by remember { mutableStateOf(pill.name) }
+    var memo by remember { mutableStateOf(pill.memo ?: "") }
     var nameError by remember { mutableStateOf<String?>(null) }
-    var imageUri by remember { mutableStateOf<Uri?>(pillToEdit?.imageUri?.let { Uri.parse(it) }) }
+    var imageUri by remember { mutableStateOf<Uri?>(pill.imageUri?.let { 
+        if (it.startsWith("content://") || it.startsWith("file://")) {
+            Uri.parse(it)
+        } else {
+            Uri.fromFile(File(it))
+        }
+    }) }
     
     val isLoading by viewModel.isLoading.collectAsState()
     val cameraPermissionState = rememberPermissionState(Manifest.permission.CAMERA)
     
-    // 수정 모드인지 확인
-    val isEditMode = pillToEdit != null
-    
-    // 수정 모드일 때 초기 이미지 설정
-    LaunchedEffect(pillToEdit) {
-        if (pillToEdit != null) {
-            viewModel.loadPillForEdit(pillToEdit)
-        }
+    // 편집 모드 초기화
+    LaunchedEffect(pill) {
+        viewModel.loadPillForEdit(pill)
     }
     
     val takePicture = rememberLauncherForActivityResult(
@@ -96,12 +94,7 @@ fun AddPillScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { 
-                    Text(
-                        if (isEditMode) stringResource(R.string.title_edit_pill)
-                        else stringResource(R.string.title_add_pill)
-                    )
-                },
+                title = { Text(stringResource(R.string.title_edit_pill)) },
                 navigationIcon = {
                     IconButton(
                         onClick = onNavigateUp,
@@ -123,7 +116,7 @@ fun AddPillScreen(
                 .padding(16.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
-            // 이미지 미리보기 및 선택 버튼
+            // 이미지 미리보기
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -213,14 +206,8 @@ fun AddPillScreen(
                         nameError = context.getString(R.string.error_pill_name_empty)
                         return@Button
                     }
-                    if (isEditMode) {
-                        viewModel.updatePill(pillToEdit!!, name, memo) {
-                            onNavigateUp()
-                        }
-                    } else {
-                        viewModel.savePill(name, memo) {
-                            onNavigateUp()
-                        }
+                    viewModel.updatePill(pill, name, memo) {
+                        onNavigateUp()
                     }
                 },
                 modifier = Modifier.fillMaxWidth(),
@@ -232,18 +219,9 @@ fun AddPillScreen(
                         strokeWidth = 2.dp
                     )
                 } else {
-                    Text(
-                        if (isEditMode) "수정" else stringResource(R.string.btn_save)
-                    )
+                    Text("수정")
                 }
             }
-        }
-    }
-
-    // 권한 요청 결과 처리
-    LaunchedEffect(cameraPermissionState.status) {
-        if (cameraPermissionState.status.isGranted) {
-            // 권한이 승인되면 자동으로 카메라 실행하지 않음
         }
     }
 } 

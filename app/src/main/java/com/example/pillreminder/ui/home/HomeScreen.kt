@@ -6,6 +6,8 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.Image
+import androidx.compose.material.icons.filled.MedicalServices
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
@@ -22,6 +24,7 @@ import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import com.example.pillreminder.R
 import com.example.pillreminder.data.model.Pill
+import java.io.File
 
 @Composable
 fun HomeScreen(
@@ -103,17 +106,30 @@ fun PillItem(
                 .height(80.dp),
             horizontalArrangement = Arrangement.spacedBy(16.dp)
         ) {
-            AsyncImage(
-                model = ImageRequest.Builder(LocalContext.current)
-                    .data(pill.imageUri)
-                    .crossfade(true)
-                    .build(),
-                contentDescription = null,
-                modifier = Modifier
-                    .size(80.dp)
-                    .align(Alignment.CenterVertically),
-                contentScale = ContentScale.Crop
-            )
+            // 이미지 또는 기본 아이콘 표시
+            if (pill.imageUri != null) {
+                // 파일 경로인지 URI인지 확인
+                val imageModel = if (pill.imageUri.startsWith("content://") || pill.imageUri.startsWith("file://")) {
+                    pill.imageUri
+                } else {
+                    // 내부 저장소의 파일 경로인 경우
+                    File(pill.imageUri)
+                }
+                
+                AsyncImage(
+                    model = imageModel,
+                    contentDescription = null,
+                    modifier = Modifier.size(80.dp),
+                    contentScale = ContentScale.Crop
+                )
+            } else {
+                Icon(
+                    imageVector = Icons.Default.MedicalServices,
+                    contentDescription = null,
+                    modifier = Modifier.size(80.dp),
+                    tint = MaterialTheme.colorScheme.primary
+                )
+            }
             
             Column(
                 modifier = Modifier

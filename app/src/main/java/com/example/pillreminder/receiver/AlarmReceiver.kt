@@ -7,6 +7,7 @@ import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.os.Build
+import android.util.Log
 import androidx.core.app.NotificationCompat
 import com.example.pillreminder.MainActivity
 import com.example.pillreminder.R
@@ -25,6 +26,7 @@ import java.util.UUID
 class AlarmReceiver : BroadcastReceiver() {
     companion object {
         private const val CHANNEL_ID = "pill_reminder_channel"
+        private const val TAG = "AlarmReceiver"
         const val ACTION_TAKE_PILL = "com.example.pillreminder.TAKE_PILL"
         const val ACTION_SKIP_PILL = "com.example.pillreminder.SKIP_PILL"
         const val EXTRA_ALARM_ID = "ALARM_ID"
@@ -32,16 +34,29 @@ class AlarmReceiver : BroadcastReceiver() {
     }
 
     override fun onReceive(context: Context, intent: Intent) {
+        Log.d(TAG, "알람 수신: ${intent.action}")
+        
         when (intent.action) {
-            ACTION_TAKE_PILL -> handleIntake(context, intent, IntakeStatus.TAKEN)
-            ACTION_SKIP_PILL -> handleIntake(context, intent, IntakeStatus.SKIPPED)
-            else -> showNotification(context, intent)
+            ACTION_TAKE_PILL -> {
+                Log.d(TAG, "복용 완료 액션 처리")
+                handleIntake(context, intent, IntakeStatus.TAKEN)
+            }
+            ACTION_SKIP_PILL -> {
+                Log.d(TAG, "건너뛰기 액션 처리")
+                handleIntake(context, intent, IntakeStatus.SKIPPED)
+            }
+            else -> {
+                Log.d(TAG, "알람 알림 표시")
+                showNotification(context, intent)
+            }
         }
     }
 
     private fun handleIntake(context: Context, intent: Intent, status: IntakeStatus) {
         val alarmId = intent.getStringExtra(EXTRA_ALARM_ID) ?: return
         val pillId = intent.getStringExtra(EXTRA_PILL_ID) ?: return
+
+        Log.d(TAG, "복용 기록 저장: alarmId=$alarmId, pillId=$pillId, status=$status")
 
         CoroutineScope(Dispatchers.IO).launch {
             val database = PillReminderDatabase.getDatabase(context)
@@ -58,6 +73,8 @@ class AlarmReceiver : BroadcastReceiver() {
             val notificationManager = 
                 context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
             notificationManager.cancel(alarmId.hashCode())
+            
+            Log.d(TAG, "복용 기록 저장 완료 및 알림 제거")
         }
     }
 
@@ -65,11 +82,15 @@ class AlarmReceiver : BroadcastReceiver() {
         val alarmId = intent.getStringExtra(EXTRA_ALARM_ID) ?: return
         val pillId = intent.getStringExtra(EXTRA_PILL_ID) ?: return
 
+        Log.d(TAG, "알림 생성 시작: alarmId=$alarmId, pillId=$pillId")
+
         CoroutineScope(Dispatchers.IO).launch {
             val database = PillReminderDatabase.getDatabase(context)
             val pill = database.pillDao().getPillById(pillId)
             
             pill?.let {
+                Log.d(TAG, "약 정보 조회 성공: ${it.name}")
+                
                 val notificationManager = 
                     context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
                 
@@ -83,6 +104,7 @@ class AlarmReceiver : BroadcastReceiver() {
                         description = context.getString(R.string.alarm_channel_description)
                     }
                     notificationManager.createNotificationChannel(channel)
+                    Log.d(TAG, "알림 채널 생성 완료")
                 }
 
                 // 복용 액션 인텐트
@@ -143,6 +165,10 @@ class AlarmReceiver : BroadcastReceiver() {
                     .build()
 
                 notificationManager.notify(alarmId.hashCode(), notification)
+                Log.d(TAG, "알림 표시 완료: ${it.name}")
+                
+            } ?: run {
+                Log.e(TAG, "약 정보를 찾을 수 없습니다: pillId=$pillId")
             }
         }
     }
