@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<navigation xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/nav_graph"
+    app:startDestination="@id/navigation_home">
+
+    <fragment
+        android:id="@+id/navigation_home"
+        android:name="com.example.pillreminder.ui.home.HomeFragment"
+        android:label="@string/title_home">
+        <action
+            android:id="@+id/action_home_to_add_pill"
+            app:destination="@id/navigation_add_pill" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/navigation_calendar"
+        android:name="com.example.pillreminder.ui.calendar.CalendarFragment"
+        android:label="@string/title_calendar" />
+
+    <fragment
+        android:id="@+id/navigation_settings"
+        android:name="com.example.pillreminder.ui.settings.SettingsFragment"
+        android:label="@string/title_settings" />
+
+    <fragment
+        android:id="@+id/navigation_add_pill"
+        android:name="com.example.pillreminder.ui.pill.AddPillFragment"
+        android:label="@string/btn_add_pill" />
+
+</navigation> 

@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">약알림</string>
+    <string name="title_home">내 약 목록</string>
+    <string name="title_calendar">캘린더</string>
+    <string name="title_settings">설정</string>
+    <string name="title_alarms">알람 설정</string>
+    <string name="title_intake_history">복용 기록</string>
+    
+    <!-- 알람 관련 -->
+    <string name="alarm_notification_title">약 복용 시간</string>
+    <string name="alarm_notification_text">%s 복용 시간입니다.</string>
+    <string name="alarm_channel_name">약 알림</string>
+    <string name="alarm_channel_description">약 복용 시간을 알려주는 알림</string>
+    <string name="dialog_set_alarm_time">알람 시간 설정</string>
+    
+    <!-- 버튼 -->
+    <string name="btn_add_pill">약 추가</string>
+    <string name="btn_add_alarm">알람 추가</string>
+    <string name="btn_save">저장</string>
+    <string name="btn_cancel">취소</string>
+    <string name="btn_take_photo">사진 촬영</string>
+    <string name="btn_select_image">이미지 선택</string>
+    <string name="btn_delete">삭제</string>
+    <string name="btn_back">뒤로</string>
+    <string name="btn_take_pill">복용 완료</string>
+    <string name="btn_skip_pill">건너뛰기</string>
+    
+    <!-- 입력 필드 -->
+    <string name="hint_pill_name">약 이름</string>
+    <string name="hint_pill_memo">메모 (선택사항)</string>
+    
+    <!-- 에러 메시지 -->
+    <string name="error_pill_name_empty">약 이름을 입력해주세요.</string>
+    <string name="error_alarm_time_invalid">올바른 시간을 선택해주세요.</string>
+    <string name="error_camera_permission">카메라 권한이 필요합니다.</string>
+    <string name="error_storage_permission">저장소 권한이 필요합니다.</string>
+    
+    <!-- 다이얼로그 -->
+    <string name="dialog_select_image_title">이미지 선택</string>
+    <string name="dialog_camera">카메라</string>
+    <string name="dialog_gallery">갤러리</string>
+    <string name="dialog_delete_pill_title">약 삭제</string>
+    <string name="dialog_delete_pill_message">이 약을 삭제하시겠습니까? 관련된 모든 알람도 함께 삭제됩니다.</string>
+    
+    <!-- 복용 상태 -->
+    <string name="status_taken">복용 완료</string>
+    <string name="status_skipped">건너뜀</string>
+    <string name="status_missed">놓침</string>
+    
+    <!-- 홈 화면 -->
+    <string name="empty_pill_list">등록된 약이 없습니다.\n오른쪽 아래 버튼을 눌러 약을 추가해주세요.</string>
+    
+    <!-- 약 추가/수정 -->
+    <string name="title_add_pill">약 추가</string>
+    <string name="title_edit_pill">약 수정</string>
+    
+    <!-- 알람 -->
+    <string name="title_add_alarm">알람 추가</string>
+    <string name="title_edit_alarm">알람 수정</string>
+    <string name="label_repeat_days">반복 요일</string>
+    <string name="channel_name">약 복용 알림</string>
+    <string name="channel_description">약 복용 시간을 알려주는 알림입니다.</string>
+    
+    <!-- 메시지 -->
+    <string name="msg_no_alarms">등록된 알람이 없습니다.</string>
+    <string name="msg_no_intake_history">복용 기록이 없습니다.</string>
+</resources>
