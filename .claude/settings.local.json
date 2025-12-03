@@ -1,0 +1,12 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(cat:*)",
+      "Bash(del \"D:\\project-app\\yactime\\app\\src\\main\\java\\com\\example\\pillreminder\\ui\\MainActivity.kt\")",
+      "Bash(./gradlew.bat assembleDebug)",
+      "Bash(git add:*)"
+    ],
+    "deny": [],
+    "ask": []
+  }
+}

@@ -5,6 +5,7 @@ import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.pillreminder.data.database.PillReminderDatabase
 import com.example.pillreminder.data.model.IntakeHistory
+import com.example.pillreminder.data.model.IntakeHistoryWithPill
 import kotlinx.coroutines.flow.*
 import java.time.LocalDate
 import java.time.LocalDateTime
@@ -19,12 +20,11 @@ class CalendarViewModel(application: Application) : AndroidViewModel(application
     private val pillDao = database.pillDao()
 
     /**
-     * 특정 날짜의 복용 기록을 가져옴
+     * 특정 날짜의 복용 기록을 약 정보와 함께 가져옴
      */
-    fun getIntakeHistoryForDate(date: LocalDate): Flow<List<IntakeHistory>> {
+    fun getIntakeHistoryForDate(date: LocalDate): Flow<List<IntakeHistoryWithPill>> {
         val startOfDay = date.atStartOfDay()
-        val endOfDay = date.atTime(LocalTime.MAX)
-        return intakeHistoryDao.getHistoryForDate(startOfDay)
+        return intakeHistoryDao.getHistoryWithPillForDate(startOfDay)
     }
 
     /**
@@ -48,11 +48,11 @@ class CalendarViewModel(application: Application) : AndroidViewModel(application
             getIntakeHistoryForDate(date)
         ) { pills, history ->
             pills.associate { pill ->
-                val pillHistory = history.filter { it.pillId == pill.id }
+                val pillHistory = history.filter { it.history.pillId == pill.id }
                 val status = when {
-                    pillHistory.any { it.status == com.example.pillreminder.data.model.IntakeStatus.TAKEN } ->
+                    pillHistory.any { it.history.status == com.example.pillreminder.data.model.IntakeStatus.TAKEN } ->
                         IntakeStatus.TAKEN
-                    pillHistory.any { it.status == com.example.pillreminder.data.model.IntakeStatus.SKIPPED } ->
+                    pillHistory.any { it.history.status == com.example.pillreminder.data.model.IntakeStatus.SKIPPED } ->
                         IntakeStatus.SKIPPED
                     else -> IntakeStatus.MISSED
                 }

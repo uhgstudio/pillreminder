@@ -1,5 +1,7 @@
 package com.example.pillreminder
 
+import android.Manifest
+import android.os.Build
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -17,7 +19,11 @@ import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Scaffold
 import androidx.compose.ui.Modifier
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -39,12 +45,74 @@ import com.example.pillreminder.ui.addAlarm.AddAlarmViewModel
 import com.example.pillreminder.ui.calendar.CalendarScreen
 import com.example.pillreminder.ui.calendar.CalendarViewModel
 import androidx.compose.ui.res.stringResource
+import com.example.pillreminder.util.AlarmManagerUtil
+import com.google.accompanist.permissions.ExperimentalPermissionsApi
+import com.google.accompanist.permissions.isGranted
+import com.google.accompanist.permissions.rememberPermissionState
 
 class MainActivity : ComponentActivity() {
+    @OptIn(ExperimentalPermissionsApi::class)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
             PillReminderTheme {
+                val context = androidx.compose.ui.platform.LocalContext.current
+                val alarmUtil = remember { AlarmManagerUtil(context) }
+                var showFullScreenIntentDialog by remember { mutableStateOf(false) }
+
+                // Android 13+ (API 33)에서 POST_NOTIFICATIONS 권한 요청
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                    val notificationPermissionState = rememberPermissionState(
+                        Manifest.permission.POST_NOTIFICATIONS
+                    )
+
+                    LaunchedEffect(Unit) {
+                        if (!notificationPermissionState.status.isGranted) {
+                            notificationPermissionState.launchPermissionRequest()
+                        }
+                    }
+                }
+
+                // Android 14+ (API 34)에서 전체 화면 알림 권한 확인
+                LaunchedEffect(Unit) {
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
+                        if (!alarmUtil.canUseFullScreenIntent()) {
+                            showFullScreenIntentDialog = true
+                        }
+                    }
+                }
+
+                // 전체 화면 알림 권한 요청 다이얼로그
+                if (showFullScreenIntentDialog) {
+                    androidx.compose.material3.AlertDialog(
+                        onDismissRequest = { showFullScreenIntentDialog = false },
+                        title = { Text("전체 화면 알림 권한 필요") },
+                        text = {
+                            Text(
+                                "약 복용 알람이 화면이 꺼진 상태에서도 표시되려면 \"전체 화면 알림\" 권한이 필요합니다.\n\n" +
+                                        "설정으로 이동하여 권한을 허용해주세요."
+                            )
+                        },
+                        confirmButton = {
+                            androidx.compose.material3.TextButton(
+                                onClick = {
+                                    showFullScreenIntentDialog = false
+                                    alarmUtil.requestFullScreenIntentPermission()
+                                }
+                            ) {
+                                Text("설정으로 이동")
+                            }
+                        },
+                        dismissButton = {
+                            androidx.compose.material3.TextButton(
+                                onClick = { showFullScreenIntentDialog = false }
+                            ) {
+                                Text("나중에")
+                            }
+                        }
+                    )
+                }
+
                 Surface(
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.background
@@ -124,30 +192,69 @@ class MainActivity : ComponentActivity() {
                                 arguments = listOf(navArgument("pillId") { type = NavType.StringType })
                             ) { backStackEntry ->
                                 val pillDetailViewModel: PillDetailViewModel = viewModel()
+                                val pillId = backStackEntry.arguments?.getString("pillId") ?: ""
                                 PillDetailScreen(
                                     viewModel = pillDetailViewModel,
-                                    pillId = backStackEntry.arguments?.getString("pillId") ?: "",
+                                    pillId = pillId,
                                     onNavigateUp = { navController.navigateUp() },
-                                    onAddAlarmClick = { pillId ->
-                                        navController.navigate("add_alarm/$pillId")
+                                    onAddAlarmClick = { id ->
+                                        navController.navigate("add_alarm/$id")
+                                    },
+                                    onEditPillClick = {
+                                        navController.navigate("edit_pill/$pillId")
                                     }
+                                )
+                            }
+
+                            composable(
+                                "edit_pill/{pillId}",
+                                arguments = listOf(navArgument("pillId") { type = NavType.StringType })
+                            ) { backStackEntry ->
+                                val addPillViewModel: AddPillViewModel = viewModel()
+                                AddPillScreen(
+                                    viewModel = addPillViewModel,
+                                    pillId = backStackEntry.arguments?.getString("pillId"),
+                                    onNavigateUp = { navController.navigateUp() }
                                 )
                             }
                             
                             composable("alarms") {
                                 val alarmsViewModel: AlarmsViewModel = viewModel()
                                 AlarmsScreen(
-                                    viewModel = alarmsViewModel
+                                    viewModel = alarmsViewModel,
+                                    onAddAlarmClick = { pillId ->
+                                        navController.navigate("add_alarm/$pillId")
+                                    },
+                                    onEditAlarmClick = { pillId, alarmId ->
+                                        navController.navigate("edit_alarm/$pillId/$alarmId")
+                                    }
                                 )
                             }
-                            
+
                             composable(
                                 "add_alarm/{pillId}",
                                 arguments = listOf(navArgument("pillId") { type = NavType.StringType })
-                            ) {
+                            ) { backStackEntry ->
                                 val addAlarmViewModel: AddAlarmViewModel = viewModel()
                                 AddAlarmScreen(
                                     viewModel = addAlarmViewModel,
+                                    pillId = backStackEntry.arguments?.getString("pillId") ?: "",
+                                    onNavigateUp = { navController.navigateUp() }
+                                )
+                            }
+
+                            composable(
+                                "edit_alarm/{pillId}/{alarmId}",
+                                arguments = listOf(
+                                    navArgument("pillId") { type = NavType.StringType },
+                                    navArgument("alarmId") { type = NavType.StringType }
+                                )
+                            ) { backStackEntry ->
+                                val addAlarmViewModel: AddAlarmViewModel = viewModel()
+                                AddAlarmScreen(
+                                    viewModel = addAlarmViewModel,
+                                    pillId = backStackEntry.arguments?.getString("pillId") ?: "",
+                                    alarmId = backStackEntry.arguments?.getString("alarmId"),
                                     onNavigateUp = { navController.navigateUp() }
                                 )
                             }

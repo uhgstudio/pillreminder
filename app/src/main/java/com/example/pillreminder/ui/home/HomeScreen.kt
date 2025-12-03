@@ -3,15 +3,21 @@ package com.example.pillreminder.ui.home
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.background
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.Medication
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
@@ -22,51 +28,103 @@ import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import com.example.pillreminder.R
 import com.example.pillreminder.data.model.Pill
+import com.example.pillreminder.ui.theme.GradientWhiteStart
+import com.example.pillreminder.ui.theme.GradientLightGrayEnd
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun HomeScreen(
     viewModel: HomeViewModel,
     onAddPillClick: () -> Unit,
-    onPillClick: (Pill) -> Unit
+    onPillClick: (String) -> Unit
 ) {
     val pills by viewModel.pills.collectAsState(initial = emptyList())
+    var pillToDelete by remember { mutableStateOf<Pill?>(null) }
 
-    Scaffold(
-        floatingActionButton = {
-            FloatingActionButton(
-                onClick = onAddPillClick,
-                contentColor = MaterialTheme.colorScheme.onPrimaryContainer
-            ) {
-                Icon(
-                    imageVector = Icons.Default.Add,
-                    contentDescription = stringResource(R.string.btn_add_pill)
+    // 깔끔한 화이트-그레이 그라디언트 배경
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(
+                Brush.verticalGradient(
+                    colors = listOf(
+                        GradientWhiteStart,
+                        GradientLightGrayEnd
+                    )
                 )
-            }
-        }
-    ) { paddingValues ->
-        if (pills.isEmpty()) {
-            EmptyPillList(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(paddingValues)
             )
-        } else {
-            LazyColumn(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(paddingValues)
-                    .padding(horizontal = 16.dp),
-                verticalArrangement = Arrangement.spacedBy(8.dp)
-            ) {
-                items(pills) { pill ->
-                    PillItem(
-                        pill = pill,
-                        onPillClick = onPillClick,
-                        onDeleteClick = { viewModel.deletePill(pill) }
+    ) {
+        Scaffold(
+            containerColor = androidx.compose.ui.graphics.Color.Transparent,  // 배경 투명하게
+            topBar = {
+                TopAppBar(
+                    title = { Text(stringResource(R.string.title_home)) },
+                    colors = TopAppBarDefaults.topAppBarColors(
+                        containerColor = androidx.compose.ui.graphics.Color.Transparent
+                    )
+                )
+            },
+            floatingActionButton = {
+                FloatingActionButton(
+                    onClick = onAddPillClick,
+                    contentColor = MaterialTheme.colorScheme.onPrimaryContainer
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Add,
+                        contentDescription = stringResource(R.string.btn_add_pill)
                     )
                 }
             }
+        ) { paddingValues ->
+            if (pills.isEmpty()) {
+                EmptyPillList(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(paddingValues)
+                )
+            } else {
+                LazyColumn(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(paddingValues)
+                        .padding(horizontal = 16.dp),
+                    contentPadding = PaddingValues(vertical = 8.dp),
+                    verticalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    items(pills) { pill ->
+                        PillItem(
+                            pill = pill,
+                            onPillClick = { onPillClick(pill.id) },
+                            onDeleteClick = { pillToDelete = pill }
+                        )
+                    }
+                }
+            }
         }
+    }
+
+    // 삭제 확인 다이얼로그
+    pillToDelete?.let { pill ->
+        AlertDialog(
+            onDismissRequest = { pillToDelete = null },
+            title = { Text(stringResource(R.string.dialog_delete_pill_title)) },
+            text = { Text(stringResource(R.string.dialog_delete_pill_message)) },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        viewModel.deletePill(pill)
+                        pillToDelete = null
+                    }
+                ) {
+                    Text(stringResource(R.string.btn_delete))
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { pillToDelete = null }) {
+                    Text(stringResource(R.string.btn_cancel))
+                }
+            }
+        )
     }
 }
 
@@ -88,14 +146,14 @@ fun EmptyPillList(modifier: Modifier = Modifier) {
 @Composable
 fun PillItem(
     pill: Pill,
-    onPillClick: (Pill) -> Unit,
+    onPillClick: () -> Unit,
     onDeleteClick: () -> Unit
 ) {
     Card(
         modifier = Modifier
             .fillMaxWidth()
             .padding(vertical = 4.dp),
-        onClick = { onPillClick(pill) }
+        onClick = onPillClick
     ) {
         Row(
             modifier = Modifier
@@ -103,17 +161,37 @@ fun PillItem(
                 .height(80.dp),
             horizontalArrangement = Arrangement.spacedBy(16.dp)
         ) {
-            AsyncImage(
-                model = ImageRequest.Builder(LocalContext.current)
-                    .data(pill.imageUri)
-                    .crossfade(true)
-                    .build(),
-                contentDescription = null,
-                modifier = Modifier
-                    .size(80.dp)
-                    .align(Alignment.CenterVertically),
-                contentScale = ContentScale.Crop
-            )
+            if (pill.imageUri != null) {
+                AsyncImage(
+                    model = ImageRequest.Builder(LocalContext.current)
+                        .data(pill.imageUri)
+                        .crossfade(true)
+                        .build(),
+                    contentDescription = pill.name,
+                    modifier = Modifier
+                        .size(80.dp)
+                        .align(Alignment.CenterVertically),
+                    contentScale = ContentScale.Crop
+                )
+            } else {
+                Box(
+                    modifier = Modifier
+                        .size(80.dp)
+                        .background(
+                            MaterialTheme.colorScheme.surfaceVariant,
+                            MaterialTheme.shapes.small
+                        )
+                        .align(Alignment.CenterVertically),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Medication,
+                        contentDescription = null,
+                        modifier = Modifier.size(40.dp),
+                        tint = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
+            }
             
             Column(
                 modifier = Modifier

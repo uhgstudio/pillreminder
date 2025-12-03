@@ -2,7 +2,9 @@ package com.example.pillreminder.data.converter
 
 import androidx.room.TypeConverter
 import java.time.DayOfWeek
+import java.time.LocalDate
 import java.time.LocalDateTime
+import java.time.LocalTime
 import java.time.format.DateTimeFormatter
 
 /**
@@ -10,10 +12,18 @@ import java.time.format.DateTimeFormatter
  */
 class Converters {
     private val dateTimeFormatter = DateTimeFormatter.ISO_LOCAL_DATE_TIME
+    private val dateFormatter = DateTimeFormatter.ISO_LOCAL_DATE
 
     @TypeConverter
     fun fromTimestamp(value: String?): LocalDateTime? {
-        return value?.let { LocalDateTime.parse(it, dateTimeFormatter) }
+        return value?.let {
+            // 날짜 형식('2025-11-25')과 날짜시간 형식('2025-11-25T10:30:00') 모두 처리
+            if (it.contains('T')) {
+                LocalDateTime.parse(it, dateTimeFormatter)
+            } else {
+                LocalDate.parse(it, dateFormatter).atStartOfDay()
+            }
+        }
     }
 
     @TypeConverter

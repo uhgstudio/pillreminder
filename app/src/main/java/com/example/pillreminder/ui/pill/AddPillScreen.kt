@@ -2,10 +2,14 @@ package com.example.pillreminder.ui.pill
 
 import android.Manifest
 import android.net.Uri
+import android.os.Environment
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Camera
@@ -15,12 +19,17 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import androidx.core.content.FileProvider
 import coil.compose.AsyncImage
 import com.example.pillreminder.R
+import com.example.pillreminder.ui.theme.GradientWhiteStart
+import com.example.pillreminder.ui.theme.GradientLightGrayEnd
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import com.google.accompanist.permissions.isGranted
 import com.google.accompanist.permissions.rememberPermissionState
@@ -31,15 +40,38 @@ import java.util.UUID
 @Composable
 fun AddPillScreen(
     viewModel: AddPillViewModel,
+    pillId: String? = null,
     onNavigateUp: () -> Unit
 ) {
     val context = LocalContext.current
     var showImageSelectionDialog by remember { mutableStateOf(false) }
     var currentPhotoUri by remember { mutableStateOf<Uri?>(null) }
+    var nameError by remember { mutableStateOf<String?>(null) }
+
+    val editingPill by viewModel.editingPill.collectAsState()
+    val savedImageUri by viewModel.imageUri.collectAsState()
+
     var name by remember { mutableStateOf("") }
     var memo by remember { mutableStateOf("") }
-    var nameError by remember { mutableStateOf<String?>(null) }
-    var imageUri by remember { mutableStateOf<Uri?>(null) }
+    var initialized by remember { mutableStateOf(false) }
+
+    // 편집 모드일 경우 기존 데이터 로드
+    LaunchedEffect(pillId) {
+        if (pillId != null) {
+            viewModel.loadPill(pillId)
+        }
+    }
+
+    // 기존 데이터로 폼 초기화
+    LaunchedEffect(editingPill) {
+        if (!initialized && editingPill != null) {
+            name = editingPill!!.name
+            memo = editingPill!!.memo ?: ""
+            initialized = true
+        }
+    }
+
+    var imageUri = savedImageUri?.let { Uri.parse(it) }
 
     val cameraPermissionState = rememberPermissionState(Manifest.permission.CAMERA)
     
@@ -70,28 +102,53 @@ fun AddPillScreen(
         takePicture.launch(currentPhotoUri)
     }
 
-    Scaffold(
-        topBar = {
-            TopAppBar(
-                title = { Text(stringResource(R.string.title_add_pill)) },
-                navigationIcon = {
-                    IconButton(onClick = onNavigateUp) {
-                        Icon(
-                            imageVector = Icons.Default.ArrowBack,
-                            contentDescription = stringResource(R.string.btn_back)
-                        )
-                    }
-                }
+    val isEditMode = pillId != null
+
+    // 깔끔한 화이트-그레이 그라디언트 배경
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(
+                Brush.verticalGradient(
+                    colors = listOf(
+                        GradientWhiteStart,
+                        GradientLightGrayEnd
+                    )
+                )
             )
-        }
-    ) { paddingValues ->
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(paddingValues)
-                .padding(16.dp),
-            verticalArrangement = Arrangement.spacedBy(16.dp)
-        ) {
+    ) {
+        Scaffold(
+            containerColor = androidx.compose.ui.graphics.Color.Transparent,  // 배경 투명하게
+            topBar = {
+                TopAppBar(
+                    title = {
+                        Text(
+                            if (isEditMode) stringResource(R.string.title_edit_pill)
+                            else stringResource(R.string.title_add_pill)
+                        )
+                    },
+                    navigationIcon = {
+                        IconButton(onClick = onNavigateUp) {
+                            Icon(
+                                imageVector = Icons.Default.ArrowBack,
+                                contentDescription = stringResource(R.string.btn_back)
+                            )
+                        }
+                    },
+                    colors = TopAppBarDefaults.topAppBarColors(
+                        containerColor = androidx.compose.ui.graphics.Color.Transparent
+                    )
+                )
+            }
+        ) { paddingValues ->
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(paddingValues)
+                    .padding(16.dp)
+                    .verticalScroll(rememberScrollState()),
+                verticalArrangement = Arrangement.spacedBy(16.dp)
+            ) {
             // 이미지 미리보기 및 선택 버튼
             Box(
                 modifier = Modifier
@@ -126,7 +183,7 @@ fun AddPillScreen(
             ) {
                 Button(
                     onClick = {
-                        launcher.launch("image/*")
+                        selectImage.launch("image/*")
                     },
                     modifier = Modifier.weight(1f)
                 ) {
@@ -135,16 +192,20 @@ fun AddPillScreen(
 
                 Button(
                     onClick = {
-                        val uri = FileProvider.getUriForFile(
-                            context,
-                            "${context.packageName}.provider",
-                            File(
-                                context.getExternalFilesDir(Environment.DIRECTORY_PICTURES),
-                                "pill_${System.currentTimeMillis()}.jpg"
+                        if (cameraPermissionState.status.isGranted) {
+                            val uri = FileProvider.getUriForFile(
+                                context,
+                                "${context.packageName}.provider",
+                                File(
+                                    context.getExternalFilesDir(Environment.DIRECTORY_PICTURES),
+                                    "pill_${System.currentTimeMillis()}.jpg"
+                                )
                             )
-                        )
-                        imageUri = uri
-                        takePicture.launch(uri)
+                            currentPhotoUri = uri
+                            takePicture.launch(uri)
+                        } else {
+                            cameraPermissionState.launchPermissionRequest()
+                        }
                     },
                     modifier = Modifier.weight(1f)
                 ) {
@@ -180,14 +241,14 @@ fun AddPillScreen(
                         nameError = context.getString(R.string.error_pill_name_empty)
                         return@Button
                     }
-                    viewModel.savePill(name, memo)
-                    onNavigateUp()
+                    viewModel.savePill(name, memo, onNavigateUp)
                 },
                 modifier = Modifier.fillMaxWidth()
             ) {
                 Text(stringResource(R.string.btn_save))
             }
         }
+    }
     }
 
     if (showImageSelectionDialog) {

@@ -6,6 +6,7 @@ import androidx.lifecycle.viewModelScope
 import com.example.pillreminder.data.database.PillReminderDatabase
 import com.example.pillreminder.data.model.Pill
 import com.example.pillreminder.data.model.PillAlarm
+import com.example.pillreminder.util.AlarmManagerUtil
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -31,8 +32,24 @@ class PillDetailViewModel(application: Application) : AndroidViewModel(applicati
 
     fun deletePill(pill: Pill, onComplete: () -> Unit) {
         viewModelScope.launch {
+            // 연관된 알람들 취소
+            val alarms = alarmDao.getAlarmsForPillOnce(pill.id)
+            val alarmManagerUtil = AlarmManagerUtil(getApplication())
+            alarms.forEach { alarm ->
+                alarmManagerUtil.cancelAlarm(alarm)
+            }
+
+            // 약 삭제 (CASCADE로 알람도 DB에서 삭제됨)
             pillDao.deletePill(pill)
             onComplete()
+        }
+    }
+
+    fun deleteAlarm(alarm: PillAlarm) {
+        viewModelScope.launch {
+            val alarmManagerUtil = AlarmManagerUtil(getApplication())
+            alarmManagerUtil.cancelAlarm(alarm)
+            alarmDao.deleteAlarm(alarm)
         }
     }
 } 

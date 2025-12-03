@@ -22,6 +22,12 @@ interface PillAlarmDao {
     @Query("SELECT * FROM pill_alarms WHERE enabled = 1")
     fun getEnabledAlarms(): Flow<List<PillAlarm>>
 
+    @Query("SELECT * FROM pill_alarms WHERE enabled = 1")
+    suspend fun getEnabledAlarmsOnce(): List<PillAlarm>
+
+    @Query("SELECT * FROM pill_alarms WHERE pillId = :pillId")
+    suspend fun getAlarmsForPillOnce(pillId: String): List<PillAlarm>
+
     @Query("SELECT * FROM pill_alarms WHERE repeatDays LIKE '%' || :dayOfWeek || '%'")
     fun getAlarmsForDay(dayOfWeek: DayOfWeek): Flow<List<PillAlarm>>
 

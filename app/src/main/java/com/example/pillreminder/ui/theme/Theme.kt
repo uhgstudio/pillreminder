@@ -81,24 +81,21 @@ private val DarkColorScheme = darkColorScheme(
 
 @Composable
 fun PillReminderTheme(
-    darkTheme: Boolean = isSystemInDarkTheme(),
-    dynamicColor: Boolean = true,
+    darkTheme: Boolean = false,  // 항상 밝은 테마 사용 (다크모드 비활성화)
+    dynamicColor: Boolean = false,  // 다이나믹 컬러 비활성화 (앱 고유 색상 사용)
     content: @Composable () -> Unit
 ) {
-    val colorScheme = when {
-        dynamicColor && Build.VERSION.SDK_INT >= Build.VERSION_CODES.S -> {
-            val context = LocalContext.current
-            if (darkTheme) dynamicDarkColorScheme(context) else dynamicLightColorScheme(context)
-        }
-        darkTheme -> DarkColorScheme
-        else -> LightColorScheme
-    }
+    // 항상 밝은 테마만 사용 (다크모드 및 다이나믹 컬러 비활성화)
+    val colorScheme = LightColorScheme
+
     val view = LocalView.current
     if (!view.isInEditMode) {
         SideEffect {
             val window = (view.context as Activity).window
-            window.statusBarColor = colorScheme.primary.toArgb()
-            WindowCompat.getInsetsController(window, view).isAppearanceLightStatusBars = darkTheme
+            // 상태바를 투명하게 설정하여 그라디언트가 자연스럽게 보이도록
+            window.statusBarColor = android.graphics.Color.TRANSPARENT
+            // 밝은 테마이므로 어두운 아이콘 사용
+            WindowCompat.getInsetsController(window, view).isAppearanceLightStatusBars = true
         }
     }
 

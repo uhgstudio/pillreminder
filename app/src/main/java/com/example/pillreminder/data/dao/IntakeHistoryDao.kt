@@ -2,6 +2,7 @@ package com.example.pillreminder.data.dao
 
 import androidx.room.*
 import com.example.pillreminder.data.model.IntakeHistory
+import com.example.pillreminder.data.model.IntakeHistoryWithPill
 import kotlinx.coroutines.flow.Flow
 import java.time.LocalDateTime
 
@@ -14,19 +15,27 @@ interface IntakeHistoryDao {
     fun getHistoryForPill(pillId: String): Flow<List<IntakeHistory>>
 
     @Query("""
-        SELECT * FROM intake_history 
-        WHERE date(intakeTime) >= date(:startDate) 
+        SELECT * FROM intake_history
+        WHERE date(intakeTime) >= date(:startDate)
         AND date(intakeTime) <= date(:endDate)
         ORDER BY intakeTime DESC
     """)
     fun getHistoryBetweenDates(startDate: LocalDateTime, endDate: LocalDateTime): Flow<List<IntakeHistory>>
 
     @Query("""
-        SELECT * FROM intake_history 
+        SELECT * FROM intake_history
         WHERE date(intakeTime) = date(:date)
         ORDER BY intakeTime DESC
     """)
     fun getHistoryForDate(date: LocalDateTime): Flow<List<IntakeHistory>>
+
+    @Transaction
+    @Query("""
+        SELECT * FROM intake_history
+        WHERE date(intakeTime) = date(:date)
+        ORDER BY intakeTime DESC
+    """)
+    fun getHistoryWithPillForDate(date: LocalDateTime): Flow<List<IntakeHistoryWithPill>>
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertHistory(history: IntakeHistory)

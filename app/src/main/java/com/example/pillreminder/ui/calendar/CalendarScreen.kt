@@ -15,12 +15,16 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.example.pillreminder.R
+import com.example.pillreminder.ui.theme.GradientGoldStart
+import com.example.pillreminder.ui.theme.GradientPeachEnd
 import com.example.pillreminder.data.model.IntakeHistory
+import com.example.pillreminder.data.model.IntakeHistoryWithPill
 import java.time.DayOfWeek
 import java.time.LocalDate
 import java.time.YearMonth
@@ -43,35 +47,53 @@ fun CalendarScreen(
         currentYearMonth.atEndOfMonth()
     ).collectAsState(initial = emptySet())
 
-    Scaffold(
-        topBar = {
-            TopAppBar(
-                title = { Text(stringResource(R.string.title_calendar)) }
+    // 밝은 골드-피치 그라디언트 배경
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(
+                Brush.verticalGradient(
+                    colors = listOf(
+                        GradientGoldStart,
+                        GradientPeachEnd
+                    )
+                )
             )
-        }
-    ) { paddingValues ->
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(paddingValues)
-        ) {
-            CalendarHeader(
-                yearMonth = currentYearMonth,
-                onPreviousMonth = { currentYearMonth = currentYearMonth.minusMonths(1) },
-                onNextMonth = { currentYearMonth = currentYearMonth.plusMonths(1) }
-            )
-            
-            CalendarGrid(
-                yearMonth = currentYearMonth,
-                selectedDate = selectedDate,
-                intakeDates = intakeDates,
-                onDateSelected = { selectedDate = it }
-            )
-            
-            IntakeHistoryList(
-                intakeHistory = intakeHistory,
-                modifier = Modifier.weight(1f)
-            )
+    ) {
+        Scaffold(
+            containerColor = Color.Transparent,  // 배경 투명하게
+            topBar = {
+                TopAppBar(
+                    title = { Text(stringResource(R.string.title_calendar)) },
+                    colors = TopAppBarDefaults.topAppBarColors(
+                        containerColor = Color.Transparent
+                    )
+                )
+            }
+        ) { paddingValues ->
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(paddingValues)
+            ) {
+                CalendarHeader(
+                    yearMonth = currentYearMonth,
+                    onPreviousMonth = { currentYearMonth = currentYearMonth.minusMonths(1) },
+                    onNextMonth = { currentYearMonth = currentYearMonth.plusMonths(1) }
+                )
+
+                CalendarGrid(
+                    yearMonth = currentYearMonth,
+                    selectedDate = selectedDate,
+                    intakeDates = intakeDates,
+                    onDateSelected = { selectedDate = it }
+                )
+
+                IntakeHistoryList(
+                    intakeHistory = intakeHistory,
+                    modifier = Modifier.weight(1f)
+                )
+            }
         }
     }
 }
@@ -192,7 +214,7 @@ fun CalendarDay(
 
 @Composable
 fun IntakeHistoryList(
-    intakeHistory: List<IntakeHistory>,
+    intakeHistory: List<IntakeHistoryWithPill>,
     modifier: Modifier = Modifier
 ) {
     Card(
@@ -206,7 +228,7 @@ fun IntakeHistoryList(
                 style = MaterialTheme.typography.titleMedium,
                 modifier = Modifier.padding(bottom = 8.dp)
             )
-            
+
             if (intakeHistory.isEmpty()) {
                 Text(
                     text = stringResource(R.string.msg_no_intake_history),
@@ -215,8 +237,11 @@ fun IntakeHistoryList(
                 )
             } else {
                 LazyColumn {
-                    items(intakeHistory) { history ->
-                        IntakeHistoryItem(history = history)
+                    items(intakeHistory.size) { index ->
+                        IntakeHistoryItem(
+                            historyWithPill = intakeHistory[index],
+                            isLast = index == intakeHistory.size - 1
+                        )
                     }
                 }
             }
@@ -225,34 +250,60 @@ fun IntakeHistoryList(
 }
 
 @Composable
-fun IntakeHistoryItem(history: IntakeHistory) {
-    Row(
+fun IntakeHistoryItem(
+    historyWithPill: IntakeHistoryWithPill,
+    isLast: Boolean
+) {
+    val history = historyWithPill.history
+    val pill = historyWithPill.pill
+
+    Column(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(vertical = 8.dp),
-        horizontalArrangement = Arrangement.SpaceBetween
+            .padding(vertical = 8.dp)
     ) {
-        Text(
-            text = history.intakeTime.format(
-                DateTimeFormatter.ofPattern("a hh:mm")
-            ),
-            style = MaterialTheme.typography.bodyMedium
-        )
-        
-        Text(
-            text = when (history.status) {
-                com.example.pillreminder.data.model.IntakeStatus.TAKEN ->
-                    stringResource(R.string.status_taken)
-                com.example.pillreminder.data.model.IntakeStatus.SKIPPED ->
-                    stringResource(R.string.status_skipped)
-            },
-            color = when (history.status) {
-                com.example.pillreminder.data.model.IntakeStatus.TAKEN ->
-                    MaterialTheme.colorScheme.primary
-                com.example.pillreminder.data.model.IntakeStatus.SKIPPED ->
-                    MaterialTheme.colorScheme.error
-            },
-            style = MaterialTheme.typography.bodyMedium
-        )
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Column(modifier = Modifier.weight(1f)) {
+                Text(
+                    text = pill.name,
+                    style = MaterialTheme.typography.titleSmall,
+                    color = MaterialTheme.colorScheme.onSurface
+                )
+                Text(
+                    text = history.intakeTime.format(
+                        DateTimeFormatter.ofPattern("a hh:mm")
+                    ),
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
+
+            Text(
+                text = when (history.status) {
+                    com.example.pillreminder.data.model.IntakeStatus.TAKEN ->
+                        stringResource(R.string.status_taken)
+                    com.example.pillreminder.data.model.IntakeStatus.SKIPPED ->
+                        stringResource(R.string.status_skipped)
+                },
+                color = when (history.status) {
+                    com.example.pillreminder.data.model.IntakeStatus.TAKEN ->
+                        MaterialTheme.colorScheme.primary
+                    com.example.pillreminder.data.model.IntakeStatus.SKIPPED ->
+                        MaterialTheme.colorScheme.error
+                },
+                style = MaterialTheme.typography.bodyMedium
+            )
+        }
+
+        if (!isLast) {
+            HorizontalDivider(
+                modifier = Modifier.padding(top = 8.dp),
+                color = MaterialTheme.colorScheme.outlineVariant
+            )
+        }
     }
 } 
