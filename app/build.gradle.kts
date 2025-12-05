@@ -2,18 +2,19 @@ plugins {
     id("com.android.application")
     id("org.jetbrains.kotlin.android")
     id("com.google.devtools.ksp")
+    id("org.jetbrains.kotlin.plugin.serialization") version "1.9.22"
 }
 
 android {
-    namespace = "com.example.pillreminder"
-    compileSdk = 34
+    namespace = "com.uhstudio.pillreminder"
+    compileSdk = 36
 
     defaultConfig {
-        applicationId = "com.example.pillreminder"
+        applicationId = "com.uhstudio.pillreminder"
         minSdk = 26
-        targetSdk = 34
-        versionCode = 1
-        versionName = "1.0"
+        targetSdk = 36
+        versionCode = 4
+        versionName = "1.0.4"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables {
@@ -33,6 +34,7 @@ android {
     
     buildFeatures {
         compose = true
+        buildConfig = true
     }
     
     composeOptions {
@@ -52,6 +54,11 @@ android {
         resources {
             excludes += "/META-INF/{AL2.0,LGPL2.1}"
         }
+    }
+
+    // Room 스키마 내보내기 설정
+    ksp {
+        arg("room.schemaLocation", "$projectDir/schemas")
     }
 }
 
@@ -99,7 +106,20 @@ dependencies {
     // Coroutines
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.7.3")
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-play-services:1.7.3")
-    
+
+    // Google Play Billing (비활성화: 사업자 등록 후 활성화 예정)
+    // implementation("com.android.billingclient:billing-ktx:6.1.0")
+
+    // Google AdMob
+    implementation("com.google.android.gms:play-services-ads:22.6.0")
+
+    // Timber Logging
+    implementation("com.jakewharton.timber:timber:5.0.1")
+
+    // JSON 직렬화
+    implementation("com.google.code.gson:gson:2.10.1")
+    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.6.0")
+
     // Testing
     testImplementation("junit:junit:4.13.2")
     androidTestImplementation("androidx.test.ext:junit:1.1.5")
