@@ -1,4 +1,4 @@
-package com.example.pillreminder.ui.calendar
+package com.uhstudio.pillreminder.ui.calendar
 
 import android.app.Activity
 import androidx.compose.foundation.background
@@ -8,10 +8,11 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
-import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.KeyboardArrowLeft
 import androidx.compose.material.icons.filled.KeyboardArrowRight
+import androidx.compose.material.icons.filled.CheckCircle
+import androidx.compose.material.icons.filled.Cancel
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -22,12 +23,10 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import com.example.pillreminder.R
-import com.example.pillreminder.ads.AdManager
-import com.example.pillreminder.ui.theme.GradientGoldStart
-import com.example.pillreminder.ui.theme.GradientPeachEnd
-import com.example.pillreminder.data.model.IntakeHistory
-import com.example.pillreminder.data.model.IntakeHistoryWithPill
+import com.uhstudio.pillreminder.ads.AdManager
+import com.uhstudio.pillreminder.ui.theme.GradientGoldStart
+import com.uhstudio.pillreminder.ui.theme.GradientPeachEnd
+import com.uhstudio.pillreminder.data.model.IntakeHistoryWithPill
 import kotlinx.coroutines.launch
 import java.time.DayOfWeek
 import java.time.LocalDate
@@ -35,6 +34,7 @@ import java.time.YearMonth
 import java.time.format.DateTimeFormatter
 import java.time.format.TextStyle
 import java.util.*
+import com.uhstudio.pillreminder.R
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -51,10 +51,12 @@ fun CalendarScreen(
 
     val intakeHistory by viewModel.getIntakeHistoryForDate(selectedDate)
         .collectAsState(initial = emptyList())
-    val intakeDates by viewModel.getIntakeDatesInRange(
+    val monthlyStats by viewModel.getMonthlyStats(currentYearMonth)
+        .collectAsState(initial = MonthlyStats())
+    val dateStatusMap by viewModel.getDateStatusMap(
         currentYearMonth.atDay(1),
         currentYearMonth.atEndOfMonth()
-    ).collectAsState(initial = emptySet())
+    ).collectAsState(initial = emptyMap())
 
     // 화면 방문 시 광고 체크
     LaunchedEffect(Unit) {
@@ -99,16 +101,26 @@ fun CalendarScreen(
                     .fillMaxSize()
                     .padding(paddingValues)
             ) {
+                // 월간 통계 카드
+                MonthlyStatsCard(
+                    yearMonth = currentYearMonth,
+                    stats = monthlyStats,
+                    modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
+                )
+
                 CalendarHeader(
                     yearMonth = currentYearMonth,
                     onPreviousMonth = { currentYearMonth = currentYearMonth.minusMonths(1) },
                     onNextMonth = { currentYearMonth = currentYearMonth.plusMonths(1) }
                 )
 
+                // 범례
+                LegendRow(modifier = Modifier.padding(horizontal = 16.dp, vertical = 4.dp))
+
                 CalendarGrid(
                     yearMonth = currentYearMonth,
                     selectedDate = selectedDate,
-                    intakeDates = intakeDates,
+                    dateStatusMap = dateStatusMap,
                     onDateSelected = { selectedDate = it }
                 )
 
@@ -168,12 +180,12 @@ fun CalendarHeader(
 fun CalendarGrid(
     yearMonth: YearMonth,
     selectedDate: LocalDate,
-    intakeDates: Set<LocalDate>,
+    dateStatusMap: Map<LocalDate, DateStatus>,
     onDateSelected: (LocalDate) -> Unit
 ) {
     val firstDayOfMonth = yearMonth.atDay(1)
     val firstDayOfGrid = firstDayOfMonth.minusDays(firstDayOfMonth.dayOfWeek.value.toLong() - 1)
-    
+
     LazyVerticalGrid(
         columns = GridCells.Fixed(7),
         modifier = Modifier
@@ -184,13 +196,13 @@ fun CalendarGrid(
             val date = firstDayOfGrid.plusDays(index.toLong())
             val isSelected = date == selectedDate
             val isCurrentMonth = date.month == yearMonth.month
-            val hasIntake = intakeDates.contains(date)
-            
+            val status = dateStatusMap[date]
+
             CalendarDay(
                 date = date,
                 isSelected = isSelected,
                 isCurrentMonth = isCurrentMonth,
-                hasIntake = hasIntake,
+                status = status,
                 onClick = { onDateSelected(date) }
             )
         }
@@ -202,20 +214,21 @@ fun CalendarDay(
     date: LocalDate,
     isSelected: Boolean,
     isCurrentMonth: Boolean,
-    hasIntake: Boolean,
+    status: DateStatus?,
     onClick: () -> Unit
 ) {
+    val backgroundColor = when {
+        isSelected -> MaterialTheme.colorScheme.primaryContainer
+        status == DateStatus.TAKEN -> MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.3f)
+        status == DateStatus.SKIPPED -> MaterialTheme.colorScheme.errorContainer.copy(alpha = 0.3f)
+        else -> Color.Transparent
+    }
+
     Box(
         modifier = Modifier
             .aspectRatio(1f)
             .padding(2.dp)
-            .background(
-                when {
-                    isSelected -> MaterialTheme.colorScheme.primaryContainer
-                    hasIntake -> MaterialTheme.colorScheme.secondaryContainer
-                    else -> Color.Transparent
-                }
-            )
+            .background(backgroundColor)
             .border(
                 width = if (isSelected) 2.dp else 0.dp,
                 color = if (isSelected) MaterialTheme.colorScheme.primary else Color.Transparent
@@ -223,15 +236,35 @@ fun CalendarDay(
             .clickable(onClick = onClick),
         contentAlignment = Alignment.Center
     ) {
-        Text(
-            text = date.dayOfMonth.toString(),
-            style = MaterialTheme.typography.bodyMedium,
-            color = when {
-                !isCurrentMonth -> MaterialTheme.colorScheme.outline
-                isSelected -> MaterialTheme.colorScheme.onPrimaryContainer
-                else -> MaterialTheme.colorScheme.onSurface
+        Column(
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            Text(
+                text = date.dayOfMonth.toString(),
+                style = MaterialTheme.typography.bodyMedium,
+                color = when {
+                    !isCurrentMonth -> MaterialTheme.colorScheme.outline
+                    isSelected -> MaterialTheme.colorScheme.onPrimaryContainer
+                    else -> MaterialTheme.colorScheme.onSurface
+                }
+            )
+
+            // 상태 표시 점
+            if (status != null && isCurrentMonth) {
+                Box(
+                    modifier = Modifier
+                        .size(4.dp)
+                        .background(
+                            when (status) {
+                                DateStatus.TAKEN -> MaterialTheme.colorScheme.primary
+                                DateStatus.SKIPPED -> MaterialTheme.colorScheme.error
+                                DateStatus.NONE -> Color.Transparent
+                            },
+                            shape = MaterialTheme.shapes.small
+                        )
+                )
             }
-        )
+        }
     }
 }
 
@@ -307,15 +340,15 @@ fun IntakeHistoryItem(
 
             Text(
                 text = when (history.status) {
-                    com.example.pillreminder.data.model.IntakeStatus.TAKEN ->
+                    com.uhstudio.pillreminder.data.model.IntakeStatus.TAKEN ->
                         stringResource(R.string.status_taken)
-                    com.example.pillreminder.data.model.IntakeStatus.SKIPPED ->
+                    com.uhstudio.pillreminder.data.model.IntakeStatus.SKIPPED ->
                         stringResource(R.string.status_skipped)
                 },
                 color = when (history.status) {
-                    com.example.pillreminder.data.model.IntakeStatus.TAKEN ->
+                    com.uhstudio.pillreminder.data.model.IntakeStatus.TAKEN ->
                         MaterialTheme.colorScheme.primary
-                    com.example.pillreminder.data.model.IntakeStatus.SKIPPED ->
+                    com.uhstudio.pillreminder.data.model.IntakeStatus.SKIPPED ->
                         MaterialTheme.colorScheme.error
                 },
                 style = MaterialTheme.typography.bodyMedium
@@ -329,4 +362,125 @@ fun IntakeHistoryItem(
             )
         }
     }
-} 
+}
+
+@Composable
+fun MonthlyStatsCard(
+    yearMonth: YearMonth,
+    stats: MonthlyStats,
+    modifier: Modifier = Modifier
+) {
+    Card(
+        modifier = modifier.fillMaxWidth()
+    ) {
+        Column(
+            modifier = Modifier.padding(16.dp),
+            verticalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
+            Text(
+                text = stringResource(
+                    R.string.calendar_monthly_stats,
+                    yearMonth.format(DateTimeFormatter.ofPattern("M월"))
+                ),
+                style = MaterialTheme.typography.titleMedium
+            )
+
+            if (stats.totalCount > 0) {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Column {
+                        Text(
+                            text = stringResource(
+                                R.string.calendar_adherence_rate,
+                                stats.adherenceRate.toInt()
+                            ),
+                            style = MaterialTheme.typography.bodyLarge,
+                            color = MaterialTheme.colorScheme.primary
+                        )
+                        Text(
+                            text = stringResource(
+                                R.string.calendar_stats_detail,
+                                stats.takenCount,
+                                stats.skippedCount
+                            ),
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
+
+                    // 복용률 원형 차트
+                    Box(
+                        contentAlignment = Alignment.Center
+                    ) {
+                        CircularProgressIndicator(
+                            progress = { stats.adherenceRate / 100f },
+                            modifier = Modifier.size(60.dp),
+                            strokeWidth = 6.dp,
+                            trackColor = MaterialTheme.colorScheme.surfaceVariant
+                        )
+                        Text(
+                            text = "${stats.adherenceRate.toInt()}%",
+                            style = MaterialTheme.typography.bodySmall
+                        )
+                    }
+                }
+            } else {
+                Text(
+                    text = stringResource(R.string.msg_no_intake_history),
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
+        }
+    }
+}
+
+@Composable
+fun LegendRow(modifier: Modifier = Modifier) {
+    Row(
+        modifier = modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.spacedBy(16.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Text(
+            text = stringResource(R.string.calendar_legend_title),
+            style = MaterialTheme.typography.bodySmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant
+        )
+
+        Row(
+            horizontalArrangement = Arrangement.spacedBy(4.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Icon(
+                imageVector = Icons.Default.CheckCircle,
+                contentDescription = null,
+                tint = MaterialTheme.colorScheme.primary,
+                modifier = Modifier.size(16.dp)
+            )
+            Text(
+                text = stringResource(R.string.calendar_legend_taken),
+                style = MaterialTheme.typography.bodySmall
+            )
+        }
+
+        Row(
+            horizontalArrangement = Arrangement.spacedBy(4.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Icon(
+                imageVector = Icons.Default.Cancel,
+                contentDescription = null,
+                tint = MaterialTheme.colorScheme.error,
+                modifier = Modifier.size(16.dp)
+            )
+            Text(
+                text = stringResource(R.string.calendar_legend_skipped),
+                style = MaterialTheme.typography.bodySmall
+            )
+        }
+    }
+}

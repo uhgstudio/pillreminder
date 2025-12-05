@@ -110,6 +110,15 @@
     <string name="msg_add_alarm_hint">+ 버튼을 눌러 알람을 추가해주세요.</string>
     <string name="msg_no_intake_history">복용 기록이 없습니다.</string>
 
+    <!-- 캘린더 화면 -->
+    <string name="calendar_monthly_stats">%s 복용 현황</string>
+    <string name="calendar_adherence_rate">복용률: %d%%</string>
+    <string name="calendar_stats_detail">복용: %1$d회 | 건너뜀: %2$d회</string>
+    <string name="calendar_legend_title">범례</string>
+    <string name="calendar_legend_taken">복용</string>
+    <string name="calendar_legend_skipped">건너뜀</string>
+    <string name="calendar_filter_all">전체</string>
+
     <!-- 설정 화면 -->
     <string name="settings_premium_status">프리미엄 상태</string>
     <string name="settings_premium_user">프리미엄 사용자</string>

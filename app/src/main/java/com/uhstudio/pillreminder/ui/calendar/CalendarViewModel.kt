@@ -1,14 +1,11 @@
-package com.example.pillreminder.ui.calendar
+package com.uhstudio.pillreminder.ui.calendar
 
 import android.app.Application
 import androidx.lifecycle.AndroidViewModel
-import androidx.lifecycle.viewModelScope
-import com.example.pillreminder.data.database.PillReminderDatabase
-import com.example.pillreminder.data.model.IntakeHistory
-import com.example.pillreminder.data.model.IntakeHistoryWithPill
+import com.uhstudio.pillreminder.data.database.PillReminderDatabase
+import com.uhstudio.pillreminder.data.model.IntakeHistoryWithPill
 import kotlinx.coroutines.flow.*
 import java.time.LocalDate
-import java.time.LocalDateTime
 import java.time.LocalTime
 
 /**
@@ -50,9 +47,9 @@ class CalendarViewModel(application: Application) : AndroidViewModel(application
             pills.associate { pill ->
                 val pillHistory = history.filter { it.history.pillId == pill.id }
                 val status = when {
-                    pillHistory.any { it.history.status == com.example.pillreminder.data.model.IntakeStatus.TAKEN } ->
+                    pillHistory.any { it.history.status == com.uhstudio.pillreminder.data.model.IntakeStatus.TAKEN } ->
                         IntakeStatus.TAKEN
-                    pillHistory.any { it.history.status == com.example.pillreminder.data.model.IntakeStatus.SKIPPED } ->
+                    pillHistory.any { it.history.status == com.uhstudio.pillreminder.data.model.IntakeStatus.SKIPPED } ->
                         IntakeStatus.SKIPPED
                     else -> IntakeStatus.MISSED
                 }
@@ -60,6 +57,74 @@ class CalendarViewModel(application: Application) : AndroidViewModel(application
             }
         }
     }
+
+    /**
+     * 특정 월의 통계를 가져옴
+     */
+    fun getMonthlyStats(yearMonth: java.time.YearMonth): Flow<MonthlyStats> {
+        val startDate = yearMonth.atDay(1).atStartOfDay()
+        val endDate = yearMonth.atEndOfMonth().atTime(LocalTime.MAX)
+
+        return intakeHistoryDao.getHistoryBetweenDates(startDate, endDate).map { histories ->
+            val takenCount = histories.count { it.status == com.uhstudio.pillreminder.data.model.IntakeStatus.TAKEN }
+            val skippedCount = histories.count { it.status == com.uhstudio.pillreminder.data.model.IntakeStatus.SKIPPED }
+            val totalCount = histories.size
+
+            val adherenceRate = if (totalCount > 0) {
+                (takenCount.toFloat() / totalCount.toFloat()) * 100f
+            } else {
+                0f
+            }
+
+            MonthlyStats(
+                totalCount = totalCount,
+                takenCount = takenCount,
+                skippedCount = skippedCount,
+                adherenceRate = adherenceRate
+            )
+        }
+    }
+
+    /**
+     * 특정 기간의 날짜별 상태 맵을 가져옴
+     */
+    fun getDateStatusMap(startDate: LocalDate, endDate: LocalDate): Flow<Map<LocalDate, DateStatus>> {
+        return intakeHistoryDao.getHistoryBetweenDates(
+            startDate.atStartOfDay(),
+            endDate.atTime(LocalTime.MAX)
+        ).map { histories ->
+            histories
+                .groupBy { it.intakeTime.toLocalDate() }
+                .mapValues { (_, dayHistories) ->
+                    when {
+                        dayHistories.any { it.status == com.uhstudio.pillreminder.data.model.IntakeStatus.TAKEN } ->
+                            DateStatus.TAKEN
+                        dayHistories.any { it.status == com.uhstudio.pillreminder.data.model.IntakeStatus.SKIPPED } ->
+                            DateStatus.SKIPPED
+                        else -> DateStatus.NONE
+                    }
+                }
+        }
+    }
+}
+
+/**
+ * 월간 통계
+ */
+data class MonthlyStats(
+    val totalCount: Int = 0,
+    val takenCount: Int = 0,
+    val skippedCount: Int = 0,
+    val adherenceRate: Float = 0f
+)
+
+/**
+ * 날짜별 상태
+ */
+enum class DateStatus {
+    TAKEN,      // 복용함
+    SKIPPED,    // 건너뜀
+    NONE        // 기록 없음
 }
 
 /**
@@ -69,4 +134,4 @@ enum class IntakeStatus {
     TAKEN,      // 복용함
     SKIPPED,    // 건너뜀
     MISSED      // 놓침
-} 
+}
