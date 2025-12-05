@@ -1,4 +1,4 @@
-package com.example.pillreminder.ui.home
+package com.uhstudio.pillreminder.ui.home
 
 import android.app.Activity
 import androidx.compose.foundation.layout.*
@@ -9,6 +9,9 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Medication
+import androidx.compose.material.icons.filled.Warning
+import androidx.compose.material.icons.filled.CheckCircle
+import androidx.compose.material.icons.filled.Schedule
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -29,12 +32,12 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
-import com.example.pillreminder.R
-import com.example.pillreminder.ads.AdManager
-import com.example.pillreminder.data.model.Pill
-import com.example.pillreminder.ui.theme.GradientPeachStart
-import com.example.pillreminder.ui.theme.GradientLightGrayEnd
+import com.uhstudio.pillreminder.ads.AdManager
+import com.uhstudio.pillreminder.data.model.Pill
+import com.uhstudio.pillreminder.ui.theme.GradientPeachStart
+import com.uhstudio.pillreminder.ui.theme.GradientLightGrayEnd
 import kotlinx.coroutines.launch
+import com.uhstudio.pillreminder.R
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -49,6 +52,9 @@ fun HomeScreen(
     val scope = rememberCoroutineScope()
 
     val pills by viewModel.pills.collectAsState(initial = emptyList())
+    val todayAlarms by viewModel.todayAlarms.collectAsState()
+    val todayStats by viewModel.todayStats.collectAsState()
+    val missedAlarmsCount by viewModel.missedAlarmsCount.collectAsState()
     var pillToDelete by remember { mutableStateOf<Pill?>(null) }
 
     // 화면 방문 시 광고 체크
@@ -113,8 +119,39 @@ fun HomeScreen(
                         .padding(paddingValues)
                         .padding(horizontal = 16.dp),
                     contentPadding = PaddingValues(vertical = 8.dp),
-                    verticalArrangement = Arrangement.spacedBy(8.dp)
+                    verticalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
+                    // 미복용 알람 경고 배너
+                    if (missedAlarmsCount > 0) {
+                        item {
+                            MissedAlarmsWarningBanner(count = missedAlarmsCount)
+                        }
+                    }
+
+                    // 오늘의 알람 섹션
+                    if (todayAlarms.isNotEmpty()) {
+                        item {
+                            TodayAlarmsSection(alarms = todayAlarms)
+                        }
+                    }
+
+                    // 복용 통계 카드
+                    if (todayAlarms.isNotEmpty()) {
+                        item {
+                            IntakeStatsCard(stats = todayStats)
+                        }
+                    }
+
+                    // 내 약 목록 섹션 헤더
+                    item {
+                        Text(
+                            text = stringResource(R.string.home_my_pills),
+                            style = MaterialTheme.typography.titleLarge,
+                            modifier = Modifier.padding(top = 8.dp, bottom = 4.dp)
+                        )
+                    }
+
+                    // 약 목록
                     items(pills) { pill ->
                         PillItem(
                             pill = pill,
@@ -249,4 +286,205 @@ fun PillItem(
             }
         }
     }
-} 
+}
+
+@Composable
+fun MissedAlarmsWarningBanner(count: Int) {
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.errorContainer
+        )
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp),
+            horizontalArrangement = Arrangement.spacedBy(12.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Icon(
+                imageVector = Icons.Default.Warning,
+                contentDescription = null,
+                tint = MaterialTheme.colorScheme.error,
+                modifier = Modifier.size(32.dp)
+            )
+            Text(
+                text = stringResource(R.string.home_missed_alarms_warning, count),
+                style = MaterialTheme.typography.bodyLarge,
+                color = MaterialTheme.colorScheme.onErrorContainer
+            )
+        }
+    }
+}
+
+@Composable
+fun TodayAlarmsSection(alarms: List<TodayAlarm>) {
+    Card(
+        modifier = Modifier.fillMaxWidth()
+    ) {
+        Column(
+            modifier = Modifier.padding(16.dp),
+            verticalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(
+                    text = stringResource(R.string.home_today_alarms),
+                    style = MaterialTheme.typography.titleMedium
+                )
+                Text(
+                    text = stringResource(R.string.home_alarm_count, alarms.size),
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.primary
+                )
+            }
+
+            HorizontalDivider(modifier = Modifier.padding(vertical = 4.dp))
+
+            if (alarms.isEmpty()) {
+                Text(
+                    text = stringResource(R.string.home_no_alarms_today),
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    modifier = Modifier.padding(vertical = 8.dp)
+                )
+            } else {
+                alarms.forEach { todayAlarm ->
+                    TodayAlarmItem(todayAlarm)
+                }
+            }
+        }
+    }
+}
+
+@Composable
+fun TodayAlarmItem(todayAlarm: TodayAlarm) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(vertical = 4.dp),
+        horizontalArrangement = Arrangement.spacedBy(12.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        // 시간 표시
+        Text(
+            text = String.format("%02d:%02d", todayAlarm.time.hour, todayAlarm.time.minute),
+            style = MaterialTheme.typography.titleMedium,
+            modifier = Modifier.width(60.dp)
+        )
+
+        // 약 이름
+        Text(
+            text = todayAlarm.pill.name,
+            style = MaterialTheme.typography.bodyMedium,
+            modifier = Modifier.weight(1f)
+        )
+
+        // 상태 표시
+        if (todayAlarm.isTaken) {
+            Row(
+                horizontalArrangement = Arrangement.spacedBy(4.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Icon(
+                    imageVector = Icons.Default.CheckCircle,
+                    contentDescription = null,
+                    tint = MaterialTheme.colorScheme.primary,
+                    modifier = Modifier.size(20.dp)
+                )
+                Text(
+                    text = stringResource(R.string.home_alarm_taken),
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.primary
+                )
+            }
+        } else {
+            val now = java.time.LocalDateTime.now()
+            val status = if (todayAlarm.time.isAfter(now)) {
+                stringResource(R.string.home_alarm_upcoming)
+            } else {
+                stringResource(R.string.home_alarm_missed)
+            }
+            Row(
+                horizontalArrangement = Arrangement.spacedBy(4.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Icon(
+                    imageVector = Icons.Default.Schedule,
+                    contentDescription = null,
+                    tint = if (todayAlarm.time.isAfter(now))
+                        MaterialTheme.colorScheme.onSurfaceVariant
+                    else
+                        MaterialTheme.colorScheme.error,
+                    modifier = Modifier.size(20.dp)
+                )
+                Text(
+                    text = status,
+                    style = MaterialTheme.typography.bodySmall,
+                    color = if (todayAlarm.time.isAfter(now))
+                        MaterialTheme.colorScheme.onSurfaceVariant
+                    else
+                        MaterialTheme.colorScheme.error
+                )
+            }
+        }
+    }
+}
+
+@Composable
+fun IntakeStatsCard(stats: IntakeStats) {
+    Card(
+        modifier = Modifier.fillMaxWidth()
+    ) {
+        Column(
+            modifier = Modifier.padding(16.dp),
+            verticalArrangement = Arrangement.spacedBy(12.dp)
+        ) {
+            Text(
+                text = stringResource(R.string.home_today_stats),
+                style = MaterialTheme.typography.titleMedium
+            )
+
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceEvenly,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                // 복용률 원형 차트
+                Box(
+                    contentAlignment = Alignment.Center
+                ) {
+                    CircularProgressIndicator(
+                        progress = { stats.adherenceRate / 100f },
+                        modifier = Modifier.size(80.dp),
+                        strokeWidth = 8.dp,
+                        trackColor = MaterialTheme.colorScheme.surfaceVariant
+                    )
+                    Text(
+                        text = stringResource(R.string.home_intake_rate, stats.adherenceRate.toInt()),
+                        style = MaterialTheme.typography.titleMedium
+                    )
+                }
+
+                // 통계 정보
+                Column(
+                    verticalArrangement = Arrangement.spacedBy(4.dp)
+                ) {
+                    Text(
+                        text = stringResource(R.string.home_taken_count, stats.takenCount, stats.totalCount),
+                        style = MaterialTheme.typography.bodyMedium
+                    )
+                    Text(
+                        text = "${stringResource(R.string.status_skipped)}: ${stats.skippedCount}",
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
+            }
+        }
+    }
+}
