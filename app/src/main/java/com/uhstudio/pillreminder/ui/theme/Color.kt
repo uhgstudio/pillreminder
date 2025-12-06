@@ -1,4 +1,4 @@
-package com.example.pillreminder.ui.theme
+package com.uhstudio.pillreminder.ui.theme
 
 import androidx.compose.ui.graphics.Color
 

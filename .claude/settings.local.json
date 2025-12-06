@@ -2,9 +2,14 @@
   "permissions": {
     "allow": [
       "Bash(cat:*)",
-      "Bash(del \"D:\\project-app\\yactime\\app\\src\\main\\java\\com\\example\\pillreminder\\ui\\MainActivity.kt\")",
+      "Bash(del \"D:\\project-app\\yactime\\app\\src\\main\\java\\com\\uhstudio\\pillreminder\\ui\\MainActivity.kt\")",
       "Bash(./gradlew.bat assembleDebug)",
-      "Bash(git add:*)"
+      "Bash(git add:*)",
+      "Bash(./gradlew.bat:*)",
+      "Bash(./gradlew clean:*)",
+      "Bash(git commit:*)",
+      "Bash(del NUL)",
+      "Bash(if exist NUL del NUL)"
     ],
     "deny": [],
     "ask": []

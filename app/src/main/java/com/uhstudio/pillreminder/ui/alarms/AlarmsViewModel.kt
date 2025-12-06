@@ -1,11 +1,11 @@
-package com.example.pillreminder.ui.alarms
+package com.uhstudio.pillreminder.ui.alarms
 
 import android.app.Application
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.pillreminder.data.database.PillReminderDatabase
-import com.example.pillreminder.data.model.PillAlarm
-import com.example.pillreminder.util.AlarmManagerUtil
+import com.uhstudio.pillreminder.data.database.PillReminderDatabase
+import com.uhstudio.pillreminder.data.model.PillAlarm
+import com.uhstudio.pillreminder.util.AlarmManagerUtil
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.launch
 

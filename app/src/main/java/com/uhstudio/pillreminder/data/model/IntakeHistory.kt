@@ -1,4 +1,4 @@
-package com.example.pillreminder.data.model
+package com.uhstudio.pillreminder.data.model
 
 import androidx.room.Entity
 import androidx.room.ForeignKey
@@ -28,6 +28,11 @@ import java.time.LocalDateTime
             childColumns = ["alarmId"],
             onDelete = ForeignKey.CASCADE
         )
+    ],
+    indices = [
+        androidx.room.Index(value = ["pillId"]),
+        androidx.room.Index(value = ["alarmId"]),
+        androidx.room.Index(value = ["intakeTime"])
     ]
 )
 data class IntakeHistory(

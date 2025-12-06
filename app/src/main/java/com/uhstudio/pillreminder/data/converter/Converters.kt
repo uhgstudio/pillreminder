@@ -1,10 +1,10 @@
-package com.example.pillreminder.data.converter
+package com.uhstudio.pillreminder.data.converter
 
 import androidx.room.TypeConverter
+import com.uhstudio.pillreminder.data.model.ScheduleType
 import java.time.DayOfWeek
 import java.time.LocalDate
 import java.time.LocalDateTime
-import java.time.LocalTime
 import java.time.format.DateTimeFormatter
 
 /**
@@ -51,5 +51,27 @@ class Converters {
     @TypeConverter
     fun toDayOfWeekSet(days: Set<DayOfWeek>?): String {
         return days?.joinToString(",") { it.name } ?: ""
+    }
+
+    // LocalDate 변환기 (v5+)
+    @TypeConverter
+    fun fromLocalDateString(value: String?): LocalDate? {
+        return value?.let { LocalDate.parse(it, dateFormatter) }
+    }
+
+    @TypeConverter
+    fun localDateToString(date: LocalDate?): String? {
+        return date?.format(dateFormatter)
+    }
+
+    // ScheduleType 변환기 (v5+)
+    @TypeConverter
+    fun fromScheduleTypeString(value: String?): ScheduleType {
+        return value?.let { ScheduleType.valueOf(it) } ?: ScheduleType.WEEKLY
+    }
+
+    @TypeConverter
+    fun scheduleTypeToString(type: ScheduleType): String {
+        return type.name
     }
 } 

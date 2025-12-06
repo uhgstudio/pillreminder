@@ -1,8 +1,8 @@
-package com.example.pillreminder.data.dao
+package com.uhstudio.pillreminder.data.dao
 
 import androidx.room.*
-import com.example.pillreminder.data.model.IntakeHistory
-import com.example.pillreminder.data.model.IntakeHistoryWithPill
+import com.uhstudio.pillreminder.data.model.IntakeHistory
+import com.uhstudio.pillreminder.data.model.IntakeHistoryWithPill
 import kotlinx.coroutines.flow.Flow
 import java.time.LocalDateTime
 

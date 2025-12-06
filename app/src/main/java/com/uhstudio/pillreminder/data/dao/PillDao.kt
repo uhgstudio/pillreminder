@@ -1,7 +1,7 @@
-package com.example.pillreminder.data.dao
+package com.uhstudio.pillreminder.data.dao
 
 import androidx.room.*
-import com.example.pillreminder.data.model.Pill
+import com.uhstudio.pillreminder.data.model.Pill
 import kotlinx.coroutines.flow.Flow
 
 /**

@@ -1,4 +1,4 @@
-package com.example.pillreminder.ui.alarms
+package com.uhstudio.pillreminder.ui.alarms
 
 import android.app.Activity
 import androidx.compose.foundation.background
@@ -8,7 +8,6 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Delete
@@ -25,14 +24,14 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
-import com.example.pillreminder.R
-import com.example.pillreminder.ads.AdManager
-import com.example.pillreminder.data.model.Pill
-import com.example.pillreminder.data.model.PillAlarm
-import com.example.pillreminder.ui.theme.GradientPeachStart
-import com.example.pillreminder.ui.theme.GradientPeachEnd
-import com.example.pillreminder.util.toKoreanShort
+import com.uhstudio.pillreminder.ads.AdManager
+import com.uhstudio.pillreminder.data.model.Pill
+import com.uhstudio.pillreminder.data.model.PillAlarm
+import com.uhstudio.pillreminder.ui.theme.GradientPeachStart
+import com.uhstudio.pillreminder.ui.theme.GradientPeachEnd
+import com.uhstudio.pillreminder.util.toKoreanShort
 import kotlinx.coroutines.launch
+import com.uhstudio.pillreminder.R
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable

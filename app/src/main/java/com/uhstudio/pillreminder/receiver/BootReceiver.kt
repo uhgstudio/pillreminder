@@ -1,10 +1,10 @@
-package com.example.pillreminder.receiver
+package com.uhstudio.pillreminder.receiver
 
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
-import com.example.pillreminder.data.database.PillReminderDatabase
-import com.example.pillreminder.util.AlarmManagerUtil
+import com.uhstudio.pillreminder.data.database.PillReminderDatabase
+import com.uhstudio.pillreminder.util.AlarmManagerUtil
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch

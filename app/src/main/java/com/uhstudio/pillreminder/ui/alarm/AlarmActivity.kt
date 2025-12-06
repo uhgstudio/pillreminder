@@ -1,6 +1,5 @@
-package com.example.pillreminder.ui.alarm
+package com.uhstudio.pillreminder.ui.alarm
 
-import android.app.KeyguardManager
 import android.app.NotificationManager
 import android.content.Context
 import android.media.AudioAttributes
@@ -23,16 +22,14 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.lifecycleScope
-import com.example.pillreminder.data.database.PillReminderDatabase
-import com.example.pillreminder.data.model.IntakeHistory
-import com.example.pillreminder.data.model.IntakeStatus
-import com.example.pillreminder.ui.theme.PillReminderTheme
-import kotlinx.coroutines.flow.first
+import com.uhstudio.pillreminder.data.database.PillReminderDatabase
+import com.uhstudio.pillreminder.data.model.IntakeHistory
+import com.uhstudio.pillreminder.data.model.IntakeStatus
+import com.uhstudio.pillreminder.ui.theme.PillReminderTheme
 import kotlinx.coroutines.launch
 import java.time.LocalDateTime
 import java.util.UUID

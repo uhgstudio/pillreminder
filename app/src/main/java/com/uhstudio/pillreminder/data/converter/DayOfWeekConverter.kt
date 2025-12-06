@@ -1,4 +1,4 @@
-package com.example.pillreminder.data.converter
+package com.uhstudio.pillreminder.data.converter
 
 import androidx.room.TypeConverter
 import java.time.DayOfWeek

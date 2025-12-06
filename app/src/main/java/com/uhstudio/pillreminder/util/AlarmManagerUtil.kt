@@ -1,4 +1,4 @@
-package com.example.pillreminder.util
+package com.uhstudio.pillreminder.util
 
 import android.app.AlarmManager
 import android.app.NotificationManager
@@ -9,13 +9,11 @@ import android.net.Uri
 import android.os.Build
 import android.os.PowerManager
 import android.provider.Settings
-import com.example.pillreminder.data.model.PillAlarm
-import com.example.pillreminder.receiver.AlarmReceiver
-import java.time.DayOfWeek
+import com.uhstudio.pillreminder.data.model.PillAlarm
+import com.uhstudio.pillreminder.receiver.AlarmReceiver
+import timber.log.Timber
 import java.time.LocalDateTime
 import java.time.ZoneId
-import java.time.temporal.TemporalAdjusters
-import java.util.*
 
 /**
  * 알람 매니저 유틸리티 클래스
@@ -29,7 +27,8 @@ class AlarmManagerUtil(private val context: Context) {
      * @return 알람 설정 성공 여부 (권한 없으면 false)
      */
     fun scheduleAlarm(pillAlarm: PillAlarm): Boolean {
-        if (!pillAlarm.enabled || pillAlarm.repeatDays.isEmpty()) {
+        if (!pillAlarm.enabled) {
+            Timber.d("scheduleAlarm: alarm disabled - ${pillAlarm.id}")
             return false
         }
 
@@ -38,15 +37,25 @@ class AlarmManagerUtil(private val context: Context) {
             if (!alarmManager.canScheduleExactAlarms()) {
                 // 정확한 알람 권한이 없으면 스케줄링 실패
                 // 약 복용 알람은 정확한 시간이 중요하므로 대체 방법 사용하지 않음
+                Timber.w("scheduleAlarm: no exact alarm permission")
                 return false
             }
         }
 
-        val nextAlarmTime = calculateNextAlarmTime(pillAlarm)
+        // ScheduleCalculator로 다음 알람 시간 계산
+        val nextAlarmTime = ScheduleCalculator.calculateNextAlarmTime(pillAlarm)
+        if (nextAlarmTime == null) {
+            // 더 이상 알람이 없음 (종료일 지났거나 특정 날짜 스케줄이 모두 완료됨)
+            Timber.d("scheduleAlarm: no more alarms for ${pillAlarm.id}")
+            return false
+        }
+
         val triggerTimeMillis = nextAlarmTime
             .atZone(ZoneId.systemDefault())
             .toInstant()
             .toEpochMilli()
+
+        Timber.d("scheduleAlarm: scheduling alarm ${pillAlarm.id} at $nextAlarmTime")
 
         val intent = Intent(context, AlarmReceiver::class.java).apply {
             putExtra("ALARM_ID", pillAlarm.id)
@@ -55,7 +64,7 @@ class AlarmManagerUtil(private val context: Context) {
 
         val pendingIntent = PendingIntent.getBroadcast(
             context,
-            pillAlarm.id.hashCode(),
+            RequestCodeUtil.generateRequestCode(pillAlarm.id),
             intent,
             PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
         )
@@ -83,38 +92,6 @@ class AlarmManagerUtil(private val context: Context) {
     }
 
     /**
-     * 다음 알람 시간을 계산합니다.
-     */
-    private fun calculateNextAlarmTime(pillAlarm: PillAlarm): LocalDateTime {
-        val now = LocalDateTime.now()
-        val todayAlarmTime = now
-            .withHour(pillAlarm.hour)
-            .withMinute(pillAlarm.minute)
-            .withSecond(0)
-            .withNano(0)
-
-        // 오늘의 요일 확인
-        val todayDayOfWeek = now.dayOfWeek
-
-        // 오늘이 반복 요일에 포함되고 아직 알람 시간이 지나지 않았으면 오늘 알람
-        if (todayDayOfWeek in pillAlarm.repeatDays && todayAlarmTime.isAfter(now)) {
-            return todayAlarmTime
-        }
-
-        // 다음 반복 요일 찾기
-        var nextDateTime = todayAlarmTime.plusDays(1)
-        for (i in 1..7) {
-            if (nextDateTime.dayOfWeek in pillAlarm.repeatDays) {
-                return nextDateTime
-            }
-            nextDateTime = nextDateTime.plusDays(1)
-        }
-
-        // 기본값 (반복 요일이 없는 경우 - 실제로는 발생하지 않음)
-        return todayAlarmTime.plusDays(1)
-    }
-
-    /**
      * 알람을 취소합니다.
      * @param pillAlarm 취소할 알람 정보
      */
@@ -122,7 +99,7 @@ class AlarmManagerUtil(private val context: Context) {
         val intent = Intent(context, AlarmReceiver::class.java)
         val pendingIntent = PendingIntent.getBroadcast(
             context,
-            pillAlarm.id.hashCode(),
+            RequestCodeUtil.generateRequestCode(pillAlarm.id),
             intent,
             PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
         )
@@ -136,7 +113,7 @@ class AlarmManagerUtil(private val context: Context) {
         val intent = Intent(context, AlarmReceiver::class.java)
         val pendingIntent = PendingIntent.getBroadcast(
             context,
-            alarmId.hashCode(),
+            RequestCodeUtil.generateRequestCode(alarmId),
             intent,
             PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
         )

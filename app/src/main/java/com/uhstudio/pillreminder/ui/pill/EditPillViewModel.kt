@@ -1,10 +1,10 @@
-package com.example.pillreminder.ui.pill
+package com.uhstudio.pillreminder.ui.pill
 
 import android.app.Application
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.pillreminder.data.database.PillReminderDatabase
-import com.example.pillreminder.data.model.Pill
+import com.uhstudio.pillreminder.data.database.PillReminderDatabase
+import com.uhstudio.pillreminder.data.model.Pill
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch

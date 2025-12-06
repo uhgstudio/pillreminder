@@ -1,4 +1,4 @@
-package com.example.pillreminder
+package com.uhstudio.pillreminder
 
 import android.Manifest
 import android.os.Build
@@ -32,27 +32,27 @@ import androidx.navigation.compose.rememberNavController
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.NavType
 import androidx.navigation.navArgument
-import com.example.pillreminder.ui.home.HomeScreen
-import com.example.pillreminder.ui.home.HomeViewModel
-import com.example.pillreminder.ui.pill.AddPillScreen
-import com.example.pillreminder.ui.pill.AddPillViewModel
-import com.example.pillreminder.ui.theme.PillReminderTheme
-import com.example.pillreminder.ui.pillDetail.PillDetailScreen
-import com.example.pillreminder.ui.pillDetail.PillDetailViewModel
-import com.example.pillreminder.ui.alarms.AlarmsScreen
-import com.example.pillreminder.ui.alarms.AlarmsViewModel
-import com.example.pillreminder.ui.addAlarm.AddAlarmScreen
-import com.example.pillreminder.ui.addAlarm.AddAlarmViewModel
-import com.example.pillreminder.ui.calendar.CalendarScreen
-import com.example.pillreminder.ui.calendar.CalendarViewModel
-import com.example.pillreminder.ui.settings.SettingsScreen
-import com.example.pillreminder.ui.settings.SettingsViewModel
+import com.uhstudio.pillreminder.ui.home.HomeScreen
+import com.uhstudio.pillreminder.ui.home.HomeViewModel
+import com.uhstudio.pillreminder.ui.pill.AddPillScreen
+import com.uhstudio.pillreminder.ui.pill.AddPillViewModel
+import com.uhstudio.pillreminder.ui.theme.PillReminderTheme
+import com.uhstudio.pillreminder.ui.pillDetail.PillDetailScreen
+import com.uhstudio.pillreminder.ui.pillDetail.PillDetailViewModel
+import com.uhstudio.pillreminder.ui.alarms.AlarmsScreen
+import com.uhstudio.pillreminder.ui.alarms.AlarmsViewModel
+import com.uhstudio.pillreminder.ui.addAlarm.AddAlarmScreen
+import com.uhstudio.pillreminder.ui.addAlarm.AddAlarmViewModel
+import com.uhstudio.pillreminder.ui.calendar.CalendarScreen
+import com.uhstudio.pillreminder.ui.calendar.CalendarViewModel
+import com.uhstudio.pillreminder.ui.settings.SettingsScreen
+import com.uhstudio.pillreminder.ui.settings.SettingsViewModel
 import androidx.compose.ui.res.stringResource
 import androidx.lifecycle.lifecycleScope
-import com.example.pillreminder.ads.AdManager
-import com.example.pillreminder.billing.BillingManager
-import com.example.pillreminder.data.database.PillReminderDatabase
-import com.example.pillreminder.util.AlarmManagerUtil
+import com.uhstudio.pillreminder.ads.AdManager
+// import com.uhstudio.pillreminder.billing.BillingManager // 비활성화
+import com.uhstudio.pillreminder.data.database.PillReminderDatabase
+import com.uhstudio.pillreminder.util.AlarmManagerUtil
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import com.google.accompanist.permissions.isGranted
 import com.google.accompanist.permissions.rememberPermissionState
@@ -67,19 +67,27 @@ class MainActivity : ComponentActivity() {
         val adManager = AdManager.getInstance(applicationContext)
         adManager.initialize()
 
-        // BillingManager 초기화 및 구매 복원
-        val billingManager = BillingManager.getInstance(applicationContext, lifecycleScope)
+        // BillingManager 초기화 및 구매 복원 (비활성화: 사업자 등록 후 활성화 예정)
+        // val billingManager = BillingManager.getInstance(applicationContext, lifecycleScope)
         lifecycleScope.launch {
-            // Billing 초기화
-            val initialized = billingManager.initialize()
-            if (initialized) {
-                // 구매 복원
-                billingManager.restorePurchases()
+            // Billing 초기화 (비활성화)
+            // val initialized = billingManager.initialize()
+            // if (initialized) {
+            //     // 구매 복원
+            //     billingManager.restorePurchases()
+            // }
+
+            // 데이터베이스 및 설정 초기화
+            val database = PillReminderDatabase.getDatabase(applicationContext)
+            val appSettingsDao = database.appSettingsDao()
+
+            // 설정이 없으면 기본 설정 삽입
+            if (appSettingsDao.getSettingsOnce() == null) {
+                appSettingsDao.insertSettings(com.uhstudio.pillreminder.data.model.AppSettings())
             }
 
             // 앱 실행 카운터 증가
-            val database = PillReminderDatabase.getDatabase(applicationContext)
-            database.appSettingsDao().incrementAppLaunch()
+            appSettingsDao.incrementAppLaunch()
 
             // 앱 실행 시 광고 표시 체크
             if (adManager.shouldShowAd()) {

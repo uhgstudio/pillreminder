@@ -1,0 +1,132 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Recordatorio de Medicamentos</string>
+    <string name="title_home">Mis Medicamentos</string>
+    <string name="title_calendar">Calendario</string>
+    <string name="title_settings">Ajustes</string>
+    <string name="title_alarms">Configuración de Alarmas</string>
+    <string name="title_intake_history">Historial de Tomas</string>
+
+    <!-- Alarm related -->
+    <string name="alarm_notification_title">Hora de Medicamento</string>
+    <string name="alarm_notification_text">Es hora de tomar %s.</string>
+    <string name="alarm_channel_name">Recordatorios de Medicamentos</string>
+    <string name="alarm_channel_description">Notificaciones para la hora de tomar medicamentos</string>
+    <string name="dialog_set_alarm_time">Establecer Hora de Alarma</string>
+
+    <!-- Buttons -->
+    <string name="btn_add_pill">Agregar Medicamento</string>
+    <string name="btn_add_alarm">Agregar Alarma</string>
+    <string name="btn_save">Guardar</string>
+    <string name="btn_cancel">Cancelar</string>
+    <string name="btn_take_photo">Tomar Foto</string>
+    <string name="btn_select_image">Seleccionar Imagen</string>
+    <string name="btn_delete">Eliminar</string>
+    <string name="btn_back">Volver</string>
+    <string name="btn_take_pill">Marcar como Tomado</string>
+    <string name="btn_skip_pill">Omitir</string>
+    <string name="btn_snooze">Recordar en 10 min</string>
+    <string name="btn_delete_alarm">Eliminar Alarma</string>
+
+    <!-- Input fields -->
+    <string name="hint_pill_name">Nombre del Medicamento</string>
+    <string name="hint_pill_memo">Notas (Opcional)</string>
+
+    <!-- Error messages -->
+    <string name="error_pill_name_empty">Por favor ingrese el nombre del medicamento.</string>
+    <string name="error_alarm_time_invalid">Por favor seleccione una hora válida.</string>
+    <string name="error_camera_permission">Se requiere permiso de cámara.</string>
+    <string name="error_storage_permission">Se requiere permiso de almacenamiento.</string>
+
+    <!-- Dialogs -->
+    <string name="dialog_select_image_title">Seleccionar Imagen</string>
+    <string name="dialog_camera">Cámara</string>
+    <string name="dialog_gallery">Galería</string>
+    <string name="dialog_delete_pill_title">Eliminar Medicamento</string>
+    <string name="dialog_delete_pill_message">¿Eliminar este medicamento? Todas las alarmas relacionadas también se eliminarán.</string>
+    <string name="dialog_delete_alarm_title">Eliminar Alarma</string>
+    <string name="dialog_delete_alarm_message">¿Eliminar esta alarma?</string>
+    <string name="dialog_select_pill_title">Seleccionar Medicamento</string>
+
+    <!-- Intake status -->
+    <string name="status_taken">Tomado</string>
+    <string name="status_skipped">Omitido</string>
+    <string name="status_missed">Perdido</string>
+
+    <!-- Home screen -->
+    <string name="empty_pill_list">No hay medicamentos registrados.\nToque el botón de abajo para agregar uno.</string>
+
+    <!-- Add/Edit medication -->
+    <string name="title_add_pill">Agregar Medicamento</string>
+    <string name="title_edit_pill">Editar Medicamento</string>
+    <string name="edit_pill">Editar Medicamento</string>
+    <string name="save">Guardar</string>
+    <string name="pill_name">Nombre del Medicamento</string>
+    <string name="description">Descripción</string>
+    <string name="dosage">Dosis</string>
+
+    <!-- Alarms -->
+    <string name="title_add_alarm">Agregar Alarma</string>
+    <string name="title_edit_alarm">Editar Alarma</string>
+    <string name="label_repeat_days">Días de Repetición</string>
+    <string name="channel_name">Recordatorios de Medicamentos</string>
+    <string name="channel_description">Notificaciones para la hora de tomar medicamentos.</string>
+
+    <!-- Messages -->
+    <string name="msg_no_alarms">No hay alarmas configuradas.</string>
+    <string name="msg_add_alarm_hint">Toque + para agregar una alarma.</string>
+    <string name="msg_no_intake_history">No hay historial de tomas.</string>
+
+    <!-- Settings screen -->
+    <string name="settings_premium_status">Estado Premium</string>
+    <string name="settings_premium_user">Usuario Premium</string>
+    <string name="settings_free_user">Usuario Gratuito</string>
+    <string name="btn_remove_ads">Eliminar Anuncios</string>
+    <string name="btn_restore_purchases">Restaurar Compras</string>
+
+    <!-- Ad settings -->
+    <string name="settings_ad_settings">Configuración de Anuncios</string>
+    <string name="settings_ad_screen_visit">Anuncio al Visitar Pantalla</string>
+    <string name="settings_ad_alarm_count">Anuncio al Registrar Alarma</string>
+    <string name="settings_ad_app_launch">Anuncio al Iniciar App</string>
+    <string name="settings_ad_time_based">Anuncio Basado en Tiempo</string>
+    <string name="settings_ad_threshold">Frecuencia de Visualización</string>
+    <string name="settings_ad_threshold_description">Mostrar anuncio cada %d veces</string>
+    <string name="settings_ad_time_interval">Intervalo de Tiempo</string>
+    <string name="settings_ad_time_interval_description">Mostrar anuncio cada %d horas</string>
+    <string name="settings_ad_test_title">Prueba de Anuncios</string>
+    <string name="settings_ad_test_description">Pruebe la funcionalidad de anuncios. Cargue el anuncio primero, luego toque el botón de mostrar.</string>
+    <string name="btn_ad_load">Cargar Anuncio</string>
+    <string name="btn_ad_show">Mostrar Anuncio</string>
+
+    <!-- Data management -->
+    <string name="settings_data_management">Gestión de Datos</string>
+    <string name="btn_export_data">Exportar Datos</string>
+    <string name="btn_import_data">Importar Datos</string>
+    <string name="export_success">Datos exportados exitosamente.</string>
+    <string name="export_error">Error al exportar: %s</string>
+    <string name="import_success">Importados %1$d medicamentos, %2$d alarmas, %3$d registros de tomas.</string>
+    <string name="import_error">Error al importar: %s</string>
+    <string name="import_file_invalid">Formato de archivo inválido.</string>
+
+    <!-- Purchase -->
+    <string name="purchase_title">Eliminar Anuncios</string>
+    <string name="purchase_description">Compra única para eliminar permanentemente todos los anuncios.</string>
+    <string name="purchase_price">Precio: %s</string>
+    <string name="purchase_success">¡Compra completada!</string>
+    <string name="purchase_error">Error en la compra: %s</string>
+    <string name="purchase_pending">Compra pendiente.</string>
+    <string name="restore_success">Compras restauradas.</string>
+    <string name="restore_no_purchases">No hay compras para restaurar.</string>
+    <string name="restore_error">Error al restaurar: %s</string>
+
+    <!-- About -->
+    <string name="settings_about">Acerca de</string>
+    <string name="settings_app_version">Versión de la App</string>
+    <string name="settings_privacy_policy">Política de Privacidad</string>
+
+    <!-- General -->
+    <string name="loading">Cargando…</string>
+    <string name="ok">OK</string>
+    <string name="close">Cerrar</string>
+</resources>

@@ -1,4 +1,4 @@
-package com.example.pillreminder.data.model
+package com.uhstudio.pillreminder.data.model
 
 import androidx.room.Entity
 import androidx.room.PrimaryKey

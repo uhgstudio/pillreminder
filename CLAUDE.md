@@ -15,7 +15,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 ./gradlew test
 
 # Run specific test class
-./gradlew testDebugUnitTest --tests="com.example.pillreminder.ClassName"
+./gradlew testDebugUnitTest --tests="com.uhstudio.pillreminder.ClassName"
 
 # Run instrumentation tests (requires device/emulator)
 ./gradlew connectedAndroidTest

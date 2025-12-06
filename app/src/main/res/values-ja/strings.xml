@@ -1,0 +1,132 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">服薬リマインダー</string>
+    <string name="title_home">薬リスト</string>
+    <string name="title_calendar">カレンダー</string>
+    <string name="title_settings">設定</string>
+    <string name="title_alarms">アラーム設定</string>
+    <string name="title_intake_history">服用記録</string>
+
+    <!-- Alarm related -->
+    <string name="alarm_notification_title">服薬時間</string>
+    <string name="alarm_notification_text">%sを服用する時間です。</string>
+    <string name="alarm_channel_name">服薬リマインダー</string>
+    <string name="alarm_channel_description">服薬時間をお知らせする通知</string>
+    <string name="dialog_set_alarm_time">アラーム時刻設定</string>
+
+    <!-- Buttons -->
+    <string name="btn_add_pill">薬を追加</string>
+    <string name="btn_add_alarm">アラーム追加</string>
+    <string name="btn_save">保存</string>
+    <string name="btn_cancel">キャンセル</string>
+    <string name="btn_take_photo">写真を撮る</string>
+    <string name="btn_select_image">画像を選択</string>
+    <string name="btn_delete">削除</string>
+    <string name="btn_back">戻る</string>
+    <string name="btn_take_pill">服用完了</string>
+    <string name="btn_skip_pill">スキップ</string>
+    <string name="btn_snooze">10分後に通知</string>
+    <string name="btn_delete_alarm">アラーム削除</string>
+
+    <!-- Input fields -->
+    <string name="hint_pill_name">薬の名前</string>
+    <string name="hint_pill_memo">メモ（任意）</string>
+
+    <!-- Error messages -->
+    <string name="error_pill_name_empty">薬の名前を入力してください。</string>
+    <string name="error_alarm_time_invalid">正しい時刻を選択してください。</string>
+    <string name="error_camera_permission">カメラの許可が必要です。</string>
+    <string name="error_storage_permission">ストレージの許可が必要です。</string>
+
+    <!-- Dialogs -->
+    <string name="dialog_select_image_title">画像選択</string>
+    <string name="dialog_camera">カメラ</string>
+    <string name="dialog_gallery">ギャラリー</string>
+    <string name="dialog_delete_pill_title">薬を削除</string>
+    <string name="dialog_delete_pill_message">この薬を削除しますか？関連するすべてのアラームも削除されます。</string>
+    <string name="dialog_delete_alarm_title">アラーム削除</string>
+    <string name="dialog_delete_alarm_message">このアラームを削除しますか？</string>
+    <string name="dialog_select_pill_title">薬を選択</string>
+
+    <!-- Intake status -->
+    <string name="status_taken">服用済み</string>
+    <string name="status_skipped">スキップ</string>
+    <string name="status_missed">見逃し</string>
+
+    <!-- Home screen -->
+    <string name="empty_pill_list">登録された薬がありません。\n右下のボタンを押して薬を追加してください。</string>
+
+    <!-- Add/Edit medication -->
+    <string name="title_add_pill">薬を追加</string>
+    <string name="title_edit_pill">薬を編集</string>
+    <string name="edit_pill">薬を編集</string>
+    <string name="save">保存</string>
+    <string name="pill_name">薬の名前</string>
+    <string name="description">説明</string>
+    <string name="dosage">服用量</string>
+
+    <!-- Alarms -->
+    <string name="title_add_alarm">アラーム追加</string>
+    <string name="title_edit_alarm">アラーム編集</string>
+    <string name="label_repeat_days">繰り返し曜日</string>
+    <string name="channel_name">服薬リマインダー</string>
+    <string name="channel_description">服薬時間をお知らせする通知です。</string>
+
+    <!-- Messages -->
+    <string name="msg_no_alarms">登録されたアラームがありません。</string>
+    <string name="msg_add_alarm_hint">+ボタンを押してアラームを追加してください。</string>
+    <string name="msg_no_intake_history">服用記録がありません。</string>
+
+    <!-- Settings screen -->
+    <string name="settings_premium_status">プレミアムステータス</string>
+    <string name="settings_premium_user">プレミアムユーザー</string>
+    <string name="settings_free_user">無料ユーザー</string>
+    <string name="btn_remove_ads">広告削除を購入</string>
+    <string name="btn_restore_purchases">購入を復元</string>
+
+    <!-- Ad settings -->
+    <string name="settings_ad_settings">広告設定</string>
+    <string name="settings_ad_screen_visit">画面訪問時の広告</string>
+    <string name="settings_ad_alarm_count">アラーム登録時の広告</string>
+    <string name="settings_ad_app_launch">アプリ起動時の広告</string>
+    <string name="settings_ad_time_based">時間ベースの広告</string>
+    <string name="settings_ad_threshold">表示頻度</string>
+    <string name="settings_ad_threshold_description">%d回ごとに広告を表示</string>
+    <string name="settings_ad_time_interval">時間間隔</string>
+    <string name="settings_ad_time_interval_description">%d時間ごとに広告を表示</string>
+    <string name="settings_ad_test_title">広告テスト</string>
+    <string name="settings_ad_test_description">広告機能をテストします。まず広告を読み込んでから表示ボタンを押してください。</string>
+    <string name="btn_ad_load">広告を読み込む</string>
+    <string name="btn_ad_show">広告を表示</string>
+
+    <!-- Data management -->
+    <string name="settings_data_management">データ管理</string>
+    <string name="btn_export_data">データをエクスポート</string>
+    <string name="btn_import_data">データをインポート</string>
+    <string name="export_success">データを正常にエクスポートしました。</string>
+    <string name="export_error">エクスポート失敗: %s</string>
+    <string name="import_success">%1$d個の薬、%2$d個のアラーム、%3$d個の服用記録をインポートしました。</string>
+    <string name="import_error">インポート失敗: %s</string>
+    <string name="import_file_invalid">無効なファイル形式です。</string>
+
+    <!-- Purchase -->
+    <string name="purchase_title">広告削除</string>
+    <string name="purchase_description">一度の購入ですべての広告を永久に削除できます。</string>
+    <string name="purchase_price">価格: %s</string>
+    <string name="purchase_success">購入が完了しました！</string>
+    <string name="purchase_error">購入失敗: %s</string>
+    <string name="purchase_pending">購入処理中です。</string>
+    <string name="restore_success">購入履歴を復元しました。</string>
+    <string name="restore_no_purchases">復元する購入履歴がありません。</string>
+    <string name="restore_error">復元失敗: %s</string>
+
+    <!-- About -->
+    <string name="settings_about">情報</string>
+    <string name="settings_app_version">アプリバージョン</string>
+    <string name="settings_privacy_policy">プライバシーポリシー</string>
+
+    <!-- General -->
+    <string name="loading">読み込み中…</string>
+    <string name="ok">OK</string>
+    <string name="close">閉じる</string>
+</resources>

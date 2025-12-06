@@ -261,7 +261,7 @@ snackbarHostState.showSnackbar("저장되었습니다")
 
 ```kotlin
 // util/DayOfWeekExtensions.kt
-package com.example.pillreminder.util
+package com.uhstudio.pillreminder.util
 
 import java.time.DayOfWeek
 
