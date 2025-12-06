@@ -109,7 +109,12 @@ class CalendarViewModel(application: Application) : AndroidViewModel(application
 }
 
 /**
- * 월간 통계
+ * 월간 복용 통계
+ *
+ * @property totalCount 총 복용 기록 개수
+ * @property takenCount 복용 완료 개수
+ * @property skippedCount 건너뜀 개수
+ * @property adherenceRate 복용률 (0-100%)
  */
 data class MonthlyStats(
     val totalCount: Int = 0,
@@ -119,12 +124,17 @@ data class MonthlyStats(
 )
 
 /**
- * 날짜별 상태
+ * 캘린더 날짜별 상태
+ *
+ * 복용 기록이 있는 날짜의 상태를 나타냅니다.
  */
 enum class DateStatus {
-    TAKEN,      // 복용함
-    SKIPPED,    // 건너뜀
-    NONE        // 기록 없음
+    /** 복용 완료 */
+    TAKEN,
+    /** 건너뜀 */
+    SKIPPED,
+    /** 기록 없음 */
+    NONE
 }
 
 /**

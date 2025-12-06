@@ -1,4 +1,4 @@
-package com.example.pillreminder.ui.pillDetail
+package com.uhstudio.pillreminder.ui.pillDetail
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
@@ -6,7 +6,7 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Alarm
-import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material3.*
@@ -18,13 +18,11 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
-import com.example.pillreminder.R
-import com.example.pillreminder.data.model.PillAlarm
-import com.example.pillreminder.ui.theme.GradientPinkStart
-import com.example.pillreminder.ui.theme.GradientPeachEnd
-import com.example.pillreminder.util.toKoreanShort
-import kotlinx.coroutines.flow.Flow
-
+import com.uhstudio.pillreminder.data.model.PillAlarm
+import com.uhstudio.pillreminder.ui.theme.GradientPinkStart
+import com.uhstudio.pillreminder.ui.theme.GradientPeachEnd
+import com.uhstudio.pillreminder.util.toKoreanShort
+import com.uhstudio.pillreminder.R
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun PillDetailScreen(
@@ -62,7 +60,7 @@ fun PillDetailScreen(
                     navigationIcon = {
                         IconButton(onClick = onNavigateUp) {
                             Icon(
-                                imageVector = Icons.Default.ArrowBack,
+                                imageVector = Icons.AutoMirrored.Filled.ArrowBack,
                                 contentDescription = stringResource(R.string.btn_back)
                             )
                         }

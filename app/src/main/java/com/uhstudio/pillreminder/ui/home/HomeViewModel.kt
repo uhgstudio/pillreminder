@@ -20,6 +20,11 @@ import java.util.UUID
 
 /**
  * 오늘의 알람 정보
+ *
+ * @property alarm 알람 설정
+ * @property pill 약 정보
+ * @property time 알람 시간
+ * @property isTaken 복용 완료 여부
  */
 data class TodayAlarm(
     val alarm: PillAlarm,
@@ -30,6 +35,11 @@ data class TodayAlarm(
 
 /**
  * 오늘의 복용 통계
+ *
+ * @property totalCount 총 알람 개수
+ * @property takenCount 복용 완료 개수
+ * @property skippedCount 건너뜀 개수
+ * @property adherenceRate 복용률 (0-100%)
  */
 data class IntakeStats(
     val totalCount: Int = 0,

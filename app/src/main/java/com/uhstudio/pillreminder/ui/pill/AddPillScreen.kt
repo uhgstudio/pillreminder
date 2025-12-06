@@ -1,4 +1,4 @@
-package com.example.pillreminder.ui.pill
+package com.uhstudio.pillreminder.ui.pill
 
 import android.Manifest
 import android.app.Activity
@@ -12,10 +12,8 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowBack
-import androidx.compose.material.icons.filled.Camera
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Image
-import androidx.compose.material.icons.filled.PhotoLibrary
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -28,16 +26,15 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.core.content.FileProvider
 import coil.compose.AsyncImage
-import com.example.pillreminder.R
-import com.example.pillreminder.ads.AdManager
-import com.example.pillreminder.ui.theme.GradientWhiteStart
-import com.example.pillreminder.ui.theme.GradientLightGrayEnd
+import com.uhstudio.pillreminder.ads.AdManager
+import com.uhstudio.pillreminder.ui.theme.GradientWhiteStart
+import com.uhstudio.pillreminder.ui.theme.GradientLightGrayEnd
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import com.google.accompanist.permissions.isGranted
 import com.google.accompanist.permissions.rememberPermissionState
 import java.io.File
 import java.util.UUID
-
+import com.uhstudio.pillreminder.R
 @OptIn(ExperimentalPermissionsApi::class, ExperimentalMaterial3Api::class)
 @Composable
 fun AddPillScreen(
@@ -46,8 +43,6 @@ fun AddPillScreen(
     onNavigateUp: () -> Unit
 ) {
     val context = LocalContext.current
-    val activity = context as? Activity
-    val adManager = remember { AdManager.getInstance(context) }
 
     var showImageSelectionDialog by remember { mutableStateOf(false) }
     var currentPhotoUri by remember { mutableStateOf<Uri?>(null) }
@@ -135,7 +130,7 @@ fun AddPillScreen(
                     navigationIcon = {
                         IconButton(onClick = onNavigateUp) {
                             Icon(
-                                imageVector = Icons.Default.ArrowBack,
+                                imageVector = Icons.AutoMirrored.Filled.ArrowBack,
                                 contentDescription = stringResource(R.string.btn_back)
                             )
                         }

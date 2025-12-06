@@ -1,6 +1,5 @@
-package com.example.pillreminder.ui.alarm
+package com.uhstudio.pillreminder.ui.alarm
 
-import android.text.format.DateFormat
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -14,11 +13,11 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
-import com.example.pillreminder.R
-import com.example.pillreminder.data.model.PillAlarm
+import com.uhstudio.pillreminder.data.model.PillAlarm
 import java.time.DayOfWeek
 import java.time.format.TextStyle
 import java.util.*
+import com.uhstudio.pillreminder.R
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -31,7 +30,6 @@ fun AlarmScreen(
     var selectedHour by remember { mutableStateOf(8) }
     var selectedMinute by remember { mutableStateOf(0) }
     val alarms by viewModel.getAlarmsForPill(pillId).collectAsState(initial = emptyList())
-    val context = LocalContext.current
 
     Scaffold(
         topBar = {
