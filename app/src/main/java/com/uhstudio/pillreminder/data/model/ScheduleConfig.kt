@@ -3,7 +3,6 @@ package com.uhstudio.pillreminder.data.model
 import kotlinx.serialization.Serializable
 import java.time.DayOfWeek
 import java.time.LocalDate
-import java.time.LocalTime
 
 /**
  * 스케줄 설정을 나타내는 sealed class
@@ -58,27 +57,6 @@ sealed class ScheduleConfig {
     }
 
     /**
-     * N시간 간격 복용 설정
-     * @param intervalHours 간격 (예: 6 = 6시간마다)
-     * @param startTime 시작 시간 (ISO 8601 형식: HH:MM:SS)
-     */
-    @Serializable
-    data class IntervalHours(
-        val intervalHours: Int,
-        val startTime: String  // LocalTime을 String으로 저장
-    ) : ScheduleConfig() {
-        fun getStartTimeAsLocalTime(): LocalTime {
-            return LocalTime.parse(startTime)
-        }
-
-        companion object {
-            fun from(intervalHours: Int, startTime: LocalTime): IntervalHours {
-                return IntervalHours(intervalHours, startTime.toString())
-            }
-        }
-    }
-
-    /**
      * 특정 날짜들 복용 설정
      * @param dates 복용할 날짜 목록 (ISO 8601 형식)
      */
@@ -96,27 +74,6 @@ sealed class ScheduleConfig {
             }
         }
     }
-
-    /**
-     * 월 단위 반복 설정
-     * @param daysOfMonth 월 중 복용할 날짜들 (1-31)
-     */
-    @Serializable
-    data class Monthly(
-        val daysOfMonth: Set<Int>  // 예: [1, 15] = 매월 1일, 15일
-    ) : ScheduleConfig()
-
-    /**
-     * 평일만 복용 설정 (월~금)
-     */
-    @Serializable
-    data object WeekdayOnly : ScheduleConfig()
-
-    /**
-     * 주말만 복용 설정 (토~일)
-     */
-    @Serializable
-    data object WeekendOnly : ScheduleConfig()
 
     /**
      * 커스텀 설정 (향후 확장용)

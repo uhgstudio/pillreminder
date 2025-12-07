@@ -15,17 +15,23 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Medication
 import androidx.compose.material.icons.filled.Notifications
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.lifecycleScope
+import coil.compose.AsyncImage
+import coil.request.ImageRequest
 import com.uhstudio.pillreminder.data.database.PillReminderDatabase
 import com.uhstudio.pillreminder.data.model.IntakeHistory
 import com.uhstudio.pillreminder.data.model.IntakeStatus
@@ -80,7 +86,13 @@ class AlarmActivity : ComponentActivity() {
 
         // Notification 취소
         val notificationManager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
-        notificationManager.cancel(alarmId.hashCode())
+        try {
+            val requestCode = com.uhstudio.pillreminder.util.RequestCodeUtil.generateRequestCode(alarmId)
+            notificationManager.cancel(requestCode)
+            timber.log.Timber.d("Notification cancelled for alarmId=$alarmId, requestCode=$requestCode")
+        } catch (e: Exception) {
+            timber.log.Timber.e(e, "Failed to cancel notification for alarmId=$alarmId")
+        }
 
         // 알람 소리와 진동 시작
         startAlarmSound(alarmSoundUri)
@@ -88,8 +100,23 @@ class AlarmActivity : ComponentActivity() {
 
         setContent {
             PillReminderTheme {
+                var pillImageUri by remember { mutableStateOf<String?>(null) }
+
+                // Pill 정보 가져오기 (이미지 포함)
+                LaunchedEffect(pillId) {
+                    if (pillId.isNotEmpty()) {
+                        try {
+                            val pill = database.pillDao().getPillById(pillId)
+                            pillImageUri = pill?.imageUri
+                        } catch (e: Exception) {
+                            timber.log.Timber.e(e, "Failed to load pill image for pillId=$pillId")
+                        }
+                    }
+                }
+
                 AlarmScreen(
                     pillName = pillName,
+                    pillImageUri = pillImageUri,
                     onTakePill = {
                         lifecycleScope.launch {
                             saveIntakeHistory(pillId, alarmId, IntakeStatus.TAKEN)
@@ -189,6 +216,7 @@ class AlarmActivity : ComponentActivity() {
 @Composable
 fun AlarmScreen(
     pillName: String,
+    pillImageUri: String?,
     onTakePill: () -> Unit,
     onSkipPill: () -> Unit,
     onSnooze: () -> Unit
@@ -213,12 +241,35 @@ fun AlarmScreen(
                 horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = Arrangement.spacedBy(24.dp)
             ) {
-                Icon(
-                    imageVector = Icons.Default.Notifications,
-                    contentDescription = null,
-                    modifier = Modifier.size(80.dp),
-                    tint = MaterialTheme.colorScheme.primary
-                )
+                // 약 이미지 또는 기본 아이콘 표시
+                if (pillImageUri != null) {
+                    AsyncImage(
+                        model = ImageRequest.Builder(androidx.compose.ui.platform.LocalContext.current)
+                            .data(pillImageUri)
+                            .crossfade(true)
+                            .build(),
+                        contentDescription = pillName,
+                        modifier = Modifier
+                            .size(120.dp)
+                            .clip(CircleShape),
+                        contentScale = ContentScale.Crop
+                    )
+                } else {
+                    Box(
+                        modifier = Modifier
+                            .size(120.dp)
+                            .clip(CircleShape)
+                            .background(MaterialTheme.colorScheme.primaryContainer),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Medication,
+                            contentDescription = null,
+                            modifier = Modifier.size(60.dp),
+                            tint = MaterialTheme.colorScheme.onPrimaryContainer
+                        )
+                    }
+                }
 
                 Text(
                     text = "약 복용 시간",

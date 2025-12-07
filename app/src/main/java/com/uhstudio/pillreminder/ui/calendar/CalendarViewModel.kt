@@ -2,9 +2,12 @@ package com.uhstudio.pillreminder.ui.calendar
 
 import android.app.Application
 import androidx.lifecycle.AndroidViewModel
+import androidx.lifecycle.viewModelScope
 import com.uhstudio.pillreminder.data.database.PillReminderDatabase
 import com.uhstudio.pillreminder.data.model.IntakeHistoryWithPill
+import com.uhstudio.pillreminder.data.model.IntakeStatus as IntakeStatusModel
 import kotlinx.coroutines.flow.*
+import kotlinx.coroutines.launch
 import java.time.LocalDate
 import java.time.LocalTime
 
@@ -21,7 +24,12 @@ class CalendarViewModel(application: Application) : AndroidViewModel(application
      */
     fun getIntakeHistoryForDate(date: LocalDate): Flow<List<IntakeHistoryWithPill>> {
         val startOfDay = date.atStartOfDay()
-        return intakeHistoryDao.getHistoryWithPillForDate(startOfDay)
+        val endOfDay = date.plusDays(1).atStartOfDay()
+        timber.log.Timber.d("getIntakeHistoryForDate: date=$date, startOfDay=$startOfDay, endOfDay=$endOfDay")
+        return intakeHistoryDao.getHistoryWithPillForDate(startOfDay, endOfDay).map { list ->
+            timber.log.Timber.d("getIntakeHistoryForDate: Retrieved ${list.size} records for date=$date")
+            list
+        }
     }
 
     /**
@@ -104,6 +112,24 @@ class CalendarViewModel(application: Application) : AndroidViewModel(application
                         else -> DateStatus.NONE
                     }
                 }
+        }
+    }
+
+    /**
+     * 복용 기록 상태를 업데이트
+     */
+    fun updateIntakeStatus(historyId: String, newStatus: IntakeStatusModel) {
+        viewModelScope.launch {
+            try {
+                val history = intakeHistoryDao.getHistoryById(historyId)
+                if (history != null) {
+                    val updated = history.copy(status = newStatus)
+                    intakeHistoryDao.updateHistory(updated)
+                    timber.log.Timber.d("updateIntakeStatus: Updated history $historyId to status $newStatus")
+                }
+            } catch (e: Exception) {
+                timber.log.Timber.e(e, "Failed to update intake status for historyId=$historyId")
+            }
         }
     }
 }

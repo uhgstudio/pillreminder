@@ -1,0 +1,423 @@
+{
+  "formatVersion": 1,
+  "database": {
+    "version": 6,
+    "identityHash": "24c1e61104a95be70239cdf86debf4ba",
+    "entities": [
+      {
+        "tableName": "pills",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` TEXT NOT NULL, `name` TEXT NOT NULL, `imageUri` TEXT, `memo` TEXT, PRIMARY KEY(`id`))",
+        "fields": [
+          {
+            "fieldPath": "id",
+            "columnName": "id",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "name",
+            "columnName": "name",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "imageUri",
+            "columnName": "imageUri",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "memo",
+            "columnName": "memo",
+            "affinity": "TEXT",
+            "notNull": false
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "id"
+          ]
+        },
+        "indices": [],
+        "foreignKeys": []
+      },
+      {
+        "tableName": "pill_alarms",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` TEXT NOT NULL, `pillId` TEXT NOT NULL, `hour` INTEGER NOT NULL, `minute` INTEGER NOT NULL, `scheduleType` TEXT NOT NULL, `scheduleConfig` TEXT, `startDate` TEXT, `endDate` TEXT, `repeatDays` TEXT NOT NULL, `enabled` INTEGER NOT NULL, `alarmSoundUri` TEXT, `createdAt` TEXT NOT NULL, `updatedAt` TEXT NOT NULL, PRIMARY KEY(`id`), FOREIGN KEY(`pillId`) REFERENCES `pills`(`id`) ON UPDATE NO ACTION ON DELETE CASCADE )",
+        "fields": [
+          {
+            "fieldPath": "id",
+            "columnName": "id",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "pillId",
+            "columnName": "pillId",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "hour",
+            "columnName": "hour",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "minute",
+            "columnName": "minute",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "scheduleType",
+            "columnName": "scheduleType",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "scheduleConfig",
+            "columnName": "scheduleConfig",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "startDate",
+            "columnName": "startDate",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "endDate",
+            "columnName": "endDate",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "repeatDays",
+            "columnName": "repeatDays",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "enabled",
+            "columnName": "enabled",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "alarmSoundUri",
+            "columnName": "alarmSoundUri",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "createdAt",
+            "columnName": "createdAt",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "updatedAt",
+            "columnName": "updatedAt",
+            "affinity": "TEXT",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "id"
+          ]
+        },
+        "indices": [
+          {
+            "name": "index_pill_alarms_pillId",
+            "unique": false,
+            "columnNames": [
+              "pillId"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_pill_alarms_pillId` ON `${TABLE_NAME}` (`pillId`)"
+          },
+          {
+            "name": "index_pill_alarms_enabled",
+            "unique": false,
+            "columnNames": [
+              "enabled"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_pill_alarms_enabled` ON `${TABLE_NAME}` (`enabled`)"
+          },
+          {
+            "name": "index_pill_alarms_hour_minute",
+            "unique": false,
+            "columnNames": [
+              "hour",
+              "minute"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_pill_alarms_hour_minute` ON `${TABLE_NAME}` (`hour`, `minute`)"
+          },
+          {
+            "name": "index_pill_alarms_scheduleType",
+            "unique": false,
+            "columnNames": [
+              "scheduleType"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_pill_alarms_scheduleType` ON `${TABLE_NAME}` (`scheduleType`)"
+          },
+          {
+            "name": "index_pill_alarms_startDate",
+            "unique": false,
+            "columnNames": [
+              "startDate"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_pill_alarms_startDate` ON `${TABLE_NAME}` (`startDate`)"
+          },
+          {
+            "name": "index_pill_alarms_endDate",
+            "unique": false,
+            "columnNames": [
+              "endDate"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_pill_alarms_endDate` ON `${TABLE_NAME}` (`endDate`)"
+          }
+        ],
+        "foreignKeys": [
+          {
+            "table": "pills",
+            "onDelete": "CASCADE",
+            "onUpdate": "NO ACTION",
+            "columns": [
+              "pillId"
+            ],
+            "referencedColumns": [
+              "id"
+            ]
+          }
+        ]
+      },
+      {
+        "tableName": "intake_history",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` TEXT NOT NULL, `pillId` TEXT NOT NULL, `alarmId` TEXT NOT NULL, `intakeTime` TEXT NOT NULL, `status` TEXT NOT NULL, PRIMARY KEY(`id`), FOREIGN KEY(`pillId`) REFERENCES `pills`(`id`) ON UPDATE NO ACTION ON DELETE CASCADE , FOREIGN KEY(`alarmId`) REFERENCES `pill_alarms`(`id`) ON UPDATE NO ACTION ON DELETE CASCADE )",
+        "fields": [
+          {
+            "fieldPath": "id",
+            "columnName": "id",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "pillId",
+            "columnName": "pillId",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "alarmId",
+            "columnName": "alarmId",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "intakeTime",
+            "columnName": "intakeTime",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "status",
+            "columnName": "status",
+            "affinity": "TEXT",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "id"
+          ]
+        },
+        "indices": [
+          {
+            "name": "index_intake_history_pillId",
+            "unique": false,
+            "columnNames": [
+              "pillId"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_intake_history_pillId` ON `${TABLE_NAME}` (`pillId`)"
+          },
+          {
+            "name": "index_intake_history_alarmId",
+            "unique": false,
+            "columnNames": [
+              "alarmId"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_intake_history_alarmId` ON `${TABLE_NAME}` (`alarmId`)"
+          },
+          {
+            "name": "index_intake_history_intakeTime",
+            "unique": false,
+            "columnNames": [
+              "intakeTime"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_intake_history_intakeTime` ON `${TABLE_NAME}` (`intakeTime`)"
+          }
+        ],
+        "foreignKeys": [
+          {
+            "table": "pills",
+            "onDelete": "CASCADE",
+            "onUpdate": "NO ACTION",
+            "columns": [
+              "pillId"
+            ],
+            "referencedColumns": [
+              "id"
+            ]
+          },
+          {
+            "table": "pill_alarms",
+            "onDelete": "CASCADE",
+            "onUpdate": "NO ACTION",
+            "columns": [
+              "alarmId"
+            ],
+            "referencedColumns": [
+              "id"
+            ]
+          }
+        ]
+      },
+      {
+        "tableName": "app_settings",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER NOT NULL, `isPremiumUser` INTEGER NOT NULL, `purchaseToken` TEXT, `purchaseTime` INTEGER, `adOnScreenVisitEnabled` INTEGER NOT NULL, `adOnScreenVisitThreshold` INTEGER NOT NULL, `adOnScreenVisitCounter` INTEGER NOT NULL, `adOnAlarmCountEnabled` INTEGER NOT NULL, `adOnAlarmCountThreshold` INTEGER NOT NULL, `adOnAppLaunchEnabled` INTEGER NOT NULL, `adOnAppLaunchThreshold` INTEGER NOT NULL, `adOnTimeBased` INTEGER NOT NULL, `lastAdShownTime` INTEGER, `adTimeIntervalHours` INTEGER NOT NULL, `totalScreenVisits` INTEGER NOT NULL, `totalAlarmRegistrations` INTEGER NOT NULL, `totalAppLaunches` INTEGER NOT NULL, PRIMARY KEY(`id`))",
+        "fields": [
+          {
+            "fieldPath": "id",
+            "columnName": "id",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "isPremiumUser",
+            "columnName": "isPremiumUser",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "purchaseToken",
+            "columnName": "purchaseToken",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "purchaseTime",
+            "columnName": "purchaseTime",
+            "affinity": "INTEGER",
+            "notNull": false
+          },
+          {
+            "fieldPath": "adOnScreenVisitEnabled",
+            "columnName": "adOnScreenVisitEnabled",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "adOnScreenVisitThreshold",
+            "columnName": "adOnScreenVisitThreshold",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "adOnScreenVisitCounter",
+            "columnName": "adOnScreenVisitCounter",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "adOnAlarmCountEnabled",
+            "columnName": "adOnAlarmCountEnabled",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "adOnAlarmCountThreshold",
+            "columnName": "adOnAlarmCountThreshold",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "adOnAppLaunchEnabled",
+            "columnName": "adOnAppLaunchEnabled",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "adOnAppLaunchThreshold",
+            "columnName": "adOnAppLaunchThreshold",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "adOnTimeBased",
+            "columnName": "adOnTimeBased",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "lastAdShownTime",
+            "columnName": "lastAdShownTime",
+            "affinity": "INTEGER",
+            "notNull": false
+          },
+          {
+            "fieldPath": "adTimeIntervalHours",
+            "columnName": "adTimeIntervalHours",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "totalScreenVisits",
+            "columnName": "totalScreenVisits",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "totalAlarmRegistrations",
+            "columnName": "totalAlarmRegistrations",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "totalAppLaunches",
+            "columnName": "totalAppLaunches",
+            "affinity": "INTEGER",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "id"
+          ]
+        },
+        "indices": [],
+        "foreignKeys": []
+      }
+    ],
+    "views": [],
+    "setupQueries": [
+      "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '24c1e61104a95be70239cdf86debf4ba')"
+    ]
+  }
+}

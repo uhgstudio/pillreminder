@@ -1,22 +1,20 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">服药提醒</string>
-    <string name="title_home">我的药物</string>
+    <string name="title_home">我的药品</string>
     <string name="title_calendar">日历</string>
     <string name="title_settings">设置</string>
-    <string name="title_alarms">闹钟设置</string>
-    <string name="title_intake_history">服药记录</string>
+    <string name="title_alarms">提醒设置</string>
+    <string name="title_intake_history">服用记录</string>
 
-    <!-- Alarm related -->
     <string name="alarm_notification_title">服药时间</string>
-    <string name="alarm_notification_text">该服用%s了。</string>
-    <string name="alarm_channel_name">服药提醒</string>
-    <string name="alarm_channel_description">提醒服药时间的通知</string>
-    <string name="dialog_set_alarm_time">设置闹钟时间</string>
+    <string name="alarm_notification_text">该服用 %s 了。</string>
+    <string name="alarm_channel_name">服药通知</string>
+    <string name="alarm_channel_description">提醒您按时服药的通知</string>
+    <string name="dialog_set_alarm_time">设置提醒时间</string>
 
-    <!-- Buttons -->
-    <string name="btn_add_pill">添加药物</string>
-    <string name="btn_add_alarm">添加闹钟</string>
+    <string name="btn_add_pill">添加药品</string>
+    <string name="btn_add_alarm">添加提醒</string>
     <string name="btn_save">保存</string>
     <string name="btn_cancel">取消</string>
     <string name="btn_take_photo">拍照</string>
@@ -26,106 +24,131 @@
     <string name="btn_take_pill">已服用</string>
     <string name="btn_skip_pill">跳过</string>
     <string name="btn_snooze">10分钟后提醒</string>
-    <string name="btn_delete_alarm">删除闹钟</string>
+    <string name="btn_delete_alarm">删除提醒</string>
 
-    <!-- Input fields -->
-    <string name="hint_pill_name">药物名称</string>
-    <string name="hint_pill_memo">备注（可选）</string>
+    <string name="hint_pill_name">药品名称</string>
+    <string name="hint_pill_memo">备注 (选填)</string>
 
-    <!-- Error messages -->
-    <string name="error_pill_name_empty">请输入药物名称。</string>
-    <string name="error_alarm_time_invalid">请选择正确的时间。</string>
+    <string name="error_pill_name_empty">请输入药品名称。</string>
+    <string name="error_alarm_time_invalid">请选择有效的时间。</string>
     <string name="error_camera_permission">需要相机权限。</string>
     <string name="error_storage_permission">需要存储权限。</string>
 
-    <!-- Dialogs -->
     <string name="dialog_select_image_title">选择图片</string>
     <string name="dialog_camera">相机</string>
     <string name="dialog_gallery">相册</string>
-    <string name="dialog_delete_pill_title">删除药物</string>
-    <string name="dialog_delete_pill_message">确定删除此药物吗？所有相关闹钟也将被删除。</string>
-    <string name="dialog_delete_alarm_title">删除闹钟</string>
-    <string name="dialog_delete_alarm_message">确定删除此闹钟吗？</string>
-    <string name="dialog_select_pill_title">选择药物</string>
+    <string name="dialog_delete_pill_title">删除药品</string>
+    <string name="dialog_delete_pill_message">确定要删除此药品吗？相关的提醒也将被一并删除。</string>
+    <string name="dialog_delete_alarm_title">删除提醒</string>
+    <string name="dialog_delete_alarm_message">确定要删除此提醒吗？</string>
+    <string name="dialog_select_pill_title">选择药品</string>
 
-    <!-- Intake status -->
     <string name="status_taken">已服用</string>
     <string name="status_skipped">已跳过</string>
-    <string name="status_missed">已错过</string>
+    <string name="status_missed">未服用</string>
 
-    <!-- Home screen -->
-    <string name="empty_pill_list">尚未添加药物。\n点击右下角按钮添加药物。</string>
+    <string name="empty_pill_list">暂无药品。\n点击右下角按钮添加。</string>
+    <string name="home_today_alarms">今日提醒</string>
+    <string name="home_today_stats">今日概况</string>
+    <string name="home_my_pills">我的药品</string>
+    <string name="home_alarm_count">%d个</string>
+    <string name="home_intake_rate">%d%%</string>
+    <string name="home_taken_count">已服 %1$d/%2$d</string>
+    <string name="home_alarm_upcoming">待服用</string>
+    <string name="home_alarm_taken">已服用</string>
+    <string name="home_alarm_missed">未服用</string>
+    <string name="home_missed_alarms_warning">您错过了 %d 个提醒</string>
+    <string name="home_no_alarms_today">今日暂无提醒</string>
 
-    <!-- Add/Edit medication -->
-    <string name="title_add_pill">添加药物</string>
-    <string name="title_edit_pill">编辑药物</string>
-    <string name="edit_pill">编辑药物</string>
+    <string name="title_add_pill">添加药品</string>
+    <string name="title_edit_pill">编辑药品</string>
+    <string name="edit_pill">编辑</string>
     <string name="save">保存</string>
-    <string name="pill_name">药物名称</string>
+    <string name="pill_name">药品名称</string>
     <string name="description">说明</string>
-    <string name="dosage">用量</string>
+    <string name="dosage">服用剂量</string>
 
-    <!-- Alarms -->
-    <string name="title_add_alarm">添加闹钟</string>
-    <string name="title_edit_alarm">编辑闹钟</string>
-    <string name="label_repeat_days">重复日期</string>
-    <string name="channel_name">服药提醒</string>
-    <string name="channel_description">提醒服药时间的通知。</string>
+    <string name="title_add_alarm">添加提醒</string>
+    <string name="title_edit_alarm">编辑提醒</string>
+    <string name="label_repeat_days">重复周期</string>
+    <string name="channel_name">服药通知</string>
+    <string name="channel_description">服药时间提醒通知。</string>
 
-    <!-- Messages -->
-    <string name="msg_no_alarms">尚未设置闹钟。</string>
-    <string name="msg_add_alarm_hint">点击+按钮添加闹钟。</string>
-    <string name="msg_no_intake_history">暂无服药记录。</string>
+    <string name="schedule_daily">每天</string>
+    <string name="schedule_weekly">每周</string>
+    <string name="schedule_interval_days">每 N 天</string>
+    <string name="schedule_interval_hours">每 N 小时</string>
+    <string name="schedule_specific_dates">特定日期</string>
+    <string name="schedule_monthly">每月</string>
+    <string name="schedule_weekday_only">仅工作日</string>
+    <string name="schedule_weekend_only">仅周末</string>
 
-    <!-- Settings screen -->
-    <string name="settings_premium_status">高级状态</string>
-    <string name="settings_premium_user">高级用户</string>
+    <string name="label_interval_hours">时间间隔</string>
+    <string name="label_start_time">开始时间</string>
+    <string name="label_specific_dates">选择日期</string>
+    <string name="label_monthly_days">每月日期</string>
+    <string name="label_interval_hours_value">每 %d 小时</string>
+    <string name="hint_weekday_only">周一至周五重复</string>
+    <string name="hint_weekend_only">周六和周日重复</string>
+    <string name="btn_add_date">添加日期</string>
+    <string name="msg_no_dates_selected">请至少选择一个日期</string>
+    <string name="msg_no_monthly_days_selected">请至少选择一天</string>
+
+    <string name="msg_no_alarms">暂无提醒。</string>
+    <string name="msg_add_alarm_hint">点击 + 按钮添加提醒。</string>
+    <string name="msg_no_intake_history">暂无服用记录。</string>
+
+    <string name="calendar_monthly_stats">%s 服用概况</string>
+    <string name="calendar_adherence_rate">服用率: %d%%</string>
+    <string name="calendar_stats_detail">服用: %1$d | 跳过: %2$d</string>
+    <string name="calendar_legend_title">图例</string>
+    <string name="calendar_legend_taken">服用</string>
+    <string name="calendar_legend_skipped">跳过</string>
+    <string name="calendar_filter_all">全部</string>
+
+    <string name="settings_premium_status">会员状态</string>
+    <string name="settings_premium_user">高级会员</string>
     <string name="settings_free_user">免费用户</string>
-    <string name="btn_remove_ads">购买移除广告</string>
+    <string name="btn_remove_ads">移除广告</string>
     <string name="btn_restore_purchases">恢复购买</string>
 
-    <!-- Ad settings -->
     <string name="settings_ad_settings">广告设置</string>
-    <string name="settings_ad_screen_visit">访问屏幕时显示广告</string>
-    <string name="settings_ad_alarm_count">添加闹钟时显示广告</string>
-    <string name="settings_ad_app_launch">启动应用时显示广告</string>
+    <string name="settings_ad_screen_visit">切换屏幕显示广告</string>
+    <string name="settings_ad_alarm_count">设置提醒显示广告</string>
+    <string name="settings_ad_app_launch">启动应用显示广告</string>
     <string name="settings_ad_time_based">基于时间的广告</string>
     <string name="settings_ad_threshold">显示频率</string>
-    <string name="settings_ad_threshold_description">每%d次显示广告</string>
+    <string name="settings_ad_threshold_description">每 %d 次操作显示一次</string>
     <string name="settings_ad_time_interval">时间间隔</string>
-    <string name="settings_ad_time_interval_description">每%d小时显示广告</string>
+    <string name="settings_ad_time_interval_description">每 %d 小时显示一次</string>
     <string name="settings_ad_test_title">广告测试</string>
-    <string name="settings_ad_test_description">测试广告功能。请先加载广告，然后点击显示按钮。</string>
+    <string name="settings_ad_test_description">测试广告功能。请先加载广告，然后点击显示。</string>
     <string name="btn_ad_load">加载广告</string>
     <string name="btn_ad_show">显示广告</string>
 
-    <!-- Data management -->
     <string name="settings_data_management">数据管理</string>
     <string name="btn_export_data">导出数据</string>
     <string name="btn_import_data">导入数据</string>
     <string name="export_success">数据导出成功。</string>
-    <string name="export_error">导出失败：%s</string>
-    <string name="import_success">已导入%1$d个药物、%2$d个闹钟、%3$d条服药记录。</string>
-    <string name="import_error">导入失败：%s</string>
-    <string name="import_file_invalid">无效的文件格式。</string>
+    <string name="export_error">导出失败: %s</string>
+    <string name="import_success">已导入 %1$d 种药品, %2$d 个提醒, %3$d 条记录。</string>
+    <string name="import_error">导入失败: %s</string>
+    <string name="import_file_invalid">文件格式无效。</string>
 
-    <!-- Purchase -->
     <string name="purchase_title">移除广告</string>
-    <string name="purchase_description">一次性购买即可永久移除所有广告。</string>
-    <string name="purchase_price">价格：%s</string>
+    <string name="purchase_description">一次性购买，永久移除所有广告。</string>
+    <string name="purchase_price">价格: %s</string>
     <string name="purchase_success">购买成功！</string>
-    <string name="purchase_error">购买失败：%s</string>
+    <string name="purchase_error">购买失败: %s</string>
     <string name="purchase_pending">购买处理中。</string>
-    <string name="restore_success">已恢复购买记录。</string>
-    <string name="restore_no_purchases">没有可恢复的购买记录。</string>
-    <string name="restore_error">恢复失败：%s</string>
+    <string name="restore_success">购买记录已恢复。</string>
+    <string name="restore_no_purchases">无可恢复的购买记录。</string>
+    <string name="restore_error">恢复失败: %s</string>
 
-    <!-- About -->
     <string name="settings_about">关于</string>
     <string name="settings_app_version">应用版本</string>
     <string name="settings_privacy_policy">隐私政策</string>
 
-    <!-- General -->
     <string name="loading">加载中…</string>
     <string name="ok">确定</string>
     <string name="close">关闭</string>

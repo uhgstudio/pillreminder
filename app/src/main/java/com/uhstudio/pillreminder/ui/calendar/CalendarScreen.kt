@@ -5,6 +5,8 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
@@ -100,13 +102,8 @@ fun CalendarScreen(
                 modifier = Modifier
                     .fillMaxSize()
                     .padding(paddingValues)
+                    .verticalScroll(rememberScrollState())
             ) {
-                // 월간 통계 카드
-                MonthlyStatsCard(
-                    yearMonth = currentYearMonth,
-                    stats = monthlyStats,
-                    modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
-                )
 
                 CalendarHeader(
                     yearMonth = currentYearMonth,
@@ -115,7 +112,7 @@ fun CalendarScreen(
                 )
 
                 // 범례
-                LegendRow(modifier = Modifier.padding(horizontal = 16.dp, vertical = 4.dp))
+                //LegendRow(modifier = Modifier.padding(horizontal = 16.dp, vertical = 4.dp))
 
                 CalendarGrid(
                     yearMonth = currentYearMonth,
@@ -126,8 +123,18 @@ fun CalendarScreen(
 
                 IntakeHistoryList(
                     intakeHistory = intakeHistory,
-                    modifier = Modifier.weight(1f)
+                    selectedDate = selectedDate,
+                    modifier = Modifier.fillMaxWidth(),
+                    viewModel = viewModel
                 )
+
+                // 월간 통계 카드
+                MonthlyStatsCard(
+                    yearMonth = currentYearMonth,
+                    stats = monthlyStats,
+                    modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
+                )
+
             }
         }
     }
@@ -271,16 +278,24 @@ fun CalendarDay(
 @Composable
 fun IntakeHistoryList(
     intakeHistory: List<IntakeHistoryWithPill>,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    selectedDate: LocalDate = LocalDate.now(),
+    viewModel: CalendarViewModel
 ) {
+    // 디버깅 로그
+    timber.log.Timber.d("IntakeHistoryList: Rendering ${intakeHistory.size} items for date=$selectedDate")
+
     Card(
         modifier = modifier.padding(16.dp)
     ) {
         Column(
-            modifier = Modifier.padding(16.dp)
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp)
         ) {
+            // 선택된 날짜 표시
             Text(
-                text = stringResource(R.string.title_intake_history),
+                text = "${selectedDate.format(DateTimeFormatter.ofPattern("M월 d일 (E)", java.util.Locale.KOREAN))} 복용 기록",
                 style = MaterialTheme.typography.titleMedium,
                 modifier = Modifier.padding(bottom = 8.dp)
             )
@@ -292,11 +307,13 @@ fun IntakeHistoryList(
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
             } else {
-                LazyColumn {
-                    items(intakeHistory.size) { index ->
+                // LazyColumn 대신 일반 Column 사용 (하루 복용 기록은 많지 않음)
+                Column {
+                    intakeHistory.forEachIndexed { index, historyWithPill ->
                         IntakeHistoryItem(
-                            historyWithPill = intakeHistory[index],
-                            isLast = index == intakeHistory.size - 1
+                            historyWithPill = historyWithPill,
+                            isLast = index == intakeHistory.size - 1,
+                            viewModel = viewModel
                         )
                     }
                 }
@@ -308,10 +325,14 @@ fun IntakeHistoryList(
 @Composable
 fun IntakeHistoryItem(
     historyWithPill: IntakeHistoryWithPill,
-    isLast: Boolean
+    isLast: Boolean,
+    viewModel: CalendarViewModel
 ) {
     val history = historyWithPill.history
     val pill = historyWithPill.pill
+    var isTaken by remember(history.id, history.status) {
+        mutableStateOf(history.status == com.uhstudio.pillreminder.data.model.IntakeStatus.TAKEN)
+    }
 
     Column(
         modifier = Modifier
@@ -338,21 +359,35 @@ fun IntakeHistoryItem(
                 )
             }
 
-            Text(
-                text = when (history.status) {
-                    com.uhstudio.pillreminder.data.model.IntakeStatus.TAKEN ->
-                        stringResource(R.string.status_taken)
-                    com.uhstudio.pillreminder.data.model.IntakeStatus.SKIPPED ->
-                        stringResource(R.string.status_skipped)
-                },
-                color = when (history.status) {
-                    com.uhstudio.pillreminder.data.model.IntakeStatus.TAKEN ->
-                        MaterialTheme.colorScheme.primary
-                    com.uhstudio.pillreminder.data.model.IntakeStatus.SKIPPED ->
-                        MaterialTheme.colorScheme.error
-                },
-                style = MaterialTheme.typography.bodyMedium
-            )
+            Row(
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(
+                    text = if (isTaken) stringResource(R.string.status_taken) else stringResource(R.string.status_skipped),
+                    color = if (isTaken) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.error,
+                    style = MaterialTheme.typography.bodyMedium
+                )
+
+                Switch(
+                    checked = isTaken,
+                    onCheckedChange = { checked ->
+                        isTaken = checked
+                        val newStatus = if (checked) {
+                            com.uhstudio.pillreminder.data.model.IntakeStatus.TAKEN
+                        } else {
+                            com.uhstudio.pillreminder.data.model.IntakeStatus.SKIPPED
+                        }
+                        viewModel.updateIntakeStatus(history.id, newStatus)
+                    },
+                    colors = SwitchDefaults.colors(
+                        checkedThumbColor = MaterialTheme.colorScheme.primary,
+                        checkedTrackColor = MaterialTheme.colorScheme.primaryContainer,
+                        uncheckedThumbColor = MaterialTheme.colorScheme.error,
+                        uncheckedTrackColor = MaterialTheme.colorScheme.errorContainer
+                    )
+                )
+            }
         }
 
         if (!isLast) {

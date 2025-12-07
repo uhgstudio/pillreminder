@@ -258,6 +258,9 @@ class MainActivity : ComponentActivity() {
                                     },
                                     onEditPillClick = {
                                         navController.navigate("edit_pill/$pillId")
+                                    },
+                                    onEditAlarmClick = { pId, aId ->
+                                        navController.navigate("edit_alarm/$pId/$aId")
                                     }
                                 )
                             }

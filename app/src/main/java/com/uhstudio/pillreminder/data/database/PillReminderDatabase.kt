@@ -27,7 +27,7 @@ import com.uhstudio.pillreminder.data.model.PillAlarm
         IntakeHistory::class,
         AppSettings::class
     ],
-    version = 5,
+    version = 6,
     exportSchema = true
 )
 @TypeConverters(Converters::class)
@@ -112,6 +112,33 @@ abstract class PillReminderDatabase : RoomDatabase() {
             }
         }
 
+        private val MIGRATION_5_6 = object : Migration(5, 6) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                // 제거된 스케줄 타입들을 새로운 타입으로 변환
+                // INTERVAL_HOURS → DAILY
+                db.execSQL("UPDATE pill_alarms SET scheduleType = 'DAILY' WHERE scheduleType = 'INTERVAL_HOURS'")
+
+                // WEEKDAY_ONLY → WEEKLY (평일: 월~금)
+                db.execSQL("""
+                    UPDATE pill_alarms
+                    SET scheduleType = 'WEEKLY',
+                        scheduleConfig = '{"type":"com.uhstudio.pillreminder.data.model.ScheduleConfig.Weekly","days":["MONDAY","TUESDAY","WEDNESDAY","THURSDAY","FRIDAY"]}'
+                    WHERE scheduleType = 'WEEKDAY_ONLY'
+                """)
+
+                // WEEKEND_ONLY → WEEKLY (주말: 토~일)
+                db.execSQL("""
+                    UPDATE pill_alarms
+                    SET scheduleType = 'WEEKLY',
+                        scheduleConfig = '{"type":"com.uhstudio.pillreminder.data.model.ScheduleConfig.Weekly","days":["SATURDAY","SUNDAY"]}'
+                    WHERE scheduleType = 'WEEKEND_ONLY'
+                """)
+
+                // MONTHLY → DAILY (매월 특정일은 매일로 변환)
+                db.execSQL("UPDATE pill_alarms SET scheduleType = 'DAILY' WHERE scheduleType = 'MONTHLY'")
+            }
+        }
+
         fun getDatabase(context: Context): PillReminderDatabase {
             return INSTANCE ?: synchronized(this) {
                 val instance = Room.databaseBuilder(
@@ -119,7 +146,7 @@ abstract class PillReminderDatabase : RoomDatabase() {
                     PillReminderDatabase::class.java,
                     "pill_reminder_database"
                 )
-                    .addMigrations(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4, MIGRATION_4_5)
+                    .addMigrations(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4, MIGRATION_4_5, MIGRATION_5_6)
                     .build()
                 INSTANCE = instance
                 instance

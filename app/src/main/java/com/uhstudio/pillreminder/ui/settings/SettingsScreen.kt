@@ -473,7 +473,7 @@ fun AboutSection() {
                     style = MaterialTheme.typography.bodyMedium
                 )
                 Text(
-                    text = "1.0.0",
+                    text = "1.0.5",
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )

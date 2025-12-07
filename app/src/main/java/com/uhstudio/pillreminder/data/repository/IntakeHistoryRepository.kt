@@ -36,14 +36,18 @@ class IntakeHistoryRepository(
      * 특정 날짜의 복용 기록을 Flow로 반환
      */
     fun getHistoryForDate(date: LocalDateTime): Flow<List<IntakeHistory>> {
-        return intakeHistoryDao.getHistoryForDate(date)
+        val startOfDay = date.toLocalDate().atStartOfDay()
+        val endOfDay = date.toLocalDate().plusDays(1).atStartOfDay()
+        return intakeHistoryDao.getHistoryForDate(startOfDay, endOfDay)
     }
 
     /**
      * 특정 날짜의 복용 기록 (약 정보 포함)을 Flow로 반환
      */
     fun getHistoryWithPillForDate(date: LocalDateTime): Flow<List<IntakeHistoryWithPill>> {
-        return intakeHistoryDao.getHistoryWithPillForDate(date)
+        val startOfDay = date.toLocalDate().atStartOfDay()
+        val endOfDay = date.toLocalDate().plusDays(1).atStartOfDay()
+        return intakeHistoryDao.getHistoryWithPillForDate(startOfDay, endOfDay)
     }
 
     /**
@@ -105,7 +109,9 @@ class IntakeHistoryRepository(
         date: LocalDateTime
     ): Result<Int> {
         return try {
-            val count = intakeHistoryDao.getIntakeCountForDate(pillId, date)
+            val startOfDay = date.toLocalDate().atStartOfDay()
+            val endOfDay = date.toLocalDate().plusDays(1).atStartOfDay()
+            val count = intakeHistoryDao.getIntakeCountForDate(pillId, startOfDay, endOfDay)
             Timber.d("getIntakeCountForDate: pillId=$pillId, date=$date, count=$count")
             Result.Success(count)
         } catch (e: Exception) {

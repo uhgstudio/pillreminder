@@ -19,12 +19,12 @@ data class AppSettings(
 
     // 광고 트리거 설정 - 화면 방문
     val adOnScreenVisitEnabled: Boolean = true,
-    val adOnScreenVisitThreshold: Int = 3,  // 3번 화면 방문마다
+    val adOnScreenVisitThreshold: Int = 4,  // 4번 화면 방문마다
     val adOnScreenVisitCounter: Int = 0,
 
     // 광고 트리거 설정 - 알람 등록 개수
     val adOnAlarmCountEnabled: Boolean = true,
-    val adOnAlarmCountThreshold: Int = 5,  // 5개 알람 등록마다
+    val adOnAlarmCountThreshold: Int = 3,  // 3개 알람 등록마다
 
     // 광고 트리거 설정 - 앱 실행 횟수
     val adOnAppLaunchEnabled: Boolean = true,

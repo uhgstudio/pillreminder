@@ -67,7 +67,12 @@ class HomeViewModel(application: Application) : AndroidViewModel(application) {
 
     init {
         loadTodayAlarms()
-        loadTodayStats()
+        // todayAlarms가 로드된 후에 stats 계산
+        viewModelScope.launch {
+            _todayAlarms.collect {
+                loadTodayStats()
+            }
+        }
     }
 
     private fun loadTodayAlarms() {
@@ -86,8 +91,10 @@ class HomeViewModel(application: Application) : AndroidViewModel(application) {
                     if (nextTime != null && nextTime.toLocalDate() == today) {
                         val pill = allPills.find { it.id == alarm.pillId }
                         if (pill != null) {
-                            // 복용 여부 확인
-                            val isTaken = historyDao.getIntakeCountForDate(pill.id, nextTime) > 0
+                            // 이 알람에 대한 복용 여부 확인 (alarmId 기준)
+                            val startOfDay = today.atStartOfDay()
+                            val endOfDay = today.plusDays(1).atStartOfDay()
+                            val isTaken = historyDao.getIntakeCountForAlarm(alarm.id, startOfDay, endOfDay) > 0
 
                             todayAlarmsList.add(
                                 TodayAlarm(
@@ -119,26 +126,37 @@ class HomeViewModel(application: Application) : AndroidViewModel(application) {
         viewModelScope.launch {
             try {
                 val today = LocalDateTime.now()
+                val startOfDay = today.toLocalDate().atStartOfDay()
+                val endOfDay = today.toLocalDate().plusDays(1).atStartOfDay()
 
                 // 오늘의 모든 복용 기록 조회
-                val histories = historyDao.getHistoryForDate(today)
+                val histories = historyDao.getHistoryForDate(startOfDay, endOfDay)
 
                 // Flow를 collect하여 통계 계산
                 histories.collect { historyList ->
                     val totalAlarms = _todayAlarms.value.size
-                    val takenCount = historyList.count { it.status == IntakeStatus.TAKEN }
-                    val skippedCount = historyList.count { it.status == IntakeStatus.SKIPPED }
+
+                    // 알람별로 중복 제거: 같은 alarmId는 한 번만 카운트
+                    val uniqueTaken = historyList
+                        .filter { it.status == IntakeStatus.TAKEN }
+                        .distinctBy { it.alarmId }
+                        .size
+
+                    val uniqueSkipped = historyList
+                        .filter { it.status == IntakeStatus.SKIPPED }
+                        .distinctBy { it.alarmId }
+                        .size
 
                     val adherenceRate = if (totalAlarms > 0) {
-                        (takenCount.toFloat() / totalAlarms.toFloat()) * 100f
+                        (uniqueTaken.toFloat() / totalAlarms.toFloat()) * 100f
                     } else {
                         0f
                     }
 
                     _todayStats.value = IntakeStats(
                         totalCount = totalAlarms,
-                        takenCount = takenCount,
-                        skippedCount = skippedCount,
+                        takenCount = uniqueTaken,
+                        skippedCount = uniqueSkipped,
                         adherenceRate = adherenceRate
                     )
                 }

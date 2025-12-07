@@ -9,7 +9,9 @@
       "Bash(./gradlew clean:*)",
       "Bash(git commit:*)",
       "Bash(del NUL)",
-      "Bash(if exist NUL del NUL)"
+      "Bash(if exist NUL del NUL)",
+      "Bash(.gradlew.bat assembleDebug)",
+      "Bash(cd:*)"
     ],
     "deny": [],
     "ask": []

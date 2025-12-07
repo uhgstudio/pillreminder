@@ -33,7 +33,9 @@ class Converters {
 
     @TypeConverter
     fun fromDayOfWeekList(value: String?): List<DayOfWeek> {
-        return value?.split(",")?.map { DayOfWeek.valueOf(it) } ?: emptyList()
+        return value?.split(",")
+            ?.filter { it.isNotBlank() }
+            ?.map { DayOfWeek.valueOf(it) } ?: emptyList()
     }
 
     @TypeConverter
@@ -44,6 +46,7 @@ class Converters {
     @TypeConverter
     fun fromDayOfWeekSet(value: String?): Set<DayOfWeek> {
         return value?.split(",")
+            ?.filter { it.isNotBlank() }
             ?.map { DayOfWeek.valueOf(it) }
             ?.toSet() ?: emptySet()
     }
@@ -67,7 +70,22 @@ class Converters {
     // ScheduleType 변환기 (v5+)
     @TypeConverter
     fun fromScheduleTypeString(value: String?): ScheduleType {
-        return value?.let { ScheduleType.valueOf(it) } ?: ScheduleType.WEEKLY
+        return when (value) {
+            // 제거된 타입들을 적절한 타입으로 변환
+            "INTERVAL_HOURS" -> ScheduleType.DAILY  // N시간마다 → 매일
+            "WEEKDAY_ONLY" -> ScheduleType.WEEKLY   // 평일만 → 주간 반복
+            "WEEKEND_ONLY" -> ScheduleType.WEEKLY   // 주말만 → 주간 반복
+            "MONTHLY" -> ScheduleType.SPECIFIC_DATES // 매월 → 특정 날짜
+            null -> ScheduleType.WEEKLY
+            else -> {
+                try {
+                    ScheduleType.valueOf(value)
+                } catch (e: IllegalArgumentException) {
+                    // 알 수 없는 타입은 WEEKLY로 fallback
+                    ScheduleType.WEEKLY
+                }
+            }
+        }
     }
 
     @TypeConverter

@@ -1,21 +1,19 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name">Lembrete de Medicamentos</string>
-    <string name="title_home">Meus Medicamentos</string>
+    <string name="app_name">Lembrete de Remédios</string>
+    <string name="title_home">Meus Remédios</string>
     <string name="title_calendar">Calendário</string>
     <string name="title_settings">Configurações</string>
-    <string name="title_alarms">Configuração de Alarmes</string>
-    <string name="title_intake_history">Histórico de Ingestão</string>
+    <string name="title_alarms">Alarmes</string>
+    <string name="title_intake_history">Histórico</string>
 
-    <!-- Alarm related -->
-    <string name="alarm_notification_title">Hora do Medicamento</string>
-    <string name="alarm_notification_text">Hora de tomar %s.</string>
-    <string name="alarm_channel_name">Lembretes de Medicamentos</string>
-    <string name="alarm_channel_description">Notificações para horário de medicamentos</string>
-    <string name="dialog_set_alarm_time">Definir Horário do Alarme</string>
+    <string name="alarm_notification_title">Hora do Remédio</string>
+    <string name="alarm_notification_text">É hora de tomar %s.</string>
+    <string name="alarm_channel_name">Notificação de Remédio</string>
+    <string name="alarm_channel_description">Lembretes para tomar remédios</string>
+    <string name="dialog_set_alarm_time">Definir Hora</string>
 
-    <!-- Buttons -->
-    <string name="btn_add_pill">Adicionar Medicamento</string>
+    <string name="btn_add_pill">Adicionar</string>
     <string name="btn_add_alarm">Adicionar Alarme</string>
     <string name="btn_save">Salvar</string>
     <string name="btn_cancel">Cancelar</string>
@@ -23,109 +21,134 @@
     <string name="btn_select_image">Selecionar Imagem</string>
     <string name="btn_delete">Excluir</string>
     <string name="btn_back">Voltar</string>
-    <string name="btn_take_pill">Marcar como Tomado</string>
+    <string name="btn_take_pill">Tomado</string>
     <string name="btn_skip_pill">Pular</string>
-    <string name="btn_snooze">Lembrar em 10 min</string>
+    <string name="btn_snooze">Soneca 10m</string>
     <string name="btn_delete_alarm">Excluir Alarme</string>
 
-    <!-- Input fields -->
-    <string name="hint_pill_name">Nome do Medicamento</string>
-    <string name="hint_pill_memo">Notas (Opcional)</string>
+    <string name="hint_pill_name">Nome do remédio</string>
+    <string name="hint_pill_memo">Nota (Opcional)</string>
 
-    <!-- Error messages -->
-    <string name="error_pill_name_empty">Por favor, insira o nome do medicamento.</string>
-    <string name="error_alarm_time_invalid">Por favor, selecione um horário válido.</string>
-    <string name="error_camera_permission">Permissão de câmera é necessária.</string>
+    <string name="error_pill_name_empty">Por favor, insira o nome do remédio.</string>
+    <string name="error_alarm_time_invalid">Selecione uma hora válida.</string>
+    <string name="error_camera_permission">Permissão da câmera é necessária.</string>
     <string name="error_storage_permission">Permissão de armazenamento é necessária.</string>
 
-    <!-- Dialogs -->
     <string name="dialog_select_image_title">Selecionar Imagem</string>
     <string name="dialog_camera">Câmera</string>
     <string name="dialog_gallery">Galeria</string>
-    <string name="dialog_delete_pill_title">Excluir Medicamento</string>
-    <string name="dialog_delete_pill_message">Excluir este medicamento? Todos os alarmes relacionados também serão excluídos.</string>
+    <string name="dialog_delete_pill_title">Excluir Remédio</string>
+    <string name="dialog_delete_pill_message">Deseja excluir este remédio? Todos os alarmes relacionados também serão excluídos.</string>
     <string name="dialog_delete_alarm_title">Excluir Alarme</string>
-    <string name="dialog_delete_alarm_message">Excluir este alarme?</string>
-    <string name="dialog_select_pill_title">Selecionar Medicamento</string>
+    <string name="dialog_delete_alarm_message">Deseja excluir este alarme?</string>
+    <string name="dialog_select_pill_title">Selecionar Remédio</string>
 
-    <!-- Intake status -->
     <string name="status_taken">Tomado</string>
     <string name="status_skipped">Pulado</string>
     <string name="status_missed">Perdido</string>
 
-    <!-- Home screen -->
-    <string name="empty_pill_list">Nenhum medicamento registrado.\nToque no botão abaixo para adicionar um.</string>
+    <string name="empty_pill_list">Nenhum remédio cadastrado.\nToque no botão para adicionar.</string>
+    <string name="home_today_alarms">Alarmes de Hoje</string>
+    <string name="home_today_stats">Estatísticas de Hoje</string>
+    <string name="home_my_pills">Meus Remédios</string>
+    <string name="home_alarm_count">%d</string>
+    <string name="home_intake_rate">%d%%</string>
+    <string name="home_taken_count">%1$d/%2$d Tomados</string>
+    <string name="home_alarm_upcoming">Próximo</string>
+    <string name="home_alarm_taken">Tomado</string>
+    <string name="home_alarm_missed">Perdido</string>
+    <string name="home_missed_alarms_warning">Você perdeu %d alarmes</string>
+    <string name="home_no_alarms_today">Sem alarmes para hoje</string>
 
-    <!-- Add/Edit medication -->
-    <string name="title_add_pill">Adicionar Medicamento</string>
-    <string name="title_edit_pill">Editar Medicamento</string>
-    <string name="edit_pill">Editar Medicamento</string>
+    <string name="title_add_pill">Adicionar Remédio</string>
+    <string name="title_edit_pill">Editar Remédio</string>
+    <string name="edit_pill">Editar</string>
     <string name="save">Salvar</string>
-    <string name="pill_name">Nome do Medicamento</string>
+    <string name="pill_name">Nome</string>
     <string name="description">Descrição</string>
     <string name="dosage">Dosagem</string>
 
-    <!-- Alarms -->
     <string name="title_add_alarm">Adicionar Alarme</string>
     <string name="title_edit_alarm">Editar Alarme</string>
-    <string name="label_repeat_days">Dias de Repetição</string>
-    <string name="channel_name">Lembretes de Medicamentos</string>
-    <string name="channel_description">Notificações para horário de medicamentos.</string>
+    <string name="label_repeat_days">Dias de repetição</string>
+    <string name="channel_name">Aviso de Medicamento</string>
+    <string name="channel_description">Notificações para horário de remédios.</string>
 
-    <!-- Messages -->
-    <string name="msg_no_alarms">Nenhum alarme configurado.</string>
-    <string name="msg_add_alarm_hint">Toque em + para adicionar um alarme.</string>
-    <string name="msg_no_intake_history">Nenhum histórico de ingestão.</string>
+    <string name="schedule_daily">Diário</string>
+    <string name="schedule_weekly">Semanal</string>
+    <string name="schedule_interval_days">A cada N dias</string>
+    <string name="schedule_interval_hours">A cada N horas</string>
+    <string name="schedule_specific_dates">Datas Específicas</string>
+    <string name="schedule_monthly">Mensal</string>
+    <string name="schedule_weekday_only">Apenas dias úteis</string>
+    <string name="schedule_weekend_only">Apenas fim de semana</string>
 
-    <!-- Settings screen -->
+    <string name="label_interval_hours">Intervalo de horas</string>
+    <string name="label_start_time">Hora de início</string>
+    <string name="label_specific_dates">Escolher datas</string>
+    <string name="label_monthly_days">Dias do mês</string>
+    <string name="label_interval_hours_value">A cada %d horas</string>
+    <string name="hint_weekday_only">Repete de segunda a sexta</string>
+    <string name="hint_weekend_only">Repete sábado e domingo</string>
+    <string name="btn_add_date">Adicionar data</string>
+    <string name="msg_no_dates_selected">Selecione pelo menos uma data</string>
+    <string name="msg_no_monthly_days_selected">Selecione pelo menos um dia</string>
+
+    <string name="msg_no_alarms">Nenhum alarme registrado.</string>
+    <string name="msg_add_alarm_hint">Toque em + para adicionar alarme.</string>
+    <string name="msg_no_intake_history">Sem histórico.</string>
+
+    <string name="calendar_monthly_stats">Status de %s</string>
+    <string name="calendar_adherence_rate">Taxa: %d%%</string>
+    <string name="calendar_stats_detail">Tomados: %1$d | Pulados: %2$d</string>
+    <string name="calendar_legend_title">Legenda</string>
+    <string name="calendar_legend_taken">Tomado</string>
+    <string name="calendar_legend_skipped">Pulado</string>
+    <string name="calendar_filter_all">Todos</string>
+
     <string name="settings_premium_status">Status Premium</string>
     <string name="settings_premium_user">Usuário Premium</string>
     <string name="settings_free_user">Usuário Gratuito</string>
     <string name="btn_remove_ads">Remover Anúncios</string>
     <string name="btn_restore_purchases">Restaurar Compras</string>
 
-    <!-- Ad settings -->
     <string name="settings_ad_settings">Configurações de Anúncios</string>
-    <string name="settings_ad_screen_visit">Anúncio ao Visitar Tela</string>
-    <string name="settings_ad_alarm_count">Anúncio ao Registrar Alarme</string>
-    <string name="settings_ad_app_launch">Anúncio ao Iniciar App</string>
-    <string name="settings_ad_time_based">Anúncio Baseado em Tempo</string>
-    <string name="settings_ad_threshold">Frequência de Exibição</string>
-    <string name="settings_ad_threshold_description">Exibir anúncio a cada %d vezes</string>
-    <string name="settings_ad_time_interval">Intervalo de Tempo</string>
-    <string name="settings_ad_time_interval_description">Exibir anúncio a cada %d horas</string>
+    <string name="settings_ad_screen_visit">Anúncios ao visitar tela</string>
+    <string name="settings_ad_alarm_count">Anúncios ao definir alarme</string>
+    <string name="settings_ad_app_launch">Anúncios ao abrir app</string>
+    <string name="settings_ad_time_based">Anúncios por tempo</string>
+    <string name="settings_ad_threshold">Frequência</string>
+    <string name="settings_ad_threshold_description">Mostrar anúncio a cada %d vezes</string>
+    <string name="settings_ad_time_interval">Intervalo de tempo</string>
+    <string name="settings_ad_time_interval_description">Mostrar anúncio a cada %d horas</string>
     <string name="settings_ad_test_title">Teste de Anúncios</string>
-    <string name="settings_ad_test_description">Teste a funcionalidade de anúncios. Carregue o anúncio primeiro, depois toque no botão de exibir.</string>
+    <string name="settings_ad_test_description">Teste os anúncios. Carregue primeiro, depois mostre.</string>
     <string name="btn_ad_load">Carregar Anúncio</string>
-    <string name="btn_ad_show">Exibir Anúncio</string>
+    <string name="btn_ad_show">Mostrar Anúncio</string>
 
-    <!-- Data management -->
-    <string name="settings_data_management">Gerenciamento de Dados</string>
+    <string name="settings_data_management">Gestão de Dados</string>
     <string name="btn_export_data">Exportar Dados</string>
     <string name="btn_import_data">Importar Dados</string>
     <string name="export_success">Dados exportados com sucesso.</string>
     <string name="export_error">Falha ao exportar: %s</string>
-    <string name="import_success">Importados %1$d medicamentos, %2$d alarmes, %3$d registros de ingestão.</string>
+    <string name="import_success">Importado: %1$d remédios, %2$d alarmes, %3$d registros.</string>
     <string name="import_error">Falha ao importar: %s</string>
     <string name="import_file_invalid">Formato de arquivo inválido.</string>
 
-    <!-- Purchase -->
     <string name="purchase_title">Remover Anúncios</string>
-    <string name="purchase_description">Compra única para remover permanentemente todos os anúncios.</string>
+    <string name="purchase_description">Compra única para remover anúncios permanentemente.</string>
     <string name="purchase_price">Preço: %s</string>
-    <string name="purchase_success">Compra concluída!</string>
+    <string name="purchase_success">Compra realizada com sucesso!</string>
     <string name="purchase_error">Falha na compra: %s</string>
     <string name="purchase_pending">Compra pendente.</string>
     <string name="restore_success">Compras restauradas.</string>
-    <string name="restore_no_purchases">Nenhuma compra para restaurar.</string>
+    <string name="restore_no_purchases">Nada para restaurar.</string>
     <string name="restore_error">Falha ao restaurar: %s</string>
 
-    <!-- About -->
     <string name="settings_about">Sobre</string>
     <string name="settings_app_version">Versão do App</string>
     <string name="settings_privacy_policy">Política de Privacidade</string>
 
-    <!-- General -->
     <string name="loading">Carregando…</string>
     <string name="ok">OK</string>
     <string name="close">Fechar</string>

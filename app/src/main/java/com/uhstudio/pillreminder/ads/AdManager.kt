@@ -25,8 +25,8 @@ class AdManager private constructor(private val context: Context) {
 
         // Google 공식 테스트 Interstitial Ad Unit ID
         // 실제 배포 시: ca-app-pub-5530707072224199/7065363535 로 변경
-        //private const val AD_UNIT_ID_INTERSTITIAL = "ca-app-pub-3940256099942544/1033173712"
-        private const val AD_UNIT_ID_INTERSTITIAL = "ca-app-pub-5530707072224199/7065363535"
+        private const val AD_UNIT_ID_INTERSTITIAL = "ca-app-pub-3940256099942544/1033173712"
+        //private const val AD_UNIT_ID_INTERSTITIAL = "ca-app-pub-5530707072224199/7065363535"
 
 
         @Volatile

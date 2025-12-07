@@ -8,7 +8,6 @@ import timber.log.Timber
 import java.time.DayOfWeek
 import java.time.LocalDate
 import java.time.LocalDateTime
-import java.time.LocalTime
 import java.time.temporal.ChronoUnit
 
 /**
@@ -51,11 +50,7 @@ object ScheduleCalculator {
                 ScheduleType.DAILY -> calculateDaily(pillAlarm, effectiveFrom)
                 ScheduleType.WEEKLY -> calculateWeekly(pillAlarm, effectiveFrom)
                 ScheduleType.INTERVAL_DAYS -> calculateIntervalDays(pillAlarm, effectiveFrom)
-                ScheduleType.INTERVAL_HOURS -> calculateIntervalHours(pillAlarm, effectiveFrom)
                 ScheduleType.SPECIFIC_DATES -> calculateSpecificDates(pillAlarm, effectiveFrom)
-                ScheduleType.MONTHLY -> calculateMonthly(pillAlarm, effectiveFrom)
-                ScheduleType.WEEKDAY_ONLY -> calculateWeekdayOnly(pillAlarm, effectiveFrom)
-                ScheduleType.WEEKEND_ONLY -> calculateWeekendOnly(pillAlarm, effectiveFrom)
                 ScheduleType.CUSTOM -> null // 향후 구현
             }
 
@@ -171,34 +166,6 @@ object ScheduleCalculator {
     }
 
     /**
-     * N시간마다 복용
-     */
-    private fun calculateIntervalHours(pillAlarm: PillAlarm, from: LocalDateTime): LocalDateTime? {
-        val config = try {
-            json.decodeFromString<ScheduleConfig.IntervalHours>(
-                pillAlarm.scheduleConfig ?: return null
-            )
-        } catch (e: Exception) {
-            Timber.e(e, "Failed to parse IntervalHours config")
-            return null
-        }
-
-        val startTime = config.getStartTimeAsLocalTime()
-        val startDateTime = from.toLocalDate().atTime(startTime)
-
-        // 오늘 시작 시간이 아직 안 지났으면
-        if (startDateTime.isAfter(from)) {
-            return startDateTime
-        }
-
-        // 시작 시간부터 지난 시간 계산
-        val hoursSinceStart = ChronoUnit.HOURS.between(startDateTime, from)
-        val nextInterval = ((hoursSinceStart / config.intervalHours) + 1) * config.intervalHours
-
-        return startDateTime.plusHours(nextInterval)
-    }
-
-    /**
      * 특정 날짜들에만 복용
      */
     private fun calculateSpecificDates(pillAlarm: PillAlarm, from: LocalDateTime): LocalDateTime? {
@@ -223,80 +190,5 @@ object ScheduleCalculator {
         }
 
         return null
-    }
-
-    /**
-     * 월 단위 반복
-     */
-    private fun calculateMonthly(pillAlarm: PillAlarm, from: LocalDateTime): LocalDateTime? {
-        val config = try {
-            json.decodeFromString<ScheduleConfig.Monthly>(
-                pillAlarm.scheduleConfig ?: return null
-            )
-        } catch (e: Exception) {
-            Timber.e(e, "Failed to parse Monthly config")
-            return null
-        }
-
-        val daysOfMonth = config.daysOfMonth.sorted()
-
-        // 이번 달에서 다음 복용일 찾기
-        for (day in daysOfMonth) {
-            if (day > from.dayOfMonth) {
-                val nextDate = from.toLocalDate().withDayOfMonth(day)
-                val alarmTime = nextDate.atTime(pillAlarm.hour, pillAlarm.minute)
-                if (alarmTime.isAfter(from)) {
-                    return alarmTime
-                }
-            }
-        }
-
-        // 다음 달 첫 번째 복용일
-        val nextMonth = from.toLocalDate().plusMonths(1)
-        val firstDay = daysOfMonth.firstOrNull() ?: return null
-        return nextMonth.withDayOfMonth(firstDay)
-            .atTime(pillAlarm.hour, pillAlarm.minute)
-    }
-
-    /**
-     * 평일만 복용 (월~금)
-     */
-    private fun calculateWeekdayOnly(pillAlarm: PillAlarm, from: LocalDateTime): LocalDateTime {
-        val todayAlarmTime = from.toLocalDate()
-            .atTime(pillAlarm.hour, pillAlarm.minute)
-
-        // 오늘이 평일이고 아직 시간 안 지났으면
-        if (from.dayOfWeek.value in 1..5 && todayAlarmTime.isAfter(from)) {
-            return todayAlarmTime
-        }
-
-        // 다음 평일 찾기
-        var nextDate = from.toLocalDate().plusDays(1)
-        while (nextDate.dayOfWeek.value !in 1..5) {
-            nextDate = nextDate.plusDays(1)
-        }
-
-        return nextDate.atTime(pillAlarm.hour, pillAlarm.minute)
-    }
-
-    /**
-     * 주말만 복용 (토~일)
-     */
-    private fun calculateWeekendOnly(pillAlarm: PillAlarm, from: LocalDateTime): LocalDateTime {
-        val todayAlarmTime = from.toLocalDate()
-            .atTime(pillAlarm.hour, pillAlarm.minute)
-
-        // 오늘이 주말이고 아직 시간 안 지났으면
-        if (from.dayOfWeek.value in 6..7 && todayAlarmTime.isAfter(from)) {
-            return todayAlarmTime
-        }
-
-        // 다음 주말 찾기
-        var nextDate = from.toLocalDate().plusDays(1)
-        while (nextDate.dayOfWeek.value !in 6..7) {
-            nextDate = nextDate.plusDays(1)
-        }
-
-        return nextDate.atTime(pillAlarm.hour, pillAlarm.minute)
     }
 }

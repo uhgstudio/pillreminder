@@ -1,5 +1,6 @@
 package com.uhstudio.pillreminder.ui.alarm
 
+import android.util.Log
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -14,10 +15,15 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.uhstudio.pillreminder.data.model.PillAlarm
+import com.uhstudio.pillreminder.data.model.ScheduleConfig
+import com.uhstudio.pillreminder.data.model.ScheduleType
+import com.uhstudio.pillreminder.util.toKoreanShort
+import kotlinx.serialization.json.Json
 import java.time.DayOfWeek
 import java.time.format.TextStyle
 import java.util.*
 import com.uhstudio.pillreminder.R
+import timber.log.Timber
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -94,6 +100,10 @@ fun AlarmItem(
     onDeleteClick: () -> Unit,
     onEnabledChange: (Boolean) -> Unit
 ) {
+    val scheduleDescription = remember(alarm) {
+        getScheduleDescription(alarm)
+    }
+
     Card(
         modifier = Modifier.fillMaxWidth()
     ) {
@@ -110,9 +120,7 @@ fun AlarmItem(
                     style = MaterialTheme.typography.headlineSmall
                 )
                 Text(
-                    text = alarm.repeatDays.joinToString(", ") {
-                        it.getDisplayName(TextStyle.SHORT, Locale.getDefault())
-                    },
+                    text = scheduleDescription,
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
@@ -134,6 +142,84 @@ fun AlarmItem(
                     )
                 }
             }
+        }
+    }
+}
+
+private fun getScheduleDescription(alarm: PillAlarm): String {
+    timber.log.Timber.d("AlarmScreen getScheduleDescription: alarmId=${alarm.id}, scheduleType=${alarm.scheduleType}, scheduleConfig=${alarm.scheduleConfig}, repeatDays=${alarm.repeatDays}")
+
+    return try {
+        Log.d(  "AlarmScreen", "AlarmItem: scheduleType=${alarm.scheduleType}")
+        when (alarm.scheduleType) {
+            ScheduleType.DAILY -> {
+                timber.log.Timber.d("AlarmScreen: DAILY type")
+                "매일"
+            }
+            ScheduleType.WEEKLY -> {
+                timber.log.Timber.d("AlarmScreen: WEEKLY type, trying to parse scheduleConfig")
+
+                // 먼저 scheduleConfig 시도
+                val days = if (alarm.scheduleConfig != null && alarm.scheduleConfig.isNotBlank()) {
+                    try {
+                        val config = Json { ignoreUnknownKeys = true }.decodeFromString<ScheduleConfig.Weekly>(alarm.scheduleConfig)
+                        val parsedDays = config.toDayOfWeekSet()
+                        timber.log.Timber.d("AlarmScreen: Parsed days from scheduleConfig: $parsedDays")
+                        parsedDays
+                    } catch (e: Exception) {
+                        timber.log.Timber.e(e, "AlarmScreen: Failed to parse scheduleConfig, falling back to repeatDays")
+                        @Suppress("DEPRECATION")
+                        alarm.repeatDays
+                    }
+                } else {
+                    timber.log.Timber.d("AlarmScreen: No scheduleConfig, using repeatDays: ${alarm.repeatDays}")
+                    @Suppress("DEPRECATION")
+                    alarm.repeatDays
+                }
+
+                timber.log.Timber.d("AlarmScreen: Final days for WEEKLY: $days")
+                when {
+                    days.isEmpty() -> {
+                        timber.log.Timber.w("AlarmScreen: Days is empty!")
+                        "반복 없음"
+                    }
+                    days.size == 7 -> "매일"
+                    else -> days.sortedBy { it.value }.joinToString(" ") { it.toKoreanShort() }
+                }
+            }
+            ScheduleType.INTERVAL_DAYS -> {
+                timber.log.Timber.d("AlarmScreen: INTERVAL_DAYS type")
+                if (alarm.scheduleConfig == null || alarm.scheduleConfig.isBlank()) {
+                    return "N일 마다"
+                }
+                val config = Json { ignoreUnknownKeys = true }.decodeFromString<ScheduleConfig.IntervalDays>(alarm.scheduleConfig)
+                "${config.intervalDays}일 마다"
+            }
+            ScheduleType.SPECIFIC_DATES -> {
+                timber.log.Timber.d("AlarmScreen: SPECIFIC_DATES type")
+                if (alarm.scheduleConfig == null || alarm.scheduleConfig.isBlank()) {
+                    return "특정 날짜"
+                }
+                val config = Json { ignoreUnknownKeys = true }.decodeFromString<ScheduleConfig.SpecificDates>(alarm.scheduleConfig)
+                val dates = config.getDatesAsLocalDateSet()
+                if (dates.isEmpty()) {
+                    "특정 날짜 (미설정)"
+                } else {
+                    "특정 날짜 (${dates.size}개)"
+                }
+            }
+            ScheduleType.CUSTOM -> "커스텀"
+        }
+    } catch (e: Exception) {
+        timber.log.Timber.e(e, "AlarmScreen: Exception in getScheduleDescription")
+        // 파싱 실패 시 레거시 방식으로 fallback
+        @Suppress("DEPRECATION")
+        val days = alarm.repeatDays
+        timber.log.Timber.d("AlarmScreen: Fallback to repeatDays: $days")
+        when {
+            days.isEmpty() -> "반복 없음"
+            days.size == 7 -> "매일"
+            else -> days.sortedBy { it.value }.joinToString(" ") { it.toKoreanShort() }
         }
     }
 }

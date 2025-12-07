@@ -5,6 +5,12 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.expandVertically
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.shrinkVertically
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Delete
@@ -12,6 +18,8 @@ import androidx.compose.material.icons.filled.Medication
 import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.Schedule
+import androidx.compose.material.icons.filled.ExpandLess
+import androidx.compose.material.icons.filled.ExpandMore
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -121,20 +129,6 @@ fun HomeScreen(
                     contentPadding = PaddingValues(vertical = 8.dp),
                     verticalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
-                    // 미복용 알람 경고 배너
-                    if (missedAlarmsCount > 0) {
-                        item {
-                            MissedAlarmsWarningBanner(count = missedAlarmsCount)
-                        }
-                    }
-
-                    // 오늘의 알람 섹션
-                    if (todayAlarms.isNotEmpty()) {
-                        item {
-                            TodayAlarmsSection(alarms = todayAlarms)
-                        }
-                    }
-
                     // 복용 통계 카드
                     if (todayAlarms.isNotEmpty()) {
                         item {
@@ -320,6 +314,8 @@ fun MissedAlarmsWarningBanner(count: Int) {
 
 @Composable
 fun TodayAlarmsSection(alarms: List<TodayAlarm>) {
+    var isExpanded by remember { mutableStateOf(true) }
+
     Card(
         modifier = Modifier.fillMaxWidth()
     ) {
@@ -328,7 +324,9 @@ fun TodayAlarmsSection(alarms: List<TodayAlarm>) {
             verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
             Row(
-                modifier = Modifier.fillMaxWidth(),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clickable { isExpanded = !isExpanded },
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
@@ -336,25 +334,43 @@ fun TodayAlarmsSection(alarms: List<TodayAlarm>) {
                     text = stringResource(R.string.home_today_alarms),
                     style = MaterialTheme.typography.titleMedium
                 )
-                Text(
-                    text = stringResource(R.string.home_alarm_count, alarms.size),
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.primary
-                )
+                Row(
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text(
+                        text = stringResource(R.string.home_alarm_count, alarms.size),
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.primary
+                    )
+                    Icon(
+                        imageVector = if (isExpanded) Icons.Default.ExpandLess else Icons.Default.ExpandMore,
+                        contentDescription = if (isExpanded) "접기" else "펼치기",
+                        tint = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
             }
 
-            HorizontalDivider(modifier = Modifier.padding(vertical = 4.dp))
+            AnimatedVisibility(
+                visible = isExpanded,
+                enter = expandVertically() + fadeIn(),
+                exit = shrinkVertically() + fadeOut()
+            ) {
+                Column {
+                    HorizontalDivider(modifier = Modifier.padding(vertical = 4.dp))
 
-            if (alarms.isEmpty()) {
-                Text(
-                    text = stringResource(R.string.home_no_alarms_today),
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    modifier = Modifier.padding(vertical = 8.dp)
-                )
-            } else {
-                alarms.forEach { todayAlarm ->
-                    TodayAlarmItem(todayAlarm)
+                    if (alarms.isEmpty()) {
+                        Text(
+                            text = stringResource(R.string.home_no_alarms_today),
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            modifier = Modifier.padding(vertical = 8.dp)
+                        )
+                    } else {
+                        alarms.forEach { todayAlarm ->
+                            TodayAlarmItem(todayAlarm)
+                        }
+                    }
                 }
             }
         }

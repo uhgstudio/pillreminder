@@ -5,6 +5,8 @@ import android.content.Context
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Check
@@ -57,15 +59,8 @@ fun AddAlarmScreen(
     var intervalDays by remember { mutableStateOf(2) }
     var intervalStartDate by remember { mutableStateOf(LocalDate.now()) }
 
-    // INTERVAL_HOURS용
-    var intervalHours by remember { mutableStateOf(6) }
-    var intervalStartTime by remember { mutableStateOf(LocalTime.now()) }
-
     // SPECIFIC_DATES용
     var specificDates by remember { mutableStateOf(listOf<LocalDate>()) }
-
-    // MONTHLY용
-    var monthlyDays by remember { mutableStateOf(setOf<Int>()) }
 
     // 복용 기간
     var startDate by remember { mutableStateOf<LocalDate?>(null) }
@@ -74,7 +69,6 @@ fun AddAlarmScreen(
     var alarmSoundUri by remember { mutableStateOf<String?>(null) }
     var alarmSoundName by remember { mutableStateOf("기본 알람음") }
     var showTimePicker by remember { mutableStateOf(false) }
-    var showStartTimePicker by remember { mutableStateOf(false) }
     var showDaySelector by remember { mutableStateOf(false) }
     var showPermissionDialog by remember { mutableStateOf(false) }
     var showSoundPicker by remember { mutableStateOf(false) }
@@ -86,13 +80,62 @@ fun AddAlarmScreen(
     LaunchedEffect(alarmId) {
         if (alarmId != null) {
             viewModel.getAlarm(alarmId)?.let { alarm ->
+                timber.log.Timber.d("AddAlarmScreen: Loading alarm - scheduleType=${alarm.scheduleType}, scheduleConfig=${alarm.scheduleConfig}")
+
                 hour = alarm.hour
                 minute = alarm.minute
                 scheduleType = alarm.scheduleType
+                startDate = alarm.startDate
+                endDate = alarm.endDate
 
-                // 기존 repeatDays 또는 scheduleConfig에서 요일 정보 로드
-                @Suppress("DEPRECATION")
-                selectedDays = alarm.repeatDays
+                // scheduleConfig에서 설정 정보 파싱
+                try {
+                    when (alarm.scheduleType) {
+                        ScheduleType.WEEKLY -> {
+                            if (alarm.scheduleConfig != null) {
+                                val json = kotlinx.serialization.json.Json { ignoreUnknownKeys = true }
+                                val config = json.decodeFromString<ScheduleConfig.Weekly>(alarm.scheduleConfig)
+                                selectedDays = config.toDayOfWeekSet()
+                                timber.log.Timber.d("AddAlarmScreen: Loaded WEEKLY days from config: $selectedDays")
+                            } else {
+                                // Fallback to deprecated repeatDays
+                                @Suppress("DEPRECATION")
+                                selectedDays = alarm.repeatDays
+                                timber.log.Timber.d("AddAlarmScreen: Loaded WEEKLY days from repeatDays: $selectedDays")
+                            }
+                        }
+                        ScheduleType.INTERVAL_DAYS -> {
+                            if (alarm.scheduleConfig != null) {
+                                val json = kotlinx.serialization.json.Json { ignoreUnknownKeys = true }
+                                val config = json.decodeFromString<ScheduleConfig.IntervalDays>(alarm.scheduleConfig)
+                                intervalDays = config.intervalDays
+                                intervalStartDate = config.getStartDateAsLocalDate()
+                                timber.log.Timber.d("AddAlarmScreen: Loaded INTERVAL_DAYS: $intervalDays days, start=$intervalStartDate")
+                            }
+                        }
+                        ScheduleType.SPECIFIC_DATES -> {
+                            if (alarm.scheduleConfig != null) {
+                                val json = kotlinx.serialization.json.Json { ignoreUnknownKeys = true }
+                                val config = json.decodeFromString<ScheduleConfig.SpecificDates>(alarm.scheduleConfig)
+                                specificDates = config.getDatesAsLocalDateSet().sorted()
+                                timber.log.Timber.d("AddAlarmScreen: Loaded SPECIFIC_DATES: ${specificDates.size} dates")
+                            }
+                        }
+                        ScheduleType.DAILY -> {
+                            timber.log.Timber.d("AddAlarmScreen: DAILY type, no additional config needed")
+                        }
+                        else -> {
+                            timber.log.Timber.w("AddAlarmScreen: Unknown schedule type: ${alarm.scheduleType}")
+                        }
+                    }
+                } catch (e: Exception) {
+                    timber.log.Timber.e(e, "AddAlarmScreen: Failed to parse scheduleConfig")
+                    // Fallback to deprecated repeatDays for WEEKLY
+                    if (alarm.scheduleType == ScheduleType.WEEKLY) {
+                        @Suppress("DEPRECATION")
+                        selectedDays = alarm.repeatDays
+                    }
+                }
 
                 alarmSoundUri = alarm.alarmSoundUri
 
@@ -155,6 +198,7 @@ fun AddAlarmScreen(
                 modifier = Modifier
                     .fillMaxSize()
                     .padding(paddingValues)
+                    .verticalScroll(rememberScrollState())
                     .padding(16.dp),
                 verticalArrangement = Arrangement.spacedBy(16.dp)
             ) {
@@ -192,7 +236,7 @@ fun AddAlarmScreen(
                         modifier = Modifier.padding(bottom = 8.dp)
                     )
 
-                    // 첫 번째 행: 기본 타입
+                    // 첫 번째 행: 매일, 주간 반복
                     Row(
                         modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.spacedBy(8.dp)
@@ -203,73 +247,60 @@ fun AddAlarmScreen(
                                 scheduleType = ScheduleType.DAILY
                                 selectedDays = emptySet()
                             },
-                            label = { Text(stringResource(R.string.schedule_daily)) },
+                            label = {
+                                Text(
+                                    text = stringResource(R.string.schedule_daily),
+                                    modifier = Modifier.fillMaxWidth(),
+                                    textAlign = androidx.compose.ui.text.style.TextAlign.Center
+                                )
+                            },
                             modifier = Modifier.weight(1f)
                         )
 
                         FilterChip(
                             selected = scheduleType == ScheduleType.WEEKLY,
                             onClick = { scheduleType = ScheduleType.WEEKLY },
-                            label = { Text(stringResource(R.string.schedule_weekly)) },
-                            modifier = Modifier.weight(1f)
-                        )
-
-                        FilterChip(
-                            selected = scheduleType == ScheduleType.INTERVAL_DAYS,
-                            onClick = { scheduleType = ScheduleType.INTERVAL_DAYS },
-                            label = { Text(stringResource(R.string.schedule_interval_days)) },
+                            label = {
+                                Text(
+                                    text = stringResource(R.string.schedule_weekly),
+                                    modifier = Modifier.fillMaxWidth(),
+                                    textAlign = androidx.compose.ui.text.style.TextAlign.Center
+                                )
+                            },
                             modifier = Modifier.weight(1f)
                         )
                     }
 
-                    // 두 번째 행: 시간/날짜 기반
+                    // 두 번째 행: N일마다, 특정날짜
                     Row(
                         modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
                         FilterChip(
-                            selected = scheduleType == ScheduleType.INTERVAL_HOURS,
-                            onClick = { scheduleType = ScheduleType.INTERVAL_HOURS },
-                            label = { Text(stringResource(R.string.schedule_interval_hours)) },
+                            selected = scheduleType == ScheduleType.INTERVAL_DAYS,
+                            onClick = { scheduleType = ScheduleType.INTERVAL_DAYS },
+                            label = {
+                                Text(
+                                    text = stringResource(R.string.schedule_interval_days),
+                                    modifier = Modifier.fillMaxWidth(),
+                                    textAlign = androidx.compose.ui.text.style.TextAlign.Center
+                                )
+                            },
                             modifier = Modifier.weight(1f)
                         )
 
                         FilterChip(
                             selected = scheduleType == ScheduleType.SPECIFIC_DATES,
                             onClick = { scheduleType = ScheduleType.SPECIFIC_DATES },
-                            label = { Text(stringResource(R.string.schedule_specific_dates)) },
+                            label = {
+                                Text(
+                                    text = stringResource(R.string.schedule_specific_dates),
+                                    modifier = Modifier.fillMaxWidth(),
+                                    textAlign = androidx.compose.ui.text.style.TextAlign.Center
+                                )
+                            },
                             modifier = Modifier.weight(1f)
                         )
-
-                        FilterChip(
-                            selected = scheduleType == ScheduleType.MONTHLY,
-                            onClick = { scheduleType = ScheduleType.MONTHLY },
-                            label = { Text(stringResource(R.string.schedule_monthly)) },
-                            modifier = Modifier.weight(1f)
-                        )
-                    }
-
-                    // 세 번째 행: 편의 타입
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.spacedBy(8.dp)
-                    ) {
-                        FilterChip(
-                            selected = scheduleType == ScheduleType.WEEKDAY_ONLY,
-                            onClick = { scheduleType = ScheduleType.WEEKDAY_ONLY },
-                            label = { Text(stringResource(R.string.schedule_weekday_only)) },
-                            modifier = Modifier.weight(1f)
-                        )
-
-                        FilterChip(
-                            selected = scheduleType == ScheduleType.WEEKEND_ONLY,
-                            onClick = { scheduleType = ScheduleType.WEEKEND_ONLY },
-                            label = { Text(stringResource(R.string.schedule_weekend_only)) },
-                            modifier = Modifier.weight(1f)
-                        )
-
-                        // 빈 공간을 채우기 위한 Spacer
-                        Spacer(modifier = Modifier.weight(1f))
                     }
                 }
             }
@@ -413,98 +444,6 @@ fun AddAlarmScreen(
                 }
             }
 
-            // N시간마다 설정 (INTERVAL_HOURS 타입일 때만 표시)
-            if (scheduleType == ScheduleType.INTERVAL_HOURS) {
-                Card(
-                    modifier = Modifier.fillMaxWidth()
-                ) {
-                    Column(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(16.dp),
-                        verticalArrangement = Arrangement.spacedBy(12.dp)
-                    ) {
-                        Text(
-                            text = stringResource(R.string.label_interval_hours),
-                            style = MaterialTheme.typography.bodyLarge
-                        )
-
-                        // 시간 간격 선택
-                        Row(
-                            modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.SpaceBetween,
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            Text(
-                                text = "매",
-                                style = MaterialTheme.typography.bodyMedium
-                            )
-                            Row(
-                                horizontalArrangement = Arrangement.spacedBy(8.dp),
-                                verticalAlignment = Alignment.CenterVertically
-                            ) {
-                                FilledTonalButton(
-                                    onClick = { if (intervalHours > 1) intervalHours-- },
-                                    enabled = intervalHours > 1
-                                ) {
-                                    Text("-")
-                                }
-                                Text(
-                                    text = "$intervalHours 시간",
-                                    style = MaterialTheme.typography.titleMedium,
-                                    modifier = Modifier.width(80.dp),
-                                    textAlign = androidx.compose.ui.text.style.TextAlign.Center
-                                )
-                                FilledTonalButton(
-                                    onClick = { if (intervalHours < 24) intervalHours++ },
-                                    enabled = intervalHours < 24
-                                ) {
-                                    Text("+")
-                                }
-                            }
-                            Text(
-                                text = "마다",
-                                style = MaterialTheme.typography.bodyMedium
-                            )
-                        }
-
-                        HorizontalDivider()
-
-                        // 시작 시간 선택
-                        Row(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .clickable {
-                                    showStartTimePicker = true
-                                }
-                                .padding(vertical = 8.dp),
-                            horizontalArrangement = Arrangement.SpaceBetween,
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            Text(
-                                text = stringResource(R.string.label_start_time),
-                                style = MaterialTheme.typography.bodyMedium
-                            )
-                            Row(
-                                horizontalArrangement = Arrangement.spacedBy(8.dp),
-                                verticalAlignment = Alignment.CenterVertically
-                            ) {
-                                Text(
-                                    text = intervalStartTime.format(DateTimeFormatter.ofPattern("HH:mm")),
-                                    style = MaterialTheme.typography.bodyMedium,
-                                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                                )
-                                Icon(
-                                    imageVector = Icons.Default.ChevronRight,
-                                    contentDescription = null,
-                                    tint = MaterialTheme.colorScheme.onSurfaceVariant
-                                )
-                            }
-                        }
-                    }
-                }
-            }
-
             // 특정 날짜 설정 (SPECIFIC_DATES 타입일 때만 표시)
             if (scheduleType == ScheduleType.SPECIFIC_DATES) {
                 Card(
@@ -576,103 +515,6 @@ fun AddAlarmScreen(
                                 }
                             }
                         }
-                    }
-                }
-            }
-
-            // 매월 특정일 설정 (MONTHLY 타입일 때만 표시)
-            @OptIn(ExperimentalLayoutApi::class)
-            if (scheduleType == ScheduleType.MONTHLY) {
-                Card(
-                    modifier = Modifier.fillMaxWidth()
-                ) {
-                    Column(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(16.dp),
-                        verticalArrangement = Arrangement.spacedBy(12.dp)
-                    ) {
-                        Text(
-                            text = stringResource(R.string.label_monthly_days),
-                            style = MaterialTheme.typography.bodyLarge
-                        )
-
-                        if (monthlyDays.isEmpty()) {
-                            Text(
-                                text = stringResource(R.string.msg_no_monthly_days_selected),
-                                style = MaterialTheme.typography.bodyMedium,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                                modifier = Modifier.padding(vertical = 8.dp)
-                            )
-                        }
-
-                        FlowRow(
-                            modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.spacedBy(8.dp),
-                            verticalArrangement = Arrangement.spacedBy(8.dp)
-                        ) {
-                            (1..31).forEach { day ->
-                                FilterChip(
-                                    selected = day in monthlyDays,
-                                    onClick = {
-                                        monthlyDays = if (day in monthlyDays) {
-                                            monthlyDays - day
-                                        } else {
-                                            monthlyDays + day
-                                        }
-                                    },
-                                    label = { Text("$day") }
-                                )
-                            }
-                        }
-                    }
-                }
-            }
-
-            // 평일만 설정 (WEEKDAY_ONLY 타입일 때만 표시)
-            if (scheduleType == ScheduleType.WEEKDAY_ONLY) {
-                Card(
-                    modifier = Modifier.fillMaxWidth()
-                ) {
-                    Column(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(16.dp),
-                        verticalArrangement = Arrangement.spacedBy(8.dp)
-                    ) {
-                        Text(
-                            text = stringResource(R.string.schedule_weekday_only),
-                            style = MaterialTheme.typography.bodyLarge
-                        )
-                        Text(
-                            text = stringResource(R.string.hint_weekday_only),
-                            style = MaterialTheme.typography.bodyMedium,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
-                        )
-                    }
-                }
-            }
-
-            // 주말만 설정 (WEEKEND_ONLY 타입일 때만 표시)
-            if (scheduleType == ScheduleType.WEEKEND_ONLY) {
-                Card(
-                    modifier = Modifier.fillMaxWidth()
-                ) {
-                    Column(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(16.dp),
-                        verticalArrangement = Arrangement.spacedBy(8.dp)
-                    ) {
-                        Text(
-                            text = stringResource(R.string.schedule_weekend_only),
-                            style = MaterialTheme.typography.bodyLarge
-                        )
-                        Text(
-                            text = stringResource(R.string.hint_weekend_only),
-                            style = MaterialTheme.typography.bodyMedium,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
-                        )
                     }
                 }
             }
@@ -763,7 +605,7 @@ fun AddAlarmScreen(
             }
 
             // 다음 5회 알람 미리보기
-            val nextAlarms = remember(scheduleType, selectedDays, intervalDays, intervalStartDate, intervalHours, intervalStartTime, specificDates, monthlyDays, hour, minute, startDate, endDate) {
+            val nextAlarms = remember(scheduleType, selectedDays, intervalDays, intervalStartDate, specificDates, hour, minute, startDate, endDate) {
                 try {
                     val json = kotlinx.serialization.json.Json {
                         ignoreUnknownKeys = true
@@ -788,33 +630,11 @@ fun AddAlarmScreen(
                             )
                             json.encodeToString(config)
                         }
-                        ScheduleType.INTERVAL_HOURS -> {
-                            val config: ScheduleConfig = ScheduleConfig.IntervalHours(
-                                intervalHours = intervalHours,
-                                startTime = intervalStartTime.toString()
-                            )
-                            json.encodeToString(config)
-                        }
                         ScheduleType.SPECIFIC_DATES -> {
                             if (specificDates.isEmpty()) return@remember emptyList()
                             val config: ScheduleConfig = ScheduleConfig.SpecificDates(
                                 dates = specificDates.map { it.toString() }.toSet()
                             )
-                            json.encodeToString(config)
-                        }
-                        ScheduleType.MONTHLY -> {
-                            if (monthlyDays.isEmpty()) return@remember emptyList()
-                            val config: ScheduleConfig = ScheduleConfig.Monthly(
-                                daysOfMonth = monthlyDays
-                            )
-                            json.encodeToString(config)
-                        }
-                        ScheduleType.WEEKDAY_ONLY -> {
-                            val config: ScheduleConfig = ScheduleConfig.WeekdayOnly
-                            json.encodeToString(config)
-                        }
-                        ScheduleType.WEEKEND_ONLY -> {
-                            val config: ScheduleConfig = ScheduleConfig.WeekendOnly
                             json.encodeToString(config)
                         }
                         else -> return@remember emptyList()
@@ -935,11 +755,7 @@ fun AddAlarmScreen(
                         ScheduleType.DAILY -> true
                         ScheduleType.WEEKLY -> selectedDays.isNotEmpty()
                         ScheduleType.INTERVAL_DAYS -> intervalDays >= 1
-                        ScheduleType.INTERVAL_HOURS -> intervalHours >= 1
                         ScheduleType.SPECIFIC_DATES -> specificDates.isNotEmpty()
-                        ScheduleType.MONTHLY -> monthlyDays.isNotEmpty()
-                        ScheduleType.WEEKDAY_ONLY -> true
-                        ScheduleType.WEEKEND_ONLY -> true
                         else -> false
                     }
 
@@ -957,18 +773,9 @@ fun AddAlarmScreen(
                                     intervalDays = intervalDays,
                                     startDate = intervalStartDate.toString()
                                 )
-                                ScheduleType.INTERVAL_HOURS -> ScheduleConfig.IntervalHours(
-                                    intervalHours = intervalHours,
-                                    startTime = intervalStartTime.toString()
-                                )
                                 ScheduleType.SPECIFIC_DATES -> ScheduleConfig.SpecificDates(
                                     dates = specificDates.map { it.toString() }.toSet()
                                 )
-                                ScheduleType.MONTHLY -> ScheduleConfig.Monthly(
-                                    daysOfMonth = monthlyDays
-                                )
-                                ScheduleType.WEEKDAY_ONLY -> ScheduleConfig.WeekdayOnly
-                                ScheduleType.WEEKEND_ONLY -> ScheduleConfig.WeekendOnly
                                 else -> ScheduleConfig.Daily
                             }
 
@@ -1000,11 +807,7 @@ fun AddAlarmScreen(
                     ScheduleType.DAILY -> isLoaded
                     ScheduleType.WEEKLY -> selectedDays.isNotEmpty() && isLoaded
                     ScheduleType.INTERVAL_DAYS -> intervalDays >= 1 && isLoaded
-                    ScheduleType.INTERVAL_HOURS -> intervalHours >= 1 && isLoaded
                     ScheduleType.SPECIFIC_DATES -> specificDates.isNotEmpty() && isLoaded
-                    ScheduleType.MONTHLY -> monthlyDays.isNotEmpty() && isLoaded
-                    ScheduleType.WEEKDAY_ONLY -> isLoaded
-                    ScheduleType.WEEKEND_ONLY -> isLoaded
                     else -> false
                 },
                 shape = MaterialTheme.shapes.medium
@@ -1014,6 +817,9 @@ fun AddAlarmScreen(
                     style = MaterialTheme.typography.titleMedium
                 )
             }
+
+            // 하단 네비게이션과의 간격 확보
+            Spacer(modifier = Modifier.height(80.dp))
         }
     }
     }
@@ -1028,19 +834,6 @@ fun AddAlarmScreen(
                 hour = selectedHour
                 minute = selectedMinute
                 showTimePicker = false
-            }
-        )
-    }
-
-    // 시작 시간 TimePicker (INTERVAL_HOURS용)
-    if (showStartTimePicker) {
-        TimePickerDialog(
-            initialHour = intervalStartTime.hour,
-            initialMinute = intervalStartTime.minute,
-            onDismissRequest = { showStartTimePicker = false },
-            onConfirm = { selectedHour, selectedMinute ->
-                intervalStartTime = LocalTime.of(selectedHour, selectedMinute)
-                showStartTimePicker = false
             }
         )
     }
@@ -1357,54 +1150,66 @@ private fun DatePickerDialog(
             .toInstant().toEpochMilli()
     )
 
-    AlertDialog(
-        onDismissRequest = onDismissRequest,
-        title = {
-            Text(
-                text = "날짜 선택",
-                style = MaterialTheme.typography.titleLarge
-            )
-        },
-        text = {
+    androidx.compose.ui.window.Dialog(
+        onDismissRequest = onDismissRequest
+    ) {
+        Card(
+            modifier = Modifier
+                .fillMaxWidth()
+                .wrapContentHeight(),
+            shape = MaterialTheme.shapes.extraLarge
+        ) {
             Column(
-                horizontalAlignment = Alignment.CenterHorizontally,
-                modifier = Modifier.fillMaxWidth()
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(16.dp)
             ) {
+                Text(
+                    text = "날짜 선택",
+                    style = MaterialTheme.typography.titleLarge,
+                    modifier = Modifier.padding(bottom = 16.dp)
+                )
+
                 DatePicker(
                     state = datePickerState,
-                    showModeToggle = false
+                    showModeToggle = false,
+                    modifier = Modifier.fillMaxWidth()
                 )
-            }
-        },
-        confirmButton = {
-            TextButton(
-                onClick = {
-                    datePickerState.selectedDateMillis?.let { millis ->
-                        val selectedDate = java.time.Instant.ofEpochMilli(millis)
-                            .atZone(java.time.ZoneId.systemDefault())
-                            .toLocalDate()
-                        onDateSelected(selectedDate)
+
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(top = 16.dp),
+                    horizontalArrangement = Arrangement.End
+                ) {
+                    if (allowClear) {
+                        TextButton(
+                            onClick = {
+                                onDateSelected(null)
+                            }
+                        ) {
+                            Text("지우기")
+                        }
+                        Spacer(modifier = Modifier.width(8.dp))
                     }
-                }
-            ) {
-                Text("확인")
-            }
-        },
-        dismissButton = {
-            Row {
-                if (allowClear) {
+                    TextButton(onClick = onDismissRequest) {
+                        Text("취소")
+                    }
+                    Spacer(modifier = Modifier.width(8.dp))
                     TextButton(
                         onClick = {
-                            onDateSelected(null)
+                            datePickerState.selectedDateMillis?.let { millis ->
+                                val selectedDate = java.time.Instant.ofEpochMilli(millis)
+                                    .atZone(java.time.ZoneId.systemDefault())
+                                    .toLocalDate()
+                                onDateSelected(selectedDate)
+                            }
                         }
                     ) {
-                        Text("지우기")
+                        Text("확인")
                     }
-                }
-                TextButton(onClick = onDismissRequest) {
-                    Text("취소")
                 }
             }
         }
-    )
+    }
 }

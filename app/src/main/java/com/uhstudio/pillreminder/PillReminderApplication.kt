@@ -74,7 +74,7 @@ class PillReminderApplication : Application() {
             val channel = NotificationChannel(
                 CHANNEL_ID,
                 getString(R.string.alarm_channel_name),
-                NotificationManager.IMPORTANCE_HIGH  // 높은 중요도 (소리 + 헤드업 알림)
+                NotificationManager.IMPORTANCE_MAX  // 최대 중요도 (소리 + 헤드업 알림 + 전체 화면)
             ).apply {
                 description = getString(R.string.alarm_channel_description)
 
@@ -98,11 +98,17 @@ class PillReminderApplication : Application() {
 
             val notificationManager = getSystemService(NotificationManager::class.java)
 
-            // 채널이 이미 존재하는 경우 재생성하지 않음
-            // 사용자가 채널 설정을 변경했을 수 있으므로 기존 설정 유지
-            if (notificationManager.getNotificationChannel(CHANNEL_ID) == null) {
-                notificationManager.createNotificationChannel(channel)
+            // 기존 채널 삭제 후 재생성 (IMPORTANCE_MAX 적용을 위해)
+            val existingChannel = notificationManager.getNotificationChannel(CHANNEL_ID)
+            if (existingChannel != null) {
+                // 기존 채널 삭제
+                notificationManager.deleteNotificationChannel(CHANNEL_ID)
+                Timber.d("Deleted existing notification channel to update importance")
             }
+
+            // 새 채널 생성
+            notificationManager.createNotificationChannel(channel)
+            Timber.d("Notification channel created with IMPORTANCE_MAX")
         }
     }
 

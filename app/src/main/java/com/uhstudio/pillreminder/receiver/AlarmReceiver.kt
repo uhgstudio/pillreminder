@@ -180,7 +180,11 @@ class AlarmReceiver : BroadcastReceiver() {
 
             // 전체 화면 알람 Activity Intent
             val alarmActivityIntent = Intent(context, com.uhstudio.pillreminder.ui.alarm.AlarmActivity::class.java).apply {
-                flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_NO_USER_ACTION
+                flags = Intent.FLAG_ACTIVITY_NEW_TASK or
+                        Intent.FLAG_ACTIVITY_CLEAR_TOP or
+                        Intent.FLAG_ACTIVITY_NO_USER_ACTION or
+                        Intent.FLAG_ACTIVITY_EXCLUDE_FROM_RECENTS or
+                        Intent.FLAG_ACTIVITY_SINGLE_TOP
                 putExtra(com.uhstudio.pillreminder.ui.alarm.AlarmActivity.EXTRA_PILL_ID, pillId)
                 putExtra(com.uhstudio.pillreminder.ui.alarm.AlarmActivity.EXTRA_ALARM_ID, alarmId)
                 putExtra(com.uhstudio.pillreminder.ui.alarm.AlarmActivity.EXTRA_PILL_NAME, it.name)
@@ -197,18 +201,12 @@ class AlarmReceiver : BroadcastReceiver() {
                 PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
             )
 
-            // 화면 상태 확인
-            val powerManager = context.getSystemService(Context.POWER_SERVICE) as android.os.PowerManager
-            val isScreenOn = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT_WATCH) {
-                powerManager.isInteractive
-            } else {
-                @Suppress("DEPRECATION")
-                powerManager.isScreenOn
-            }
-
-            // 화면이 켜져 있으면 직접 Activity 실행 (테스트용)
-            if (isScreenOn) {
+            // 앱이 백그라운드든 포그라운드든 관계없이 AlarmActivity 실행
+            try {
                 context.startActivity(alarmActivityIntent)
+                Timber.d("AlarmActivity started successfully")
+            } catch (e: Exception) {
+                Timber.e(e, "Failed to start AlarmActivity, will rely on fullScreenIntent")
             }
 
             // 복용 액션 인텐트
@@ -246,8 +244,12 @@ class AlarmReceiver : BroadcastReceiver() {
                 .setCategory(NotificationCompat.CATEGORY_ALARM)
                 .setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
                 .setAutoCancel(true)
-                .setFullScreenIntent(fullScreenPendingIntent, true)  // 전체 화면 Intent
+                .setOngoing(false)
+                .setFullScreenIntent(fullScreenPendingIntent, true)  // 전체 화면 Intent - 화면이 꺼져있을 때 자동 실행
                 .setContentIntent(fullScreenPendingIntent)
+                .setDefaults(NotificationCompat.DEFAULT_ALL)
+                .setStyle(NotificationCompat.BigTextStyle()
+                    .bigText(context.getString(R.string.alarm_notification_text, it.name)))
                 .addAction(
                     R.drawable.ic_check,
                     context.getString(R.string.btn_take_pill),

@@ -19,37 +19,52 @@ interface IntakeHistoryDao {
 
     @Query("""
         SELECT * FROM intake_history
-        WHERE date(intakeTime) >= date(:startDate)
-        AND date(intakeTime) <= date(:endDate)
+        WHERE intakeTime >= :startDate AND intakeTime <= :endDate
         ORDER BY intakeTime DESC
     """)
     fun getHistoryBetweenDates(startDate: LocalDateTime, endDate: LocalDateTime): Flow<List<IntakeHistory>>
 
     @Query("""
         SELECT * FROM intake_history
-        WHERE date(intakeTime) = date(:date)
+        WHERE intakeTime >= :startOfDay AND intakeTime < :endOfDay
         ORDER BY intakeTime DESC
     """)
-    fun getHistoryForDate(date: LocalDateTime): Flow<List<IntakeHistory>>
+    fun getHistoryForDate(startOfDay: LocalDateTime, endOfDay: LocalDateTime): Flow<List<IntakeHistory>>
 
     @Transaction
     @Query("""
-        SELECT * FROM intake_history
-        WHERE date(intakeTime) = date(:date)
-        ORDER BY intakeTime DESC
+        SELECT intake_history.* FROM intake_history
+        INNER JOIN pills ON intake_history.pillId = pills.id
+        WHERE intake_history.intakeTime >= :startOfDay
+        AND intake_history.intakeTime < :endOfDay
+        ORDER BY intake_history.intakeTime DESC
     """)
-    fun getHistoryWithPillForDate(date: LocalDateTime): Flow<List<IntakeHistoryWithPill>>
+    fun getHistoryWithPillForDate(startOfDay: LocalDateTime, endOfDay: LocalDateTime): Flow<List<IntakeHistoryWithPill>>
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertHistory(history: IntakeHistory)
 
+    @Update
+    suspend fun updateHistory(history: IntakeHistory)
+
+    @Query("SELECT * FROM intake_history WHERE id = :historyId")
+    suspend fun getHistoryById(historyId: String): IntakeHistory?
+
     @Query("""
-        SELECT COUNT(*) FROM intake_history 
-        WHERE pillId = :pillId 
-        AND date(intakeTime) = date(:date)
+        SELECT COUNT(*) FROM intake_history
+        WHERE pillId = :pillId
+        AND intakeTime >= :startOfDay AND intakeTime < :endOfDay
         AND status = 'TAKEN'
     """)
-    suspend fun getIntakeCountForDate(pillId: String, date: LocalDateTime): Int
+    suspend fun getIntakeCountForDate(pillId: String, startOfDay: LocalDateTime, endOfDay: LocalDateTime): Int
+
+    @Query("""
+        SELECT COUNT(*) FROM intake_history
+        WHERE alarmId = :alarmId
+        AND intakeTime >= :startOfDay AND intakeTime < :endOfDay
+        AND status = 'TAKEN'
+    """)
+    suspend fun getIntakeCountForAlarm(alarmId: String, startOfDay: LocalDateTime, endOfDay: LocalDateTime): Int
 
     @Transaction
     @Query("""
