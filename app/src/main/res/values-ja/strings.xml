@@ -98,6 +98,13 @@
     <string name="msg_add_alarm_hint">+ ボタンを押してアラームを追加してください。</string>
     <string name="msg_no_intake_history">服用履歴がありません。</string>
 
+    <!-- お薬詳細 - 服用履歴 -->
+    <string name="pill_detail_intake_history">服用履歴</string>
+    <string name="pill_detail_history_count">件</string>
+    <string name="pill_detail_no_history">まだ服用履歴がありません。</string>
+    <string name="pill_detail_show_more">+%d件を表示</string>
+    <string name="pill_detail_show_less">閉じる</string>
+
     <string name="calendar_monthly_stats">%s の状況</string>
     <string name="calendar_adherence_rate">服用率: %d%%</string>
     <string name="calendar_stats_detail">服用: %1$d回 | スキップ: %2$d回</string>
@@ -152,4 +159,62 @@
     <string name="loading">読み込み中…</string>
     <string name="ok">OK</string>
     <string name="close">閉じる</string>
+
+    <!-- 曜日 (短縮形) -->
+    <string name="day_mon_short">月</string>
+    <string name="day_tue_short">火</string>
+    <string name="day_wed_short">水</string>
+    <string name="day_thu_short">木</string>
+    <string name="day_fri_short">金</string>
+    <string name="day_sat_short">土</string>
+    <string name="day_sun_short">日</string>
+
+    <!-- 曜日 (完全形) -->
+    <string name="day_mon_full">月曜日</string>
+    <string name="day_tue_full">火曜日</string>
+    <string name="day_wed_full">水曜日</string>
+    <string name="day_thu_full">木曜日</string>
+    <string name="day_fri_full">金曜日</string>
+    <string name="day_sat_full">土曜日</string>
+    <string name="day_sun_full">日曜日</string>
+
+    <!-- スケジュール説明 -->
+    <string name="schedule_no_repeat">繰り返しなし</string>
+    <string name="schedule_every_n_days">%d日ごと</string>
+    <string name="schedule_specific_dates_count">特定の日付 (%d件)</string>
+    <string name="schedule_specific_dates_none">特定の日付 (未設定)</string>
+    <string name="schedule_custom">カスタム</string>
+
+    <!-- UIテキスト -->
+    <string name="btn_collapse">閉じる</string>
+    <string name="btn_expand">開く</string>
+    <string name="label_today">今日</string>
+    <string name="label_yesterday">昨日</string>
+    <string name="label_later">後で</string>
+    <string name="label_start_date">開始日</string>
+    <string name="label_end_date">終了日</string>
+    <string name="label_not_set">未設定</string>
+    <string name="label_alarm_sound">アラーム音</string>
+    <string name="btn_clear">クリア</string>
+    <string name="label_every">毎</string>
+    <string name="label_interval_suffix">日ごと</string>
+    <string name="label_edit">編集</string>
+    <string name="default_pill_name">薬</string>
+
+    <!-- 日付形式 -->
+    <string name="date_format_ymd">yyyy年MM月dd日</string>
+
+    <!-- 権限関連 -->
+    <string name="btn_go_to_settings">設定へ移動</string>
+
+    <!-- 広告猶予期間設定 -->
+    <string name="settings_ad_grace_period">広告猶予期間</string>
+    <string name="settings_ad_grace_period_status">状態: %s</string>
+    <string name="settings_ad_grace_period_active">猶予期間中 (残り%d時間)</string>
+    <string name="settings_ad_grace_period_expired">猶予期間終了</string>
+    <string name="settings_ad_grace_period_not_set">未設定</string>
+    <string name="btn_reset_grace_period">猶予期間リセット (テスト)</string>
+    <string name="btn_skip_grace_period">猶予期間スキップ (テスト)</string>
+    <string name="msg_grace_period_reset">広告猶予期間がリセットされました。</string>
+    <string name="settings_ad_grace_period_skipped">猶予期間をスキップしました。広告が表示されます。</string>
 </resources>

@@ -7,7 +7,6 @@ import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.os.Build
-import androidx.core.app.NotificationCompat
 import com.uhstudio.pillreminder.R
 import com.uhstudio.pillreminder.data.database.PillReminderDatabase
 import com.uhstudio.pillreminder.data.model.IntakeHistory
@@ -26,7 +25,6 @@ import java.util.UUID
  */
 class AlarmReceiver : BroadcastReceiver() {
     companion object {
-        private const val CHANNEL_ID = "pill_reminder_channel"
         const val ACTION_TAKE_PILL = "com.uhstudio.pillreminder.TAKE_PILL"
         const val ACTION_SKIP_PILL = "com.uhstudio.pillreminder.SKIP_PILL"
         const val ACTION_SNOOZE = "com.uhstudio.pillreminder.SNOOZE"
@@ -161,22 +159,30 @@ class AlarmReceiver : BroadcastReceiver() {
 
         try {
             val database = PillReminderDatabase.getDatabase(context)
-            val pill = database.pillDao().getPillById(pillId)
 
+            // 알람 enabled 체크
+            val alarm = database.pillAlarmDao().getAlarmById(alarmId)
+            if (alarm == null) {
+                Timber.e("showNotification: Alarm not found - alarmId=$alarmId")
+                return
+            }
+
+            if (!alarm.enabled) {
+                Timber.d("showNotification: Alarm is disabled - alarmId=$alarmId")
+                return
+            }
+
+            val pill = database.pillDao().getPillById(pillId)
             if (pill == null) {
                 Timber.e("showNotification: Pill not found - pillId=$pillId")
                 return
             }
 
-            Timber.d("showNotification: Showing notification for pill=${pill.name}")
+            Timber.d("showNotification: Showing alarm for pill=${pill.name}")
 
-            pill.let {
             // 다음 알람 스케줄링
-            val alarm = database.pillAlarmDao().getAlarmById(alarmId)
-            alarm?.let { pillAlarm ->
-                val alarmManagerUtil = AlarmManagerUtil(context)
-                alarmManagerUtil.scheduleAlarm(pillAlarm)
-            }
+            val alarmManagerUtil = AlarmManagerUtil(context)
+            alarmManagerUtil.scheduleAlarm(alarm)
 
             // 전체 화면 알람 Activity Intent
             val alarmActivityIntent = Intent(context, com.uhstudio.pillreminder.ui.alarm.AlarmActivity::class.java).apply {
@@ -187,92 +193,21 @@ class AlarmReceiver : BroadcastReceiver() {
                         Intent.FLAG_ACTIVITY_SINGLE_TOP
                 putExtra(com.uhstudio.pillreminder.ui.alarm.AlarmActivity.EXTRA_PILL_ID, pillId)
                 putExtra(com.uhstudio.pillreminder.ui.alarm.AlarmActivity.EXTRA_ALARM_ID, alarmId)
-                putExtra(com.uhstudio.pillreminder.ui.alarm.AlarmActivity.EXTRA_PILL_NAME, it.name)
-                alarm?.alarmSoundUri?.let { uri ->
+                putExtra(com.uhstudio.pillreminder.ui.alarm.AlarmActivity.EXTRA_PILL_NAME, pill.name)
+                alarm.alarmSoundUri?.let { uri ->
                     putExtra(com.uhstudio.pillreminder.ui.alarm.AlarmActivity.EXTRA_ALARM_SOUND_URI, uri)
                 }
             }
 
-            // Full Screen Intent용 PendingIntent
-            val fullScreenPendingIntent = PendingIntent.getActivity(
-                context,
-                RequestCodeUtil.generateRequestCode(alarmId),
-                alarmActivityIntent,
-                PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
-            )
-
-            // 앱이 백그라운드든 포그라운드든 관계없이 AlarmActivity 실행
+            // 전체 화면 알람 Activity 실행
             try {
                 context.startActivity(alarmActivityIntent)
-                Timber.d("AlarmActivity started successfully")
+                Timber.d("AlarmActivity started successfully for alarmId=$alarmId")
             } catch (e: Exception) {
-                Timber.e(e, "Failed to start AlarmActivity, will rely on fullScreenIntent")
+                Timber.e(e, "Failed to start AlarmActivity for alarmId=$alarmId")
             }
-
-            // 복용 액션 인텐트
-            val takeIntent = Intent(context, AlarmReceiver::class.java).apply {
-                action = ACTION_TAKE_PILL
-                putExtra(EXTRA_ALARM_ID, alarmId)
-                putExtra(EXTRA_PILL_ID, pillId)
-            }
-            val takePendingIntent = PendingIntent.getBroadcast(
-                context,
-                RequestCodeUtil.generateRequestCodeWithPrefix("take", alarmId),
-                takeIntent,
-                PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
-            )
-
-            // 건너뛰기 액션 인텐트
-            val skipIntent = Intent(context, AlarmReceiver::class.java).apply {
-                action = ACTION_SKIP_PILL
-                putExtra(EXTRA_ALARM_ID, alarmId)
-                putExtra(EXTRA_PILL_ID, pillId)
-            }
-            val skipPendingIntent = PendingIntent.getBroadcast(
-                context,
-                RequestCodeUtil.generateRequestCodeWithPrefix("skip", alarmId),
-                skipIntent,
-                PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
-            )
-
-            // 알림 생성 (Full Screen Intent 포함)
-            val notification = NotificationCompat.Builder(context, CHANNEL_ID)
-                .setSmallIcon(R.drawable.ic_notification)
-                .setContentTitle(context.getString(R.string.alarm_notification_title))
-                .setContentText(context.getString(R.string.alarm_notification_text, it.name))
-                .setPriority(NotificationCompat.PRIORITY_MAX)
-                .setCategory(NotificationCompat.CATEGORY_ALARM)
-                .setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
-                .setAutoCancel(true)
-                .setOngoing(false)
-                .setFullScreenIntent(fullScreenPendingIntent, true)  // 전체 화면 Intent - 화면이 꺼져있을 때 자동 실행
-                .setContentIntent(fullScreenPendingIntent)
-                .setDefaults(NotificationCompat.DEFAULT_ALL)
-                .setStyle(NotificationCompat.BigTextStyle()
-                    .bigText(context.getString(R.string.alarm_notification_text, it.name)))
-                .addAction(
-                    R.drawable.ic_check,
-                    context.getString(R.string.btn_take_pill),
-                    takePendingIntent
-                )
-                .addAction(
-                    R.drawable.ic_skip,
-                    context.getString(R.string.btn_skip_pill),
-                    skipPendingIntent
-                )
-                .build()
-
-            val notificationManager =
-                context.getSystemService(Context.NOTIFICATION_SERVICE) as? NotificationManager
-            if (notificationManager != null) {
-                notificationManager.notify(RequestCodeUtil.generateRequestCode(alarmId), notification)
-                Timber.d("Notification shown successfully: pillId=$pillId, alarmId=$alarmId")
-            } else {
-                Timber.e("NotificationManager is null, cannot show notification")
-            }
-        }
         } catch (e: Exception) {
-            Timber.e(e, "Failed to show notification: pillId=$pillId, alarmId=$alarmId")
+            Timber.e(e, "Failed to show alarm: pillId=$pillId, alarmId=$alarmId")
         }
     }
 } 

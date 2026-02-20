@@ -2,41 +2,68 @@ package com.uhstudio.pillreminder.ui.addAlarm
 
 import android.app.Activity
 import android.content.Context
+import android.widget.Toast
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.filled.Check
-import androidx.compose.material.icons.filled.ChevronRight
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.Card
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.DatePicker
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
+import androidx.compose.material3.TimePicker
+import androidx.compose.material3.TimePickerDefaults
+import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.TopAppBarDefaults
+import androidx.compose.material3.rememberDatePickerState
+import androidx.compose.material3.rememberTimePickerState
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import com.uhstudio.pillreminder.R
 import com.uhstudio.pillreminder.ads.AdManager
 import com.uhstudio.pillreminder.data.model.ScheduleConfig
 import com.uhstudio.pillreminder.data.model.ScheduleType
-import com.uhstudio.pillreminder.ui.theme.GradientPeachStart
-import com.uhstudio.pillreminder.ui.theme.GradientGoldEnd
+import com.uhstudio.pillreminder.ui.components.AlarmScheduleSection
+import com.uhstudio.pillreminder.ui.theme.StitchPrimary
 import com.uhstudio.pillreminder.util.AlarmManagerUtil
-import com.uhstudio.pillreminder.util.ScheduleCalculator
-import com.uhstudio.pillreminder.util.toKoreanShort
 import java.time.DayOfWeek
 import java.time.LocalDate
-import java.time.LocalTime
-import java.time.format.DateTimeFormatter
-import kotlinx.serialization.encodeToString
-import com.uhstudio.pillreminder.R
-import androidx.compose.foundation.layout.ExperimentalLayoutApi
-import androidx.compose.foundation.layout.FlowRow
-import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.Delete
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -52,28 +79,17 @@ fun AddAlarmScreen(
 
     var hour by remember { mutableStateOf(8) }
     var minute by remember { mutableStateOf(0) }
-    var scheduleType by remember { mutableStateOf(ScheduleType.WEEKLY) }
     var selectedDays by remember { mutableStateOf(setOf<DayOfWeek>()) }
 
-    // INTERVAL_DAYS용
-    var intervalDays by remember { mutableStateOf(2) }
-    var intervalStartDate by remember { mutableStateOf(LocalDate.now()) }
-
-    // SPECIFIC_DATES용
-    var specificDates by remember { mutableStateOf(listOf<LocalDate>()) }
-
-    // 복용 기간
-    var startDate by remember { mutableStateOf<LocalDate?>(null) }
-    var endDate by remember { mutableStateOf<LocalDate?>(null) }
+    val isLoading by viewModel.isLoading.collectAsState()
 
     var alarmSoundUri by remember { mutableStateOf<String?>(null) }
     var alarmSoundName by remember { mutableStateOf("기본 알람음") }
+
     var showTimePicker by remember { mutableStateOf(false) }
-    var showDaySelector by remember { mutableStateOf(false) }
     var showPermissionDialog by remember { mutableStateOf(false) }
     var showSoundPicker by remember { mutableStateOf(false) }
-    var showDatePicker by remember { mutableStateOf(false) }
-    var datePickerMode by remember { mutableStateOf("start") } // "start", "end", "intervalStart", "specificDate"
+
     var isLoaded by remember { mutableStateOf(alarmId == null) }
 
     // 기존 알람 정보 불러오기
@@ -84,53 +100,26 @@ fun AddAlarmScreen(
 
                 hour = alarm.hour
                 minute = alarm.minute
-                scheduleType = alarm.scheduleType
-                startDate = alarm.startDate
-                endDate = alarm.endDate
 
                 // scheduleConfig에서 설정 정보 파싱
                 try {
-                    when (alarm.scheduleType) {
-                        ScheduleType.WEEKLY -> {
-                            if (alarm.scheduleConfig != null) {
-                                val json = kotlinx.serialization.json.Json { ignoreUnknownKeys = true }
-                                val config = json.decodeFromString<ScheduleConfig.Weekly>(alarm.scheduleConfig)
-                                selectedDays = config.toDayOfWeekSet()
-                                timber.log.Timber.d("AddAlarmScreen: Loaded WEEKLY days from config: $selectedDays")
-                            } else {
-                                // Fallback to deprecated repeatDays
-                                @Suppress("DEPRECATION")
-                                selectedDays = alarm.repeatDays
-                                timber.log.Timber.d("AddAlarmScreen: Loaded WEEKLY days from repeatDays: $selectedDays")
-                            }
+                    if (alarm.scheduleType == ScheduleType.WEEKLY) {
+                        if (alarm.scheduleConfig != null) {
+                            val json = kotlinx.serialization.json.Json { ignoreUnknownKeys = true }
+                            val config = json.decodeFromString<ScheduleConfig.Weekly>(alarm.scheduleConfig)
+                            selectedDays = config.toDayOfWeekSet()
+                        } else {
+                            @Suppress("DEPRECATION")
+                            selectedDays = alarm.repeatDays
                         }
-                        ScheduleType.INTERVAL_DAYS -> {
-                            if (alarm.scheduleConfig != null) {
-                                val json = kotlinx.serialization.json.Json { ignoreUnknownKeys = true }
-                                val config = json.decodeFromString<ScheduleConfig.IntervalDays>(alarm.scheduleConfig)
-                                intervalDays = config.intervalDays
-                                intervalStartDate = config.getStartDateAsLocalDate()
-                                timber.log.Timber.d("AddAlarmScreen: Loaded INTERVAL_DAYS: $intervalDays days, start=$intervalStartDate")
-                            }
-                        }
-                        ScheduleType.SPECIFIC_DATES -> {
-                            if (alarm.scheduleConfig != null) {
-                                val json = kotlinx.serialization.json.Json { ignoreUnknownKeys = true }
-                                val config = json.decodeFromString<ScheduleConfig.SpecificDates>(alarm.scheduleConfig)
-                                specificDates = config.getDatesAsLocalDateSet().sorted()
-                                timber.log.Timber.d("AddAlarmScreen: Loaded SPECIFIC_DATES: ${specificDates.size} dates")
-                            }
-                        }
-                        ScheduleType.DAILY -> {
-                            timber.log.Timber.d("AddAlarmScreen: DAILY type, no additional config needed")
-                        }
-                        else -> {
-                            timber.log.Timber.w("AddAlarmScreen: Unknown schedule type: ${alarm.scheduleType}")
-                        }
+                    } else if (alarm.scheduleType == ScheduleType.DAILY) {
+                        selectedDays = setOf(
+                            DayOfWeek.MONDAY, DayOfWeek.TUESDAY, DayOfWeek.WEDNESDAY,
+                            DayOfWeek.THURSDAY, DayOfWeek.FRIDAY, DayOfWeek.SATURDAY, DayOfWeek.SUNDAY
+                        )
                     }
                 } catch (e: Exception) {
                     timber.log.Timber.e(e, "AddAlarmScreen: Failed to parse scheduleConfig")
-                    // Fallback to deprecated repeatDays for WEEKLY
                     if (alarm.scheduleType == ScheduleType.WEEKLY) {
                         @Suppress("DEPRECATION")
                         selectedDays = alarm.repeatDays
@@ -138,8 +127,6 @@ fun AddAlarmScreen(
                 }
 
                 alarmSoundUri = alarm.alarmSoundUri
-
-                // 알람음 이름 가져오기
                 alarm.alarmSoundUri?.let { uri ->
                     try {
                         val ringtone = android.media.RingtoneManager.getRingtone(context, android.net.Uri.parse(uri))
@@ -148,48 +135,36 @@ fun AddAlarmScreen(
                         alarmSoundName = "선택된 알람음"
                     }
                 }
-
                 isLoaded = true
             }
         }
     }
 
-    // 밝은 피치-골드 그라디언트 배경
-    Box(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(
-                Brush.verticalGradient(
-                    colors = listOf(
-                        GradientPeachStart,
-                        GradientGoldEnd
-                    )
-                )
-            )
-    ) {
-        Scaffold(
-            containerColor = androidx.compose.ui.graphics.Color.Transparent,  // 배경 투명하게
+
+
+    // Modern Clean Layout (Stitch Style)
+    Scaffold(
+        containerColor = Color(0xFFFFF9F2), // StitchCream
             topBar = {
                 TopAppBar(
                     title = {
                         Text(
-                            if (alarmId == null) {
-                                stringResource(R.string.title_add_alarm)
-                            } else {
-                                "알람 수정"
-                            }
+                            if (alarmId == null) stringResource(R.string.alarm_new_reminder) else stringResource(R.string.alarm_edit_reminder),
+                            style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Bold, color = Color(0xFF4C7B71)) // StitchSageDark
                         )
                     },
                     navigationIcon = {
                         IconButton(onClick = onNavigateUp) {
                             Icon(
                                 imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                                contentDescription = stringResource(R.string.btn_back)
+                                contentDescription = stringResource(R.string.btn_back),
+                                tint = Color(0xFF4C7B71) // StitchSageDark
                             )
                         }
                     },
                     colors = TopAppBarDefaults.topAppBarColors(
-                        containerColor = androidx.compose.ui.graphics.Color.Transparent
+                        containerColor = Color(0xFFFFF9F2), // StitchCream
+                        titleContentColor = Color(0xFF4C7B71)
                     )
                 )
             }
@@ -199,629 +174,77 @@ fun AddAlarmScreen(
                     .fillMaxSize()
                     .padding(paddingValues)
                     .verticalScroll(rememberScrollState())
-                    .padding(16.dp),
-                verticalArrangement = Arrangement.spacedBy(16.dp)
+                    .padding(24.dp), // Increased padding
+                verticalArrangement = Arrangement.spacedBy(24.dp)
             ) {
-            // 시간 선택
-            Card(
-                modifier = Modifier.fillMaxWidth(),
-                onClick = { showTimePicker = true }
-            ) {
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(24.dp),
-                    horizontalArrangement = Arrangement.Center
-                ) {
-                    Text(
-                        text = String.format("%02d:%02d", hour, minute),
-                        style = MaterialTheme.typography.displayMedium,
-                        color = MaterialTheme.colorScheme.primary
-                    )
-                }
-            }
-
-            // 스케줄 타입 선택
-            Card(
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                Column(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(16.dp)
-                ) {
-                    Text(
-                        text = "복용 방법",
-                        style = MaterialTheme.typography.bodyLarge,
-                        modifier = Modifier.padding(bottom = 8.dp)
-                    )
-
-                    // 첫 번째 행: 매일, 주간 반복
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.spacedBy(8.dp)
-                    ) {
-                        FilterChip(
-                            selected = scheduleType == ScheduleType.DAILY,
-                            onClick = {
-                                scheduleType = ScheduleType.DAILY
-                                selectedDays = emptySet()
-                            },
-                            label = {
-                                Text(
-                                    text = stringResource(R.string.schedule_daily),
-                                    modifier = Modifier.fillMaxWidth(),
-                                    textAlign = androidx.compose.ui.text.style.TextAlign.Center
-                                )
-                            },
-                            modifier = Modifier.weight(1f)
-                        )
-
-                        FilterChip(
-                            selected = scheduleType == ScheduleType.WEEKLY,
-                            onClick = { scheduleType = ScheduleType.WEEKLY },
-                            label = {
-                                Text(
-                                    text = stringResource(R.string.schedule_weekly),
-                                    modifier = Modifier.fillMaxWidth(),
-                                    textAlign = androidx.compose.ui.text.style.TextAlign.Center
-                                )
-                            },
-                            modifier = Modifier.weight(1f)
-                        )
-                    }
-
-                    // 두 번째 행: N일마다, 특정날짜
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.spacedBy(8.dp)
-                    ) {
-                        FilterChip(
-                            selected = scheduleType == ScheduleType.INTERVAL_DAYS,
-                            onClick = { scheduleType = ScheduleType.INTERVAL_DAYS },
-                            label = {
-                                Text(
-                                    text = stringResource(R.string.schedule_interval_days),
-                                    modifier = Modifier.fillMaxWidth(),
-                                    textAlign = androidx.compose.ui.text.style.TextAlign.Center
-                                )
-                            },
-                            modifier = Modifier.weight(1f)
-                        )
-
-                        FilterChip(
-                            selected = scheduleType == ScheduleType.SPECIFIC_DATES,
-                            onClick = { scheduleType = ScheduleType.SPECIFIC_DATES },
-                            label = {
-                                Text(
-                                    text = stringResource(R.string.schedule_specific_dates),
-                                    modifier = Modifier.fillMaxWidth(),
-                                    textAlign = androidx.compose.ui.text.style.TextAlign.Center
-                                )
-                            },
-                            modifier = Modifier.weight(1f)
-                        )
-                    }
-                }
-            }
-
-            // 반복 요일 선택 (WEEKLY 타입일 때만 표시)
-            if (scheduleType == ScheduleType.WEEKLY) {
-                Card(
-                    modifier = Modifier.fillMaxWidth()
-                ) {
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .clickable { showDaySelector = true }
-                            .padding(16.dp),
-                        horizontalArrangement = Arrangement.SpaceBetween,
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Text(
-                            text = stringResource(R.string.label_repeat_days),
-                            style = MaterialTheme.typography.bodyLarge
-                        )
-
-                        Row(
-                            verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.spacedBy(8.dp)
-                        ) {
-                            Text(
-                                text = if (selectedDays.isEmpty()) {
-                                    "선택 안함"
-                                } else if (selectedDays.size == 7) {
-                                    "매일"
-                                } else {
-                                    selectedDays.sortedBy { it.value }
-                                        .joinToString(" ") { it.toKoreanShort() }
-                                },
-                                style = MaterialTheme.typography.bodyMedium,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant
-                            )
-                            Icon(
-                                imageVector = Icons.Default.ChevronRight,
-                                contentDescription = null,
-                                tint = MaterialTheme.colorScheme.onSurfaceVariant
-                            )
-                        }
-                    }
-                }
-            }
-
-            // N일마다 설정 (INTERVAL_DAYS 타입일 때만 표시)
-            if (scheduleType == ScheduleType.INTERVAL_DAYS) {
-                Card(
-                    modifier = Modifier.fillMaxWidth()
-                ) {
-                    Column(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(16.dp),
-                        verticalArrangement = Arrangement.spacedBy(12.dp)
-                    ) {
-                        Text(
-                            text = "간격 설정",
-                            style = MaterialTheme.typography.bodyLarge
-                        )
-
-                        // 간격 일수 선택
-                        Row(
-                            modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.SpaceBetween,
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            Text(
-                                text = "매",
-                                style = MaterialTheme.typography.bodyMedium
-                            )
-                            Row(
-                                horizontalArrangement = Arrangement.spacedBy(8.dp),
-                                verticalAlignment = Alignment.CenterVertically
-                            ) {
-                                // 감소 버튼
-                                FilledTonalButton(
-                                    onClick = { if (intervalDays > 1) intervalDays-- },
-                                    enabled = intervalDays > 1
-                                ) {
-                                    Text("-")
-                                }
-                                Text(
-                                    text = "$intervalDays 일",
-                                    style = MaterialTheme.typography.titleMedium,
-                                    modifier = Modifier.width(60.dp),
-                                    textAlign = androidx.compose.ui.text.style.TextAlign.Center
-                                )
-                                // 증가 버튼
-                                FilledTonalButton(
-                                    onClick = { if (intervalDays < 30) intervalDays++ },
-                                    enabled = intervalDays < 30
-                                ) {
-                                    Text("+")
-                                }
-                            }
-                            Text(
-                                text = "마다",
-                                style = MaterialTheme.typography.bodyMedium
-                            )
-                        }
-
-                        HorizontalDivider()
-
-                        // 시작 기준일
-                        Row(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .clickable {
-                                    datePickerMode = "intervalStart"
-                                    showDatePicker = true
-                                }
-                                .padding(vertical = 8.dp),
-                            horizontalArrangement = Arrangement.SpaceBetween,
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            Text(
-                                text = "시작 기준일",
-                                style = MaterialTheme.typography.bodyMedium
-                            )
-                            Row(
-                                horizontalArrangement = Arrangement.spacedBy(8.dp),
-                                verticalAlignment = Alignment.CenterVertically
-                            ) {
-                                Text(
-                                    text = intervalStartDate.format(DateTimeFormatter.ofPattern("yyyy년 MM월 dd일")),
-                                    style = MaterialTheme.typography.bodyMedium,
-                                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                                )
-                                Icon(
-                                    imageVector = Icons.Default.ChevronRight,
-                                    contentDescription = null,
-                                    tint = MaterialTheme.colorScheme.onSurfaceVariant
-                                )
-                            }
-                        }
-                    }
-                }
-            }
-
-            // 특정 날짜 설정 (SPECIFIC_DATES 타입일 때만 표시)
-            if (scheduleType == ScheduleType.SPECIFIC_DATES) {
-                Card(
-                    modifier = Modifier.fillMaxWidth()
-                ) {
-                    Column(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(16.dp),
-                        verticalArrangement = Arrangement.spacedBy(12.dp)
-                    ) {
-                        Row(
-                            modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.SpaceBetween,
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            Text(
-                                text = stringResource(R.string.label_specific_dates),
-                                style = MaterialTheme.typography.bodyLarge
-                            )
-                            FilledTonalButton(
-                                onClick = {
-                                    datePickerMode = "specificDate"
-                                    showDatePicker = true
-                                }
-                            ) {
-                                Icon(
-                                    imageVector = Icons.Default.Add,
-                                    contentDescription = null,
-                                    modifier = Modifier.size(16.dp)
-                                )
-                                Spacer(modifier = Modifier.width(4.dp))
-                                Text(stringResource(R.string.btn_add_date))
-                            }
-                        }
-
-                        if (specificDates.isEmpty()) {
-                            Text(
-                                text = stringResource(R.string.msg_no_dates_selected),
-                                style = MaterialTheme.typography.bodyMedium,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                                modifier = Modifier.padding(vertical = 8.dp)
-                            )
-                        } else {
-                            HorizontalDivider()
-                            specificDates.sortedBy { it }.forEach { date ->
-                                Row(
-                                    modifier = Modifier
-                                        .fillMaxWidth()
-                                        .padding(vertical = 8.dp),
-                                    horizontalArrangement = Arrangement.SpaceBetween,
-                                    verticalAlignment = Alignment.CenterVertically
-                                ) {
-                                    Text(
-                                        text = date.format(DateTimeFormatter.ofPattern("yyyy년 MM월 dd일 (E)", java.util.Locale.KOREAN)),
-                                        style = MaterialTheme.typography.bodyMedium
-                                    )
-                                    IconButton(
-                                        onClick = {
-                                            specificDates = specificDates.filter { it != date }
-                                        }
-                                    ) {
-                                        Icon(
-                                            imageVector = Icons.Default.Delete,
-                                            contentDescription = "삭제",
-                                            tint = MaterialTheme.colorScheme.error
-                                        )
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-
-            // 복용 기간 설정 (선택사항)
-            Card(
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                Column(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(16.dp),
-                    verticalArrangement = Arrangement.spacedBy(12.dp)
-                ) {
-                    Text(
-                        text = "복용 기간 (선택사항)",
-                        style = MaterialTheme.typography.bodyLarge
-                    )
-
-                    // 시작일
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .clickable {
-                                datePickerMode = "start"
-                                showDatePicker = true
-                            }
-                            .padding(vertical = 8.dp),
-                        horizontalArrangement = Arrangement.SpaceBetween,
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Text(
-                            text = "시작일",
-                            style = MaterialTheme.typography.bodyMedium
-                        )
-                        Row(
-                            horizontalArrangement = Arrangement.spacedBy(8.dp),
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            Text(
-                                text = startDate?.format(DateTimeFormatter.ofPattern("yyyy년 MM월 dd일")) ?: "미설정",
-                                style = MaterialTheme.typography.bodyMedium,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant
-                            )
-                            Icon(
-                                imageVector = Icons.Default.ChevronRight,
-                                contentDescription = null,
-                                tint = MaterialTheme.colorScheme.onSurfaceVariant
-                            )
-                        }
-                    }
-
-                    HorizontalDivider()
-
-                    // 종료일
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .clickable {
-                                datePickerMode = "end"
-                                showDatePicker = true
-                            }
-                            .padding(vertical = 8.dp),
-                        horizontalArrangement = Arrangement.SpaceBetween,
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Text(
-                            text = "종료일",
-                            style = MaterialTheme.typography.bodyMedium
-                        )
-                        Row(
-                            horizontalArrangement = Arrangement.spacedBy(8.dp),
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            Text(
-                                text = endDate?.format(DateTimeFormatter.ofPattern("yyyy년 MM월 dd일")) ?: "미설정",
-                                style = MaterialTheme.typography.bodyMedium,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant
-                            )
-                            Icon(
-                                imageVector = Icons.Default.ChevronRight,
-                                contentDescription = null,
-                                tint = MaterialTheme.colorScheme.onSurfaceVariant
-                            )
-                        }
-                    }
-                }
-            }
-
-            // 다음 5회 알람 미리보기
-            val nextAlarms = remember(scheduleType, selectedDays, intervalDays, intervalStartDate, specificDates, hour, minute, startDate, endDate) {
-                try {
-                    val json = kotlinx.serialization.json.Json {
-                        ignoreUnknownKeys = true
-                        isLenient = true
-                    }
-
-                    // 임시 알람 객체 생성
-                    val configJson = when (scheduleType) {
-                        ScheduleType.DAILY -> {
-                            val config: ScheduleConfig = ScheduleConfig.Daily
-                            json.encodeToString(config)
-                        }
-                        ScheduleType.WEEKLY -> {
-                            if (selectedDays.isEmpty()) return@remember emptyList()
-                            val config: ScheduleConfig = ScheduleConfig.Weekly.from(selectedDays)
-                            json.encodeToString(config)
-                        }
-                        ScheduleType.INTERVAL_DAYS -> {
-                            val config: ScheduleConfig = ScheduleConfig.IntervalDays(
-                                intervalDays = intervalDays,
-                                startDate = intervalStartDate.toString()
-                            )
-                            json.encodeToString(config)
-                        }
-                        ScheduleType.SPECIFIC_DATES -> {
-                            if (specificDates.isEmpty()) return@remember emptyList()
-                            val config: ScheduleConfig = ScheduleConfig.SpecificDates(
-                                dates = specificDates.map { it.toString() }.toSet()
-                            )
-                            json.encodeToString(config)
-                        }
-                        else -> return@remember emptyList()
-                    }
-
-                    val tempAlarm = com.uhstudio.pillreminder.data.model.PillAlarm(
-                        id = "preview",
-                        pillId = pillId,
-                        hour = hour,
-                        minute = minute,
-                        scheduleType = scheduleType,
-                        scheduleConfig = configJson,
-                        startDate = startDate,
-                        endDate = endDate,
-                        repeatDays = emptySet(),
-                        enabled = true
-                    )
-
-                    // 다음 5회 알람 계산
-                    val alarms = mutableListOf<java.time.LocalDateTime>()
-                    var currentTime = java.time.LocalDateTime.now()
-                    repeat(5) {
-                        val nextAlarm = ScheduleCalculator.calculateNextAlarmTime(tempAlarm, currentTime)
-                        if (nextAlarm != null) {
-                            alarms.add(nextAlarm)
-                            currentTime = nextAlarm.plusMinutes(1)
-                        }
-                    }
-                    alarms
-                } catch (e: Exception) {
-                    emptyList()
-                }
-            }
-
-            if (nextAlarms.isNotEmpty()) {
-                Card(
-                    modifier = Modifier.fillMaxWidth(),
-                    colors = CardDefaults.cardColors(
-                        containerColor = MaterialTheme.colorScheme.secondaryContainer
-                    )
-                ) {
-                    Column(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(16.dp),
-                        verticalArrangement = Arrangement.spacedBy(8.dp)
-                    ) {
-                        Text(
-                            text = "다음 5회 알람 미리보기",
-                            style = MaterialTheme.typography.bodyLarge,
-                            color = MaterialTheme.colorScheme.onSecondaryContainer
-                        )
-                        nextAlarms.forEach { alarmTime ->
-                            Row(
-                                modifier = Modifier.fillMaxWidth(),
-                                horizontalArrangement = Arrangement.spacedBy(8.dp),
-                                verticalAlignment = Alignment.CenterVertically
-                            ) {
-                                Icon(
-                                    imageVector = Icons.Default.Check,
-                                    contentDescription = null,
-                                    tint = MaterialTheme.colorScheme.primary,
-                                    modifier = Modifier.size(16.dp)
-                                )
-                                Text(
-                                    text = alarmTime.format(DateTimeFormatter.ofPattern("yyyy년 MM월 dd일 (E) HH:mm", java.util.Locale.KOREAN)),
-                                    style = MaterialTheme.typography.bodyMedium,
-                                    color = MaterialTheme.colorScheme.onSecondaryContainer
-                                )
-                            }
-                        }
-                    }
-                }
-            }
-
-            // 알람음 선택
-            Card(
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .clickable { showSoundPicker = true }
-                        .padding(16.dp),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Text(
-                        text = "알람음",
-                        style = MaterialTheme.typography.bodyLarge
-                    )
-
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.spacedBy(8.dp)
-                    ) {
-                        Text(
-                            text = alarmSoundName,
-                            style = MaterialTheme.typography.bodyMedium,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
-                        )
-                        Icon(
-                            imageVector = Icons.Default.ChevronRight,
-                            contentDescription = null,
-                            tint = MaterialTheme.colorScheme.onSurfaceVariant
-                        )
-                    }
-                }
-            }
+            // Unified Alarm Schedule Section (same as AddPillScreen)
+            AlarmScheduleSection(
+                hour = hour,
+                minute = minute,
+                onTimeClick = { showTimePicker = true },
+                selectedDays = selectedDays,
+                onDaysChange = { selectedDays = it },
+                alarmSoundName = alarmSoundName,
+                onSoundClick = { showSoundPicker = true }
+            )
 
             Spacer(modifier = Modifier.weight(1f))
 
             // 저장 버튼
             Button(
                 onClick = {
-                    // 입력 검증
-                    val isValid = when (scheduleType) {
-                        ScheduleType.DAILY -> true
-                        ScheduleType.WEEKLY -> selectedDays.isNotEmpty()
-                        ScheduleType.INTERVAL_DAYS -> intervalDays >= 1
-                        ScheduleType.SPECIFIC_DATES -> specificDates.isNotEmpty()
-                        else -> false
-                    }
-
-                    if (isValid) {
-                        // 정확한 알람 권한 체크 (Android 12+)
-                        val alarmUtil = AlarmManagerUtil(context)
-                        if (!alarmUtil.canScheduleExactAlarms()) {
-                            showPermissionDialog = true
-                        } else {
-                            // ScheduleConfig 생성
-                            val scheduleConfig = when (scheduleType) {
-                                ScheduleType.DAILY -> ScheduleConfig.Daily
-                                ScheduleType.WEEKLY -> ScheduleConfig.Weekly.from(selectedDays)
-                                ScheduleType.INTERVAL_DAYS -> ScheduleConfig.IntervalDays(
-                                    intervalDays = intervalDays,
-                                    startDate = intervalStartDate.toString()
-                                )
-                                ScheduleType.SPECIFIC_DATES -> ScheduleConfig.SpecificDates(
-                                    dates = specificDates.map { it.toString() }.toSet()
-                                )
-                                else -> ScheduleConfig.Daily
+                    val finalScheduleType = if (selectedDays.isEmpty() || selectedDays.size == 7) ScheduleType.DAILY else ScheduleType.WEEKLY
+                    val finalScheduleConfig = if (finalScheduleType == ScheduleType.WEEKLY) ScheduleConfig.Weekly.from(selectedDays) else ScheduleConfig.Daily
+                    
+                    val alarmUtil = AlarmManagerUtil(context)
+                    if (!alarmUtil.canScheduleExactAlarms()) {
+                        showPermissionDialog = true
+                    } else {
+                        // 권한이 있으면 알람 저장/수정
+                        viewModel.saveAlarmWithSchedule(
+                            pillId = pillId,
+                            hour = hour,
+                            minute = minute,
+                            scheduleType = finalScheduleType,
+                            scheduleConfig = finalScheduleConfig,
+                            startDate = null, // simplified duration
+                            endDate = null,   // simplified duration
+                            alarmSoundUri = alarmSoundUri,
+                            alarmId = alarmId,
+                            onComplete = {
+                                Toast.makeText(context, context.getString(R.string.msg_saved), Toast.LENGTH_SHORT).show()
+                                onNavigateUp()
+                            },
+                            onShowAd = {
+                                activity?.let {
+                                    adManager.showInterstitialAd(it, onAdClosed = onNavigateUp)
+                                } ?: onNavigateUp()
                             }
-
-                            // 권한이 있으면 알람 저장/수정
-                            viewModel.saveAlarmWithSchedule(
-                                pillId = pillId,
-                                hour = hour,
-                                minute = minute,
-                                scheduleType = scheduleType,
-                                scheduleConfig = scheduleConfig,
-                                startDate = startDate,
-                                endDate = endDate,
-                                alarmSoundUri = alarmSoundUri,
-                                alarmId = alarmId,
-                                onComplete = onNavigateUp,
-                                onShowAd = {
-                                    activity?.let {
-                                        adManager.showInterstitialAd(it)
-                                    }
-                                }
-                            )
-                        }
+                        )
                     }
                 },
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(56.dp),
-                enabled = when (scheduleType) {
-                    ScheduleType.DAILY -> isLoaded
-                    ScheduleType.WEEKLY -> selectedDays.isNotEmpty() && isLoaded
-                    ScheduleType.INTERVAL_DAYS -> intervalDays >= 1 && isLoaded
-                    ScheduleType.SPECIFIC_DATES -> specificDates.isNotEmpty() && isLoaded
-                    else -> false
-                },
-                shape = MaterialTheme.shapes.medium
-            ) {
-                Text(
-                    text = stringResource(R.string.btn_save),
-                    style = MaterialTheme.typography.titleMedium
+                modifier = Modifier.fillMaxWidth().height(56.dp),
+                enabled = isLoaded,
+                shape = RoundedCornerShape(16.dp),
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = StitchPrimary,
+                    contentColor = Color.White
                 )
+            ) {
+                Row(
+                    horizontalArrangement = Arrangement.Center,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text(
+                        stringResource(R.string.btn_save),
+                        style = MaterialTheme.typography.titleMedium.copy(fontWeight = androidx.compose.ui.text.font.FontWeight.Bold)
+                    )
+                }
             }
 
             // 하단 네비게이션과의 간격 확보
             Spacer(modifier = Modifier.height(80.dp))
         }
-    }
     }
 
     // Material3 TimePicker 다이얼로그
@@ -838,17 +261,6 @@ fun AddAlarmScreen(
         )
     }
 
-    // 요일 선택 다이얼로그 (iOS 스타일)
-    if (showDaySelector) {
-        DaySelectorDialog(
-            selectedDays = selectedDays,
-            onDismissRequest = { showDaySelector = false },
-            onConfirm = { days ->
-                selectedDays = days
-                showDaySelector = false
-            }
-        )
-    }
 
     // 정확한 알람 권한 요청 다이얼로그
     if (showPermissionDialog) {
@@ -900,111 +312,21 @@ fun AddAlarmScreen(
         )
     }
 
-    // 날짜 선택 다이얼로그
-    if (showDatePicker) {
-        DatePickerDialog(
-            initialDate = when (datePickerMode) {
-                "start" -> startDate ?: LocalDate.now()
-                "end" -> endDate ?: LocalDate.now()
-                "intervalStart" -> intervalStartDate
-                "specificDate" -> LocalDate.now()
-                else -> LocalDate.now()
-            },
-            onDismissRequest = { showDatePicker = false },
-            onDateSelected = { selectedDate ->
-                when (datePickerMode) {
-                    "start" -> startDate = selectedDate
-                    "end" -> endDate = selectedDate
-                    "intervalStart" -> intervalStartDate = selectedDate
-                    "specificDate" -> {
-                        if (selectedDate != null && selectedDate !in specificDates) {
-                            specificDates = specificDates + selectedDate
-                        }
-                    }
-                }
-                showDatePicker = false
-            },
-            allowClear = datePickerMode in listOf("start", "end")
-        )
+    // 날짜 선택 다이얼로그 (Not needed anymore given simplification)
+
+
+    if (isLoading) {
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(MaterialTheme.colorScheme.background.copy(alpha = 0.5f)),
+            contentAlignment = Alignment.Center
+        ) {
+            CircularProgressIndicator()
+        }
     }
 }
 
-@Composable
-private fun DaySelectorDialog(
-    selectedDays: Set<DayOfWeek>,
-    onDismissRequest: () -> Unit,
-    onConfirm: (Set<DayOfWeek>) -> Unit
-) {
-    var tempSelectedDays by remember { mutableStateOf(selectedDays) }
-
-    val dayNames = listOf(
-        DayOfWeek.SUNDAY to "일요일",
-        DayOfWeek.MONDAY to "월요일",
-        DayOfWeek.TUESDAY to "화요일",
-        DayOfWeek.WEDNESDAY to "수요일",
-        DayOfWeek.THURSDAY to "목요일",
-        DayOfWeek.FRIDAY to "금요일",
-        DayOfWeek.SATURDAY to "토요일"
-    )
-
-    AlertDialog(
-        onDismissRequest = onDismissRequest,
-        title = {
-            Text(
-                text = stringResource(R.string.label_repeat_days),
-                style = MaterialTheme.typography.titleLarge
-            )
-        },
-        text = {
-            Column {
-                dayNames.forEach { (day, name) ->
-                    val isSelected = day in tempSelectedDays
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .clickable {
-                                tempSelectedDays = if (day in tempSelectedDays) {
-                                    tempSelectedDays - day
-                                } else {
-                                    tempSelectedDays + day
-                                }
-                            }
-                            .padding(vertical = 16.dp, horizontal = 8.dp),
-                        horizontalArrangement = Arrangement.SpaceBetween,
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Text(
-                            text = name,
-                            style = MaterialTheme.typography.bodyLarge,
-                            color = if (isSelected) {
-                                MaterialTheme.colorScheme.primary
-                            } else {
-                                MaterialTheme.colorScheme.onSurface
-                            }
-                        )
-                        if (isSelected) {
-                            Icon(
-                                imageVector = Icons.Default.Check,
-                                contentDescription = null,
-                                tint = MaterialTheme.colorScheme.primary
-                            )
-                        }
-                    }
-                }
-            }
-        },
-        confirmButton = {
-            TextButton(onClick = { onConfirm(tempSelectedDays) }) {
-                Text(stringResource(R.string.btn_save))
-            }
-        },
-        dismissButton = {
-            TextButton(onClick = onDismissRequest) {
-                Text(stringResource(R.string.btn_cancel))
-            }
-        }
-    )
-}
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -1079,7 +401,7 @@ private fun SoundPickerDialog(
         val ringtones = mutableListOf<Pair<String?, String>>()
 
         // 기본 알람음 추가
-        ringtones.add(Pair(null, "기본 알람음"))
+        ringtones.add(Pair(null, context.getString(R.string.default_sound)))
 
         // 시스템 알람음 추가
         while (cursor.moveToNext()) {
@@ -1094,7 +416,7 @@ private fun SoundPickerDialog(
 
     AlertDialog(
         onDismissRequest = onDismissRequest,
-        title = { Text("알람음 선택") },
+        title = { Text(stringResource(R.string.label_alarm_sound)) },
         text = {
             androidx.compose.foundation.lazy.LazyColumn(
                 modifier = Modifier
@@ -1131,7 +453,7 @@ private fun SoundPickerDialog(
         },
         confirmButton = {
             TextButton(onClick = onDismissRequest) {
-                Text("닫기")
+                Text(stringResource(R.string.close))
             }
         }
     )
@@ -1165,7 +487,7 @@ private fun DatePickerDialog(
                     .padding(16.dp)
             ) {
                 Text(
-                    text = "날짜 선택",
+                    text = stringResource(R.string.label_specific_dates),
                     style = MaterialTheme.typography.titleLarge,
                     modifier = Modifier.padding(bottom = 16.dp)
                 )
@@ -1188,12 +510,12 @@ private fun DatePickerDialog(
                                 onDateSelected(null)
                             }
                         ) {
-                            Text("지우기")
+                            Text(stringResource(R.string.btn_clear))
                         }
                         Spacer(modifier = Modifier.width(8.dp))
                     }
                     TextButton(onClick = onDismissRequest) {
-                        Text("취소")
+                        Text(stringResource(R.string.btn_cancel))
                     }
                     Spacer(modifier = Modifier.width(8.dp))
                     TextButton(
@@ -1206,10 +528,11 @@ private fun DatePickerDialog(
                             }
                         }
                     ) {
-                        Text("확인")
+                        Text(stringResource(R.string.ok))
                     }
                 }
             }
         }
     }
 }
+

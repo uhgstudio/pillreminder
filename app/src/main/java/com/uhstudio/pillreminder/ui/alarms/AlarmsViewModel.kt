@@ -3,6 +3,7 @@ package com.uhstudio.pillreminder.ui.alarms
 import android.app.Application
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
+import com.uhstudio.pillreminder.ads.AdManager
 import com.uhstudio.pillreminder.data.database.PillReminderDatabase
 import com.uhstudio.pillreminder.data.model.PillAlarm
 import com.uhstudio.pillreminder.util.AlarmManagerUtil
@@ -14,6 +15,7 @@ class AlarmsViewModel(application: Application) : AndroidViewModel(application) 
     private val alarmDao = database.pillAlarmDao()
     private val pillDao = database.pillDao()
     private val alarmManagerUtil = AlarmManagerUtil(application)
+    private val adManager = AdManager.getInstance(application)
 
     val allAlarms: Flow<List<PillAlarm>> = alarmDao.getAllAlarms()
     val allPills = pillDao.getAllPills()
@@ -37,10 +39,18 @@ class AlarmsViewModel(application: Application) : AndroidViewModel(application) 
         }
     }
 
-    fun deleteAlarm(alarm: PillAlarm) {
+    fun deleteAlarm(alarm: PillAlarm, onShowAd: () -> Unit = {}) {
         viewModelScope.launch {
             alarmManagerUtil.cancelAlarm(alarm)
             alarmDao.deleteAlarm(alarm)
+
+            // 삭제 완료 후 광고 표시 체크
+            val shouldShow = adManager.incrementAndCheckAlarmRegistration()
+            if (shouldShow) {
+                adManager.loadInterstitialAd {
+                    onShowAd()
+                }
+            }
         }
     }
 } 

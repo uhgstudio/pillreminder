@@ -22,6 +22,7 @@
     <string name="btn_take_photo">사진 촬영</string>
     <string name="btn_select_image">이미지 선택</string>
     <string name="btn_delete">삭제</string>
+    <string name="btn_delete_pill">약 삭제하기</string>
     <string name="btn_back">뒤로</string>
     <string name="btn_take_pill">복용 완료</string>
     <string name="btn_skip_pill">건너뛰기</string>
@@ -29,6 +30,7 @@
     <string name="btn_delete_alarm">알람 삭제</string>
     
     <!-- 입력 필드 -->
+    <string name="hint_dosage">Dosage (e.g., 500mg, 1 tablet)</string>
     <string name="hint_pill_name">약 이름</string>
     <string name="hint_pill_memo">메모 (선택사항)</string>
     
@@ -110,6 +112,13 @@
     <string name="msg_add_alarm_hint">+ 버튼을 눌러 알람을 추가해주세요.</string>
     <string name="msg_no_intake_history">복용 기록이 없습니다.</string>
 
+    <!-- 약 상세 화면 - 복용 기록 -->
+    <string name="pill_detail_intake_history">복용 기록</string>
+    <string name="pill_detail_history_count">건</string>
+    <string name="pill_detail_no_history">아직 복용 기록이 없습니다.</string>
+    <string name="pill_detail_show_more">+%d건 더 보기</string>
+    <string name="pill_detail_show_less">접기</string>
+
     <!-- 캘린더 화면 -->
     <string name="calendar_monthly_stats">%s 복용 현황</string>
     <string name="calendar_adherence_rate">복용률: %d%%</string>
@@ -171,4 +180,159 @@
     <string name="loading">로딩 중…</string>
     <string name="ok">확인</string>
     <string name="close">닫기</string>
+
+    <!-- 요일 (짧은 형태) -->
+    <string name="day_mon_short">월</string>
+    <string name="day_tue_short">화</string>
+    <string name="day_wed_short">수</string>
+    <string name="day_thu_short">목</string>
+    <string name="day_fri_short">금</string>
+    <string name="day_sat_short">토</string>
+    <string name="day_sun_short">일</string>
+
+    <!-- 요일 (긴 형태) -->
+    <string name="day_mon_full">월요일</string>
+    <string name="day_tue_full">화요일</string>
+    <string name="day_wed_full">수요일</string>
+    <string name="day_thu_full">목요일</string>
+    <string name="day_fri_full">금요일</string>
+    <string name="day_sat_full">토요일</string>
+    <string name="day_sun_full">일요일</string>
+
+    <!-- 스케줄 설명 추가 -->
+    <string name="schedule_no_repeat">반복 없음</string>
+    <string name="schedule_every_n_days">%d일 마다</string>
+    <string name="schedule_specific_dates_count">특정 날짜 (%d개)</string>
+    <string name="schedule_specific_dates_none">특정 날짜 (미설정)</string>
+    <string name="schedule_custom">커스텀</string>
+
+    <!-- UI 텍스트 추가 -->
+    <string name="btn_collapse">접기</string>
+    <string name="btn_expand">펼치기</string>
+    <string name="label_today">오늘</string>
+    <string name="label_yesterday">어제</string>
+    <string name="label_later">나중에</string>
+    <string name="label_start_date">시작일</string>
+    <string name="label_end_date">종료일</string>
+    <string name="label_not_set">미설정</string>
+    <string name="label_alarm_sound">알람음</string>
+    <string name="btn_clear">지우기</string>
+    <string name="label_every">매</string>
+    <string name="label_interval_suffix">마다</string>
+    <string name="label_edit">수정</string>
+    <string name="default_pill_name">약</string>
+
+    <!-- 날짜 형식 -->
+    <string name="date_format_ymd">yyyy년 MM월 dd일</string>
+
+    <!-- 권한 관련 -->
+    <!-- 광고 유예 기간 설정 -->
+    <string name="settings_ad_grace_period">광고 유예 기간</string>
+    <string name="settings_ad_grace_period_status">상태: %s</string>
+    <string name="settings_ad_grace_period_active">유예 기간 중 (%d시간 남음)</string>
+    <string name="settings_ad_grace_period_expired">유예 기간 종료</string>
+    <string name="settings_ad_grace_period_not_set">미설정</string>
+    <string name="btn_reset_grace_period">유예 기간 초기화 (테스트용)</string>
+    <string name="btn_skip_grace_period">유예 기간 건너뛰기 (테스트용)</string>
+    <string name="msg_grace_period_reset">광고 유예 기간이 초기화되었습니다.</string>
+    <string name="settings_ad_grace_period_skipped">광고 유예 기간을 건너뛰었습니다. 이제 광고가 표시됩니다.</string>
+
+    <!-- UI 개선 추가 문자열 -->
+    <string name="msg_select_day">요일을 선택해주세요</string>
+    <string name="msg_saved">저장되었습니다</string>
+    <string name="msg_deleted">삭제되었습니다</string>
+    <!-- 요일 (이미 존재하는지 확인 후 추가, 위에서 day_mon_short 등이 있으나 day_mon 등으로 쓰일 수 있음) -->
+    <!-- 기존 코드에서 day_mon_short 등을 사용하고 있다면 그것을 활용. 여기서는 DayOfWeekExtensions에서 사용하는 문자열은 하드코딩 되어 있으므로 그대로 둠.
+         하지만 XML에서 참조할 경우를 대비해 필요시 추가. 현재는 필요 없음. -->
+
+    <!-- 사용자 이름 설정 -->
+    <string name="default_user_name">사용자님</string>
+    <string name="settings_user_name">사용자 이름</string>
+    <string name="settings_user_name_hint">이름을 입력하세요</string>
+    <string name="settings_user_name_description">홈 화면에 표시될 이름을 설정합니다</string>
+
+    <!-- AddPillScreen 다국어 지원 -->
+    <string name="pill_dosage_label">복용량</string>
+    <string name="gentle_reminder_label">알림음</string>
+    <string name="set_dosage_title">복용량 설정</string>
+    <string name="set_dosage_hint">예: 1정, 5ml</string>
+    <string name="select_alarm_sound_title">알림음 선택</string>
+    <string name="default_sound">기본 알림음</string>
+    <string name="confirm">확인</string>
+
+    <!-- HomeScreen 다국어 지원 -->
+    <string name="home_greeting">안녕하세요, %s</string>
+    <string name="home_daily_goal">오늘의 목표</string>
+    <string name="home_today_progress">오늘의 진행률</string>
+    <string name="home_your_schedule">나의 일정</string>
+    <string name="home_no_pills">등록된 약이 없습니다</string>
+    <string name="home_add_first_pill">첫 번째 약을 추가해보세요</string>
+    <string name="home_hydration_reminder">수분 섭취를 잊지 마세요!</string>
+    <string name="home_hydration_message">하루 8잔의 물을 마시는 것을 목표로 하세요</string>
+    <string name="home_badges_earned">획득한 배지</string>
+    <string name="home_streak_days">%d일 연속</string>
+    <string name="home_completed">완료</string>
+    <string name="home_remaining">남음</string>
+
+    <!-- 약 수량 관리 -->
+    <string name="pill_quantity_label">약 수량</string>
+    <string name="set_quantity_title">수량 설정</string>
+    <string name="set_quantity_hint">수량 입력 (예: 30)</string>
+    <string name="home_running_low">재고 부족</string>
+    <string name="home_running_low_message">%1$s: %2$d개 남음</string>
+    <string name="home_doses_taken">%1$d / %2$d 복용 완료</string>
+    <string name="home_view_all">전체 보기</string>
+    <string name="alarm_new_reminder">새 알람</string>
+    <string name="alarm_edit_reminder">알람 수정</string>
+    <string name="alarm_every_day">매일</string>
+    <string name="btn_change">변경</string>
+
+    <!-- UI Localization Additions -->
+    <string name="pill_detail_wellness_title">매일의 건강 관리</string>
+    <string name="pill_detail_routine_title">나의 복용 루틴</string>
+    <string name="pill_detail_reminders_active">알림 활성화됨</string>
+    <string name="pill_detail_daily_alarms">일일 알람</string>
+    <string name="pill_detail_enabled">활성화</string>
+    <string name="pill_detail_motivation_quote">약을 거르지 않고 드시는 것은 자신에 대한 작은 친절입니다.</string>
+    <string name="pill_detail_morning_schedule">매일 아침</string>
+    <string name="pill_detail_scheduled_dose">예정된 복용</string>
+    
+    <string name="calendar_wellness_history_title">건강 기록</string>
+    <string name="calendar_motivation_quote">꾸준함이 건강의 비결입니다. 과거를 돌아보는 것이 앞으로 나아가는 힘이 됩니다.</string>
+    <string name="calendar_daily_log">일일 기록</string>
+    <string name="calendar_monthly_review">%s 리뷰</string>
+    <string name="calendar_doses_taken_summary">%1$d/%2$d 복용 완료</string>
+    
+    <string name="status_taken_label">복용</string>
+    <string name="status_skipped_label">건너뜀</string>
+    <string name="label_am">오전</string>
+    <string name="label_pm">오후</string>
+    <string name="calendar_month_year_format">yyyy년 MMMM</string>
+    <string name="label_schedule">일정</string>
+    <string name="label_unit">개</string>
+    <string name="label_done">완료</string>
+    <string name="title_edit_medication">약 수정</string>
+    <string name="title_add_medication">약 등록</string>
+    <string name="label_add_photo_hint">박스 사진 추가</string>
+    <string name="label_medication_name">약 이름</string>
+    <string name="hint_medication_name">예: 데일리 비타민</string>
+    <string name="label_medication_type">약 종류</string>
+    <string name="label_instructions">복용법</string>
+    <string name="hint_instructions">예: 아침 식사 후 복용...</string>
+    <string name="error_name_required">약 이름을 입력해주세요</string>
+    <string name="msg_saved_success">성공적으로 저장되었습니다</string>
+    <string name="btn_save_medication">약 저장하기</string>
+    <string name="dialog_alarm_permission_title">정확한 알람 권한 필요</string>
+    <string name="dialog_alarm_permission_text">약 복용 알람이 정확한 시간에 울리려면 \"정확한 알람\" 권한이 필요합니다.\n\n설정으로 이동하여 권한을 허용해주세요.</string>
+    <string name="btn_go_to_settings">설정으로 이동</string>
+    <string name="btn_later">나중에</string>
+    <string name="label_selected_sound">선택된 알람음</string>
+    <string name="home_doses_summary">%1$d/%2$d 복용 완료</string>
+    <string name="home_next_dose">다음: %s • 루틴</string>
+    <string name="home_water_reminder">약과 함께 물 한 컵 잊지 마세요!</string>
+    <string name="home_no_meds_today">오늘 예정된 약이 없습니다</string>
+    <string name="home_done_today">오늘 완료</string>
+    <string name="home_current_status">현재 상태</string>
+    <string name="home_feeling_great">주말까지\n화이팅!</string>
 </resources>
+

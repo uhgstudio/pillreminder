@@ -249,4 +249,45 @@ class SettingsViewModel(application: Application) : AndroidViewModel(application
             onComplete(true)
         }
     }
+
+    /**
+     * 광고 유예 기간 초기화 (테스트용)
+     * firstLaunchTime을 현재 시간으로 설정하여 유예 기간 재시작
+     */
+    fun resetAdGracePeriod(onComplete: () -> Unit) {
+        viewModelScope.launch {
+            val currentTime = System.currentTimeMillis()
+            val current = settings.value ?: return@launch
+            val updated = current.copy(firstLaunchTime = currentTime)
+            appSettingsDao.updateSettings(updated)
+            onComplete()
+        }
+    }
+
+    /**
+     * 광고 유예 기간 건너뛰기 (테스트용)
+     * firstLaunchTime을 과거로 설정하여 유예 기간 즉시 종료
+     */
+    fun skipAdGracePeriod(onComplete: () -> Unit) {
+        viewModelScope.launch {
+            val current = settings.value ?: return@launch
+            // 유예 기간보다 오래 전의 시간으로 설정
+            val pastTime = System.currentTimeMillis() - (current.adGracePeriodHours + 1) * 60 * 60 * 1000L
+            val updated = current.copy(firstLaunchTime = pastTime)
+            appSettingsDao.updateSettings(updated)
+            onComplete()
+        }
+    }
+
+    /**
+     * 유예 기간 남은 시간 계산
+     */
+    fun getGracePeriodRemainingHours(): Int? {
+        val settingsValue = settings.value ?: return null
+        val firstLaunch = settingsValue.firstLaunchTime ?: return null
+        val currentTime = System.currentTimeMillis()
+        val elapsedHours = (currentTime - firstLaunch) / 1000 / 60 / 60
+        val remainingHours = settingsValue.adGracePeriodHours - elapsedHours.toInt()
+        return if (remainingHours > 0) remainingHours else 0
+    }
 }

@@ -1,61 +1,54 @@
 package com.uhstudio.pillreminder
 
+// import com.uhstudio.pillreminder.billing.BillingManager // 비활성화
 import android.Manifest
 import android.os.Build
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Alarm
-import androidx.compose.material.icons.filled.CalendarToday
-import androidx.compose.material.icons.filled.Home
-import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
-import androidx.compose.material3.NavigationBar
-import androidx.compose.material3.NavigationBarItem
-import androidx.compose.material3.Icon
-import androidx.compose.material3.Scaffold
-import androidx.compose.ui.Modifier
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
+import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
-import androidx.navigation.compose.currentBackStackEntryAsState
-import androidx.navigation.NavType
 import androidx.navigation.navArgument
-import com.uhstudio.pillreminder.ui.home.HomeScreen
-import com.uhstudio.pillreminder.ui.home.HomeViewModel
-import com.uhstudio.pillreminder.ui.pill.AddPillScreen
-import com.uhstudio.pillreminder.ui.pill.AddPillViewModel
-import com.uhstudio.pillreminder.ui.theme.PillReminderTheme
-import com.uhstudio.pillreminder.ui.pillDetail.PillDetailScreen
-import com.uhstudio.pillreminder.ui.pillDetail.PillDetailViewModel
-import com.uhstudio.pillreminder.ui.alarms.AlarmsScreen
-import com.uhstudio.pillreminder.ui.alarms.AlarmsViewModel
-import com.uhstudio.pillreminder.ui.addAlarm.AddAlarmScreen
-import com.uhstudio.pillreminder.ui.addAlarm.AddAlarmViewModel
-import com.uhstudio.pillreminder.ui.calendar.CalendarScreen
-import com.uhstudio.pillreminder.ui.calendar.CalendarViewModel
-import com.uhstudio.pillreminder.ui.settings.SettingsScreen
-import com.uhstudio.pillreminder.ui.settings.SettingsViewModel
-import androidx.compose.ui.res.stringResource
-import androidx.lifecycle.lifecycleScope
-import com.uhstudio.pillreminder.ads.AdManager
-// import com.uhstudio.pillreminder.billing.BillingManager // 비활성화
-import com.uhstudio.pillreminder.data.database.PillReminderDatabase
-import com.uhstudio.pillreminder.util.AlarmManagerUtil
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import com.google.accompanist.permissions.isGranted
 import com.google.accompanist.permissions.rememberPermissionState
+import com.uhstudio.pillreminder.ads.AdManager
+import com.uhstudio.pillreminder.data.database.PillReminderDatabase
+import com.uhstudio.pillreminder.ui.addAlarm.AddAlarmScreen
+import com.uhstudio.pillreminder.ui.addAlarm.AddAlarmViewModel
+import com.uhstudio.pillreminder.ui.alarms.AlarmsScreen
+import com.uhstudio.pillreminder.ui.alarms.AlarmsViewModel
+import com.uhstudio.pillreminder.ui.calendar.CalendarScreen
+import com.uhstudio.pillreminder.ui.calendar.CalendarViewModel
+import com.uhstudio.pillreminder.ui.home.HomeScreen
+import com.uhstudio.pillreminder.ui.home.HomeViewModel
+import com.uhstudio.pillreminder.ui.home.StitchBottomNavigation
+import com.uhstudio.pillreminder.ui.pill.AddPillScreen
+import com.uhstudio.pillreminder.ui.pill.AddPillViewModel
+import com.uhstudio.pillreminder.ui.pillDetail.PillDetailScreen
+import com.uhstudio.pillreminder.ui.pillDetail.PillDetailViewModel
+import com.uhstudio.pillreminder.ui.settings.SettingsScreen
+import com.uhstudio.pillreminder.ui.settings.SettingsViewModel
+import com.uhstudio.pillreminder.ui.theme.PillReminderTheme
+import com.uhstudio.pillreminder.util.AlarmManagerUtil
 import kotlinx.coroutines.launch
 
 class MainActivity : ComponentActivity() {
@@ -82,20 +75,26 @@ class MainActivity : ComponentActivity() {
             val appSettingsDao = database.appSettingsDao()
 
             // 설정이 없으면 기본 설정 삽입
-            if (appSettingsDao.getSettingsOnce() == null) {
+            val existingSettings = appSettingsDao.getSettingsOnce()
+            if (existingSettings == null) {
                 appSettingsDao.insertSettings(com.uhstudio.pillreminder.data.model.AppSettings())
             }
 
-            // 앱 실행 카운터 증가
+            // 첫 실행 시간 기록 (광고 유예 기간 계산용)
+            if (appSettingsDao.getFirstLaunchTime() == null) {
+                appSettingsDao.updateFirstLaunchTime(System.currentTimeMillis())
+            }
+
+            // 앱 실행 카운터 증가 (통계용)
             appSettingsDao.incrementAppLaunch()
 
-            // 앱 실행 시 광고 표시 체크
-            if (adManager.shouldShowAd()) {
-                adManager.loadInterstitialAd {
-                    // 광고 로드 완료 후 표시
-                    adManager.showInterstitialAd(this@MainActivity)
-                }
-            }
+            // 앱 오프닝 광고 비활성화 - 사용자 경험 개선을 위해 제거
+            // val shouldShowAd = adManager.checkAppLaunchAd()
+            // if (shouldShowAd) {
+            //     adManager.loadAppOpenAd {
+            //         adManager.showAppOpenAd(this@MainActivity)
+            //     }
+            // }
         }
 
         setContent {
@@ -144,14 +143,14 @@ class MainActivity : ComponentActivity() {
                                     alarmUtil.requestFullScreenIntentPermission()
                                 }
                             ) {
-                                Text("설정으로 이동")
+                                Text(stringResource(R.string.btn_go_to_settings))
                             }
                         },
                         dismissButton = {
                             androidx.compose.material3.TextButton(
                                 onClick = { showFullScreenIntentDialog = false }
                             ) {
-                                Text("나중에")
+                                Text(stringResource(R.string.label_later))
                             }
                         }
                     )
@@ -164,59 +163,9 @@ class MainActivity : ComponentActivity() {
                     val navController = rememberNavController()
                     
                     Scaffold(
+                        modifier = Modifier.navigationBarsPadding(),
                         bottomBar = {
-                            NavigationBar {
-                                val navBackStackEntry by navController.currentBackStackEntryAsState()
-                                val currentRoute = navBackStackEntry?.destination?.route
-                                
-                                NavigationBarItem(
-                                    icon = { Icon(Icons.Default.Home, contentDescription = null) },
-                                    label = { Text(stringResource(R.string.title_home)) },
-                                    selected = currentRoute == "home",
-                                    onClick = {
-                                        navController.navigate("home") {
-                                            popUpTo(navController.graph.startDestinationId)
-                                            launchSingleTop = true
-                                        }
-                                    }
-                                )
-                                
-                                NavigationBarItem(
-                                    icon = { Icon(Icons.Default.Alarm, contentDescription = null) },
-                                    label = { Text(stringResource(R.string.title_alarms)) },
-                                    selected = currentRoute == "alarms",
-                                    onClick = {
-                                        navController.navigate("alarms") {
-                                            popUpTo(navController.graph.startDestinationId)
-                                            launchSingleTop = true
-                                        }
-                                    }
-                                )
-                                
-                                NavigationBarItem(
-                                    icon = { Icon(Icons.Default.CalendarToday, contentDescription = null) },
-                                    label = { Text(stringResource(R.string.title_calendar)) },
-                                    selected = currentRoute == "calendar",
-                                    onClick = {
-                                        navController.navigate("calendar") {
-                                            popUpTo(navController.graph.startDestinationId)
-                                            launchSingleTop = true
-                                        }
-                                    }
-                                )
-
-                                NavigationBarItem(
-                                    icon = { Icon(Icons.Default.Settings, contentDescription = null) },
-                                    label = { Text(stringResource(R.string.title_settings)) },
-                                    selected = currentRoute == "settings",
-                                    onClick = {
-                                        navController.navigate("settings") {
-                                            popUpTo(navController.graph.startDestinationId)
-                                            launchSingleTop = true
-                                        }
-                                    }
-                                )
-                            }
+                            StitchBottomNavigation(navController = navController)
                         }
                     ) { paddingValues ->
                         NavHost(
@@ -231,7 +180,9 @@ class MainActivity : ComponentActivity() {
                                     onAddPillClick = { navController.navigate("add_pill") },
                                     onPillClick = { pillId -> 
                                         navController.navigate("pill_detail/$pillId")
-                                    }
+                                    },
+                                    onBadgesClick = { navController.navigate("badges") },
+                                    onCalendarClick = { navController.navigate("calendar") }
                                 )
                             }
                             
@@ -329,6 +280,12 @@ class MainActivity : ComponentActivity() {
                                 val settingsViewModel: SettingsViewModel = viewModel()
                                 SettingsScreen(
                                     viewModel = settingsViewModel
+                                )
+                            }
+
+                            composable("badges") {
+                                com.uhstudio.pillreminder.ui.badges.BadgesScreen(
+                                    onNavigateUp = { navController.navigateUp() }
                                 )
                             }
                         }

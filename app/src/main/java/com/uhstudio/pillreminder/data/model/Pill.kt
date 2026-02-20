@@ -16,5 +16,9 @@ data class Pill(
     val id: String,
     val name: String,
     val imageUri: String? = null,
-    val memo: String? = null
+    val memo: String? = null,
+    val type: String = "Capsule", // "Capsule", "Tablet", "Liquid", "Cream"
+    val dosage: String = "",
+    val quantity: Int = 30, // 약 수량 (기본값 30개)
+    val lowStockThreshold: Int = 5 // 재고 부족 기준 (기본값 5개)
 ) 

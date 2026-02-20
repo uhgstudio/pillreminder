@@ -7,7 +7,7 @@ import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
@@ -28,10 +28,8 @@ import coil.compose.AsyncImage
 import com.uhstudio.pillreminder.ads.AdManager
 import com.uhstudio.pillreminder.data.model.Pill
 import com.uhstudio.pillreminder.data.model.PillAlarm
-import com.uhstudio.pillreminder.ui.theme.GradientPeachStart
-import com.uhstudio.pillreminder.ui.theme.GradientPeachEnd
+
 import com.uhstudio.pillreminder.util.toKoreanShort
-import kotlinx.coroutines.launch
 import com.uhstudio.pillreminder.R
 import com.uhstudio.pillreminder.data.model.ScheduleConfig
 import com.uhstudio.pillreminder.data.model.ScheduleType
@@ -48,42 +46,15 @@ fun AlarmsScreen(
     val context = LocalContext.current
     val activity = context as? Activity
     val adManager = remember { AdManager.getInstance(context) }
-    val scope = rememberCoroutineScope()
 
     val alarms by viewModel.allAlarms.collectAsState(initial = emptyList())
     val pills by viewModel.allPills.collectAsState(initial = emptyList())
     var alarmToDelete by remember { mutableStateOf<PillAlarm?>(null) }
     var showPillSelectionDialog by remember { mutableStateOf(false) }
 
-    // 화면 방문 시 광고 체크
-    LaunchedEffect(Unit) {
-        scope.launch {
-            val shouldShow = adManager.incrementAndCheckScreenVisit()
-            if (shouldShow) {
-                adManager.loadInterstitialAd {
-                    activity?.let {
-                        adManager.showInterstitialAd(it)
-                    }
-                }
-            }
-        }
-    }
-
-    // 밝은 피치-오렌지 그라디언트 배경
-    Box(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(
-                Brush.verticalGradient(
-                    colors = listOf(
-                        GradientPeachStart,
-                        GradientPeachEnd
-                    )
-                )
-            )
-    ) {
-        Scaffold(
-            containerColor = androidx.compose.ui.graphics.Color.Transparent,  // 배경 투명하게
+    // Modern Clean Layout
+    Scaffold(
+        containerColor = MaterialTheme.colorScheme.background,
             topBar = {
                 TopAppBar(
                     title = { Text(stringResource(R.string.title_alarms)) },
@@ -96,7 +67,8 @@ fun AlarmsScreen(
                 if (pills.isNotEmpty()) {
                     FloatingActionButton(
                         onClick = { showPillSelectionDialog = true },
-                        contentColor = MaterialTheme.colorScheme.onPrimaryContainer
+                        containerColor = MaterialTheme.colorScheme.primary,
+                        contentColor = MaterialTheme.colorScheme.onPrimary
                     ) {
                         Icon(
                             imageVector = Icons.Default.Add,
@@ -106,39 +78,46 @@ fun AlarmsScreen(
                 }
             }
         ) { paddingValues ->
-            if (alarms.isEmpty()) {
-                Box(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .padding(paddingValues),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Text(
-                        text = stringResource(R.string.msg_no_alarms),
-                        style = MaterialTheme.typography.bodyLarge
-                    )
-                }
-            } else {
-                LazyColumn(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .padding(paddingValues),
-                    contentPadding = PaddingValues(16.dp),
-                    verticalArrangement = Arrangement.spacedBy(8.dp)
-                ) {
-                    items(alarms) { alarm ->
-                        val pill = pills.find { it.id == alarm.pillId }
-                        AlarmItem(
-                            alarm = alarm,
-                            pill = pill,
-                            onToggle = { enabled -> viewModel.toggleAlarm(alarm, enabled) },
-                            onEdit = { onEditAlarmClick(alarm.pillId, alarm.id) },
-                            onDelete = { alarmToDelete = alarm }
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(paddingValues)
+            ) {
+                if (alarms.isEmpty()) {
+                    Box(
+                        modifier = Modifier
+                            .weight(1f)
+                            .fillMaxWidth(),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text(
+                            text = stringResource(R.string.msg_no_alarms),
+                            style = MaterialTheme.typography.bodyLarge
                         )
+                    }
+                } else {
+                    LazyColumn(
+                        modifier = Modifier
+                            .weight(1f)
+                            .fillMaxWidth(),
+                        // 플로팅 버튼과 겹치지 않도록 하단에 여유 공간 추가
+                        contentPadding = PaddingValues(start = 16.dp, end = 16.dp, top = 16.dp, bottom = 80.dp),
+                        verticalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        // 알람 목록
+                        itemsIndexed(alarms) { _, alarm ->
+                            val pill = pills.find { it.id == alarm.pillId }
+                            AlarmItem(
+                                alarm = alarm,
+                                pill = pill,
+                                onToggle = { enabled -> viewModel.toggleAlarm(alarm, enabled) },
+                                onEdit = { onEditAlarmClick(alarm.pillId, alarm.id) },
+                                onDelete = { alarmToDelete = alarm }
+                            )
+                        }
                     }
                 }
             }
-        }
     }
 
     // 알람 삭제 확인 다이얼로그
@@ -150,7 +129,14 @@ fun AlarmsScreen(
             confirmButton = {
                 TextButton(
                     onClick = {
-                        viewModel.deleteAlarm(alarm)
+                        viewModel.deleteAlarm(
+                            alarm = alarm,
+                            onShowAd = {
+                                activity?.let {
+                                    adManager.showInterstitialAd(it)
+                                }
+                            }
+                        )
                         alarmToDelete = null
                     }
                 ) {
@@ -264,11 +250,13 @@ private fun AlarmItem(
     onEdit: () -> Unit,
     onDelete: () -> Unit
 ) {
-    val scheduleDescription = remember(alarm) {
-        getScheduleDescription(alarm)
-    }
+    val scheduleDescription = getScheduleDescriptionComposable(alarm)
     Card(
-        modifier = Modifier.fillMaxWidth()
+        modifier = Modifier.fillMaxWidth(),
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.surface
+        ),
+        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
     ) {
         Row(
             modifier = Modifier
@@ -345,7 +333,7 @@ private fun AlarmItem(
                     ) {
                         Icon(
                             imageVector = Icons.Default.Edit,
-                            contentDescription = "알람 수정",
+                            contentDescription = stringResource(R.string.title_edit_alarm),
                             tint = MaterialTheme.colorScheme.primary
                         )
                     }
@@ -370,79 +358,109 @@ private fun AlarmItem(
 }
 
 
-private fun getScheduleDescription(alarm: PillAlarm): String {
-    timber.log.Timber.d("AlarmScreen getScheduleDescription: alarmId=${alarm.id}, scheduleType=${alarm.scheduleType}, scheduleConfig=${alarm.scheduleConfig}, repeatDays=${alarm.repeatDays}")
+@Composable
+private fun getScheduleDescriptionComposable(alarm: PillAlarm): String {
+    val context = LocalContext.current
+    val dailyText = stringResource(R.string.schedule_daily)
+    val noRepeatText = stringResource(R.string.schedule_no_repeat)
+    val customText = stringResource(R.string.schedule_custom)
+    val specificDatesNoneText = stringResource(R.string.schedule_specific_dates_none)
+    val specificDatesText = stringResource(R.string.schedule_specific_dates)
+
+    return remember(alarm) {
+        getScheduleDescriptionInternal(
+            alarm = alarm,
+            context = context,
+            dailyText = dailyText,
+            noRepeatText = noRepeatText,
+            customText = customText,
+            specificDatesNoneText = specificDatesNoneText,
+            specificDatesText = specificDatesText
+        )
+    }
+}
+
+private fun getScheduleDescriptionInternal(
+    alarm: PillAlarm,
+    context: android.content.Context,
+    dailyText: String,
+    noRepeatText: String,
+    customText: String,
+    specificDatesNoneText: String,
+    specificDatesText: String
+): String {
+    timber.log.Timber.d("AlarmsScreen getScheduleDescription: alarmId=${alarm.id}, scheduleType=${alarm.scheduleType}, scheduleConfig=${alarm.scheduleConfig}, repeatDays=${alarm.repeatDays}")
 
     return try {
-        Log.d(  "AlarmScreen", "AlarmItem: scheduleType=${alarm.scheduleType}")
+        Log.d("AlarmsScreen", "AlarmItem: scheduleType=${alarm.scheduleType}")
         when (alarm.scheduleType) {
             ScheduleType.DAILY -> {
-                timber.log.Timber.d("AlarmScreen: DAILY type")
-                "매일"
+                timber.log.Timber.d("AlarmsScreen: DAILY type")
+                dailyText
             }
             ScheduleType.WEEKLY -> {
-                timber.log.Timber.d("AlarmScreen: WEEKLY type, trying to parse scheduleConfig")
+                timber.log.Timber.d("AlarmsScreen: WEEKLY type, trying to parse scheduleConfig")
 
                 // 먼저 scheduleConfig 시도
                 val days = if (alarm.scheduleConfig != null && alarm.scheduleConfig.isNotBlank()) {
                     try {
                         val config = Json { ignoreUnknownKeys = true }.decodeFromString<ScheduleConfig.Weekly>(alarm.scheduleConfig)
                         val parsedDays = config.toDayOfWeekSet()
-                        timber.log.Timber.d("AlarmScreen: Parsed days from scheduleConfig: $parsedDays")
+                        timber.log.Timber.d("AlarmsScreen: Parsed days from scheduleConfig: $parsedDays")
                         parsedDays
                     } catch (e: Exception) {
-                        timber.log.Timber.e(e, "AlarmScreen: Failed to parse scheduleConfig, falling back to repeatDays")
+                        timber.log.Timber.e(e, "AlarmsScreen: Failed to parse scheduleConfig, falling back to repeatDays")
                         @Suppress("DEPRECATION")
                         alarm.repeatDays
                     }
                 } else {
-                    timber.log.Timber.d("AlarmScreen: No scheduleConfig, using repeatDays: ${alarm.repeatDays}")
+                    timber.log.Timber.d("AlarmsScreen: No scheduleConfig, using repeatDays: ${alarm.repeatDays}")
                     @Suppress("DEPRECATION")
                     alarm.repeatDays
                 }
 
-                timber.log.Timber.d("AlarmScreen: Final days for WEEKLY: $days")
+                timber.log.Timber.d("AlarmsScreen: Final days for WEEKLY: $days")
                 when {
                     days.isEmpty() -> {
-                        timber.log.Timber.w("AlarmScreen: Days is empty!")
-                        "반복 없음"
+                        timber.log.Timber.w("AlarmsScreen: Days is empty!")
+                        noRepeatText
                     }
-                    days.size == 7 -> "매일"
+                    days.size == 7 -> dailyText
                     else -> days.sortedBy { it.value }.joinToString(" ") { it.toKoreanShort() }
                 }
             }
             ScheduleType.INTERVAL_DAYS -> {
-                timber.log.Timber.d("AlarmScreen: INTERVAL_DAYS type")
+                timber.log.Timber.d("AlarmsScreen: INTERVAL_DAYS type")
                 if (alarm.scheduleConfig == null || alarm.scheduleConfig.isBlank()) {
-                    return "N일 마다"
+                    return context.getString(R.string.schedule_every_n_days, 0)
                 }
                 val config = Json { ignoreUnknownKeys = true }.decodeFromString<ScheduleConfig.IntervalDays>(alarm.scheduleConfig)
-                "${config.intervalDays}일 마다"
+                context.getString(R.string.schedule_every_n_days, config.intervalDays)
             }
             ScheduleType.SPECIFIC_DATES -> {
-                timber.log.Timber.d("AlarmScreen: SPECIFIC_DATES type")
+                timber.log.Timber.d("AlarmsScreen: SPECIFIC_DATES type")
                 if (alarm.scheduleConfig == null || alarm.scheduleConfig.isBlank()) {
-                    return "특정 날짜"
+                    return specificDatesText
                 }
                 val config = Json { ignoreUnknownKeys = true }.decodeFromString<ScheduleConfig.SpecificDates>(alarm.scheduleConfig)
                 val dates = config.getDatesAsLocalDateSet()
                 if (dates.isEmpty()) {
-                    "특정 날짜 (미설정)"
+                    specificDatesNoneText
                 } else {
-                    "특정 날짜 (${dates.size}개)"
+                    context.getString(R.string.schedule_specific_dates_count, dates.size)
                 }
             }
-            ScheduleType.CUSTOM -> "커스텀"
+            ScheduleType.CUSTOM -> customText
         }
     } catch (e: Exception) {
-        timber.log.Timber.e(e, "AlarmScreen: Exception in getScheduleDescription")
+        timber.log.Timber.e(e, "AlarmsScreen: Exception in getScheduleDescription")
         // 파싱 실패 시 레거시 방식으로 fallback
         @Suppress("DEPRECATION")
         val days = alarm.repeatDays
-        timber.log.Timber.d("AlarmScreen: Fallback to repeatDays: $days")
+        timber.log.Timber.d("AlarmsScreen: Fallback to repeatDays: $days")
         when {
-            days.isEmpty() -> "반복 없음"
-            days.size == 7 -> "매일"
+            days.isEmpty() -> noRepeatText
+            days.size == 7 -> dailyText
             else -> days.sortedBy { it.value }.joinToString(" ") { it.toKoreanShort() }
         }
     }

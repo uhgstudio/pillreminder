@@ -11,8 +11,10 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import java.time.DayOfWeek
 import java.time.LocalTime
 import com.uhstudio.pillreminder.R
+import com.uhstudio.pillreminder.util.toKoreanShort
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -78,7 +80,7 @@ fun EditAlarmScreen(
                     modifier = Modifier.padding(16.dp)
                 ) {
                     Text(
-                        text = "알람 시간",
+                        text = stringResource(R.string.dialog_set_alarm_time),
                         style = MaterialTheme.typography.titleMedium,
                         modifier = Modifier.padding(bottom = 16.dp)
                     )
@@ -106,17 +108,16 @@ fun EditAlarmScreen(
                     LazyRow(
                         horizontalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
-                        items(listOf(1, 2, 3, 4, 5, 6, 7)) { day ->
-                            val dayName = when(day) {
-                                1 -> "월"
-                                2 -> "화"
-                                3 -> "수"
-                                4 -> "목"
-                                5 -> "금"
-                                6 -> "토"
-                                7 -> "일"
-                                else -> ""
-                            }
+                        items(listOf(
+                            1 to DayOfWeek.MONDAY,
+                            2 to DayOfWeek.TUESDAY,
+                            3 to DayOfWeek.WEDNESDAY,
+                            4 to DayOfWeek.THURSDAY,
+                            5 to DayOfWeek.FRIDAY,
+                            6 to DayOfWeek.SATURDAY,
+                            7 to DayOfWeek.SUNDAY
+                        )) { (day, dayOfWeek) ->
+                            val dayName = dayOfWeek.toKoreanShort()
                             
                             FilterChip(
                                 onClick = { viewModel.toggleDay(day) },

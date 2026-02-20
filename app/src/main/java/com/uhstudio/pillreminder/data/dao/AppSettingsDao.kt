@@ -96,4 +96,36 @@ interface AppSettingsDao {
      */
     @Query("SELECT isPremiumUser FROM app_settings WHERE id = 1")
     suspend fun isPremiumUser(): Boolean?
+
+    /**
+     * 첫 실행 시간 업데이트
+     */
+    @Query("""
+        UPDATE app_settings
+        SET firstLaunchTime = :time
+        WHERE id = 1
+    """)
+    suspend fun updateFirstLaunchTime(time: Long)
+
+    /**
+     * 광고 표시 가능 여부 확인 (프리미엄 + 유예 기간)
+     */
+    @Query("SELECT firstLaunchTime FROM app_settings WHERE id = 1")
+    suspend fun getFirstLaunchTime(): Long?
+
+    /**
+     * 마지막 앱 오프닝 광고 표시 시간 업데이트
+     */
+    @Query("""
+        UPDATE app_settings
+        SET lastAppOpenAdShownTime = :time
+        WHERE id = 1
+    """)
+    suspend fun updateLastAppOpenAdShownTime(time: Long)
+
+    /**
+     * 마지막 앱 오프닝 광고 표시 시간 가져오기
+     */
+    @Query("SELECT lastAppOpenAdShownTime FROM app_settings WHERE id = 1")
+    suspend fun getLastAppOpenAdShownTime(): Long?
 }

@@ -98,6 +98,13 @@
     <string name="msg_add_alarm_hint">Toque + para añadir alarma.</string>
     <string name="msg_no_intake_history">Sin historial.</string>
 
+    <!-- Detalle de Medicamento - Historial de Toma -->
+    <string name="pill_detail_intake_history">Historial de Toma</string>
+    <string name="pill_detail_history_count"> registros</string>
+    <string name="pill_detail_no_history">Aún no hay historial de toma.</string>
+    <string name="pill_detail_show_more">+%d más</string>
+    <string name="pill_detail_show_less">Mostrar menos</string>
+
     <string name="calendar_monthly_stats">Estado de %s</string>
     <string name="calendar_adherence_rate">Tasa: %d%%</string>
     <string name="calendar_stats_detail">Tomadas: %1$d | Omitidas: %2$d</string>
@@ -152,4 +159,62 @@
     <string name="loading">Cargando…</string>
     <string name="ok">OK</string>
     <string name="close">Cerrar</string>
+
+    <!-- Días de la Semana (Corto) -->
+    <string name="day_mon_short">Lun</string>
+    <string name="day_tue_short">Mar</string>
+    <string name="day_wed_short">Mié</string>
+    <string name="day_thu_short">Jue</string>
+    <string name="day_fri_short">Vie</string>
+    <string name="day_sat_short">Sáb</string>
+    <string name="day_sun_short">Dom</string>
+
+    <!-- Días de la Semana (Completo) -->
+    <string name="day_mon_full">Lunes</string>
+    <string name="day_tue_full">Martes</string>
+    <string name="day_wed_full">Miércoles</string>
+    <string name="day_thu_full">Jueves</string>
+    <string name="day_fri_full">Viernes</string>
+    <string name="day_sat_full">Sábado</string>
+    <string name="day_sun_full">Domingo</string>
+
+    <!-- Descripciones de Horario -->
+    <string name="schedule_no_repeat">Sin repetición</string>
+    <string name="schedule_every_n_days">Cada %d días</string>
+    <string name="schedule_specific_dates_count">Fechas específicas (%d)</string>
+    <string name="schedule_specific_dates_none">Fechas específicas (no establecido)</string>
+    <string name="schedule_custom">Personalizado</string>
+
+    <!-- Texto UI -->
+    <string name="btn_collapse">Contraer</string>
+    <string name="btn_expand">Expandir</string>
+    <string name="label_today">Hoy</string>
+    <string name="label_yesterday">Ayer</string>
+    <string name="label_later">Más tarde</string>
+    <string name="label_start_date">Fecha de inicio</string>
+    <string name="label_end_date">Fecha de fin</string>
+    <string name="label_not_set">No establecido</string>
+    <string name="label_alarm_sound">Sonido de alarma</string>
+    <string name="btn_clear">Borrar</string>
+    <string name="label_every">Cada</string>
+    <string name="label_interval_suffix">días</string>
+    <string name="label_edit">Editar</string>
+    <string name="default_pill_name">Medicamento</string>
+
+    <!-- Formato de Fecha -->
+    <string name="date_format_ymd">dd MMM yyyy</string>
+
+    <!-- Permisos -->
+    <string name="btn_go_to_settings">Ir a Ajustes</string>
+
+    <!-- Configuración del período de gracia de anuncios -->
+    <string name="settings_ad_grace_period">Período de Gracia</string>
+    <string name="settings_ad_grace_period_status">Estado: %s</string>
+    <string name="settings_ad_grace_period_active">Período activo (%d horas restantes)</string>
+    <string name="settings_ad_grace_period_expired">Período expirado</string>
+    <string name="settings_ad_grace_period_not_set">No establecido</string>
+    <string name="btn_reset_grace_period">Restablecer período (Test)</string>
+    <string name="btn_skip_grace_period">Omitir período (Test)</string>
+    <string name="msg_grace_period_reset">El período de gracia se ha restablecido.</string>
+    <string name="settings_ad_grace_period_skipped">Período omitido. Los anuncios aparecerán ahora.</string>
 </resources>

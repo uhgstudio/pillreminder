@@ -14,6 +14,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import android.content.Context
 import com.uhstudio.pillreminder.data.model.PillAlarm
 import com.uhstudio.pillreminder.data.model.ScheduleConfig
 import com.uhstudio.pillreminder.data.model.ScheduleType
@@ -100,9 +101,7 @@ fun AlarmItem(
     onDeleteClick: () -> Unit,
     onEnabledChange: (Boolean) -> Unit
 ) {
-    val scheduleDescription = remember(alarm) {
-        getScheduleDescription(alarm)
-    }
+    val scheduleDescription = getScheduleDescriptionComposable(alarm)
 
     Card(
         modifier = Modifier.fillMaxWidth()
@@ -146,15 +145,45 @@ fun AlarmItem(
     }
 }
 
-private fun getScheduleDescription(alarm: PillAlarm): String {
+@Composable
+private fun getScheduleDescriptionComposable(alarm: PillAlarm): String {
+    val context = LocalContext.current
+    val dailyText = stringResource(R.string.schedule_daily)
+    val noRepeatText = stringResource(R.string.schedule_no_repeat)
+    val customText = stringResource(R.string.schedule_custom)
+    val specificDatesNoneText = stringResource(R.string.schedule_specific_dates_none)
+    val specificDatesText = stringResource(R.string.schedule_specific_dates)
+
+    return remember(alarm) {
+        getScheduleDescriptionInternal(
+            alarm = alarm,
+            context = context,
+            dailyText = dailyText,
+            noRepeatText = noRepeatText,
+            customText = customText,
+            specificDatesNoneText = specificDatesNoneText,
+            specificDatesText = specificDatesText
+        )
+    }
+}
+
+private fun getScheduleDescriptionInternal(
+    alarm: PillAlarm,
+    context: Context,
+    dailyText: String,
+    noRepeatText: String,
+    customText: String,
+    specificDatesNoneText: String,
+    specificDatesText: String
+): String {
     timber.log.Timber.d("AlarmScreen getScheduleDescription: alarmId=${alarm.id}, scheduleType=${alarm.scheduleType}, scheduleConfig=${alarm.scheduleConfig}, repeatDays=${alarm.repeatDays}")
 
     return try {
-        Log.d(  "AlarmScreen", "AlarmItem: scheduleType=${alarm.scheduleType}")
+        Log.d("AlarmScreen", "AlarmItem: scheduleType=${alarm.scheduleType}")
         when (alarm.scheduleType) {
             ScheduleType.DAILY -> {
                 timber.log.Timber.d("AlarmScreen: DAILY type")
-                "매일"
+                dailyText
             }
             ScheduleType.WEEKLY -> {
                 timber.log.Timber.d("AlarmScreen: WEEKLY type, trying to parse scheduleConfig")
@@ -181,34 +210,34 @@ private fun getScheduleDescription(alarm: PillAlarm): String {
                 when {
                     days.isEmpty() -> {
                         timber.log.Timber.w("AlarmScreen: Days is empty!")
-                        "반복 없음"
+                        noRepeatText
                     }
-                    days.size == 7 -> "매일"
+                    days.size == 7 -> dailyText
                     else -> days.sortedBy { it.value }.joinToString(" ") { it.toKoreanShort() }
                 }
             }
             ScheduleType.INTERVAL_DAYS -> {
                 timber.log.Timber.d("AlarmScreen: INTERVAL_DAYS type")
                 if (alarm.scheduleConfig == null || alarm.scheduleConfig.isBlank()) {
-                    return "N일 마다"
+                    return context.getString(R.string.schedule_every_n_days, 0)
                 }
                 val config = Json { ignoreUnknownKeys = true }.decodeFromString<ScheduleConfig.IntervalDays>(alarm.scheduleConfig)
-                "${config.intervalDays}일 마다"
+                context.getString(R.string.schedule_every_n_days, config.intervalDays)
             }
             ScheduleType.SPECIFIC_DATES -> {
                 timber.log.Timber.d("AlarmScreen: SPECIFIC_DATES type")
                 if (alarm.scheduleConfig == null || alarm.scheduleConfig.isBlank()) {
-                    return "특정 날짜"
+                    return specificDatesText
                 }
                 val config = Json { ignoreUnknownKeys = true }.decodeFromString<ScheduleConfig.SpecificDates>(alarm.scheduleConfig)
                 val dates = config.getDatesAsLocalDateSet()
                 if (dates.isEmpty()) {
-                    "특정 날짜 (미설정)"
+                    specificDatesNoneText
                 } else {
-                    "특정 날짜 (${dates.size}개)"
+                    context.getString(R.string.schedule_specific_dates_count, dates.size)
                 }
             }
-            ScheduleType.CUSTOM -> "커스텀"
+            ScheduleType.CUSTOM -> customText
         }
     } catch (e: Exception) {
         timber.log.Timber.e(e, "AlarmScreen: Exception in getScheduleDescription")
@@ -217,8 +246,8 @@ private fun getScheduleDescription(alarm: PillAlarm): String {
         val days = alarm.repeatDays
         timber.log.Timber.d("AlarmScreen: Fallback to repeatDays: $days")
         when {
-            days.isEmpty() -> "반복 없음"
-            days.size == 7 -> "매일"
+            days.isEmpty() -> noRepeatText
+            days.size == 7 -> dailyText
             else -> days.sortedBy { it.value }.joinToString(" ") { it.toKoreanShort() }
         }
     }

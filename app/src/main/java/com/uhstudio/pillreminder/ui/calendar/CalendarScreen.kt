@@ -1,100 +1,102 @@
 package com.uhstudio.pillreminder.ui.calendar
 
-import android.app.Activity
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.aspectRatio
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.grid.GridCells
-import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowLeft
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
-import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.Cancel
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.material.icons.filled.CheckCircle
+import androidx.compose.material.icons.filled.Medication
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.TopAppBarDefaults
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import com.uhstudio.pillreminder.ads.AdManager
-import com.uhstudio.pillreminder.ui.theme.GradientGoldStart
-import com.uhstudio.pillreminder.ui.theme.GradientPeachEnd
+import androidx.compose.ui.unit.sp
+import com.uhstudio.pillreminder.R
 import com.uhstudio.pillreminder.data.model.IntakeHistoryWithPill
-import kotlinx.coroutines.launch
-import java.time.DayOfWeek
+import com.uhstudio.pillreminder.data.model.IntakeStatus
+import com.uhstudio.pillreminder.ui.calendar.CalendarViewModel
+import com.uhstudio.pillreminder.ui.calendar.DateStatus
+import com.uhstudio.pillreminder.ui.calendar.MonthlyStats
+import com.uhstudio.pillreminder.ui.theme.StitchCream
+import com.uhstudio.pillreminder.ui.theme.StitchMint
+import com.uhstudio.pillreminder.ui.theme.StitchPeach
+import com.uhstudio.pillreminder.ui.theme.StitchPrimary
+import com.uhstudio.pillreminder.ui.theme.StitchSageDark
+import com.uhstudio.pillreminder.ui.theme.StitchSecondary
+import com.uhstudio.pillreminder.ui.theme.StitchTerracotta
+import com.uhstudio.pillreminder.ui.theme.StitchTypography
 import java.time.LocalDate
 import java.time.YearMonth
 import java.time.format.DateTimeFormatter
-import java.time.format.TextStyle
-import java.util.*
-import com.uhstudio.pillreminder.R
+import java.util.Locale
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun CalendarScreen(
     viewModel: CalendarViewModel
 ) {
-    val context = LocalContext.current
-    val activity = context as? Activity
-    val adManager = remember { AdManager.getInstance(context) }
-    val scope = rememberCoroutineScope()
-
     var selectedDate by remember { mutableStateOf(LocalDate.now()) }
     var currentYearMonth by remember { mutableStateOf(YearMonth.from(selectedDate)) }
 
     val intakeHistory by viewModel.getIntakeHistoryForDate(selectedDate)
         .collectAsState(initial = emptyList())
-    val monthlyStats by viewModel.getMonthlyStats(currentYearMonth)
-        .collectAsState(initial = MonthlyStats())
     val dateStatusMap by viewModel.getDateStatusMap(
         currentYearMonth.atDay(1),
         currentYearMonth.atEndOfMonth()
     ).collectAsState(initial = emptyMap())
 
-    // 화면 방문 시 광고 체크
-    LaunchedEffect(Unit) {
-        scope.launch {
-            val shouldShow = adManager.incrementAndCheckScreenVisit()
-            if (shouldShow) {
-                adManager.loadInterstitialAd {
-                    activity?.let {
-                        adManager.showInterstitialAd(it)
-                    }
-                }
-            }
-        }
-    }
-
-    // 밝은 골드-피치 그라디언트 배경
-    Box(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(
-                Brush.verticalGradient(
-                    colors = listOf(
-                        GradientGoldStart,
-                        GradientPeachEnd
-                    )
-                )
-            )
-    ) {
+    Box(modifier = Modifier.fillMaxSize().background(Color(0xFFFDFCF8))) { // Paper Background
         Scaffold(
-            containerColor = Color.Transparent,  // 배경 투명하게
+            containerColor = Color.Transparent,
             topBar = {
                 TopAppBar(
-                    title = { Text(stringResource(R.string.title_calendar)) },
-                    colors = TopAppBarDefaults.topAppBarColors(
-                        containerColor = Color.Transparent
-                    )
+                    title = {
+                        Text(
+                            stringResource(R.string.calendar_wellness_history_title),
+                            style = StitchTypography.headlineMedium.copy(color = StitchSageDark, fontWeight = FontWeight.Bold)
+                        )
+                    },
+                    colors = TopAppBarDefaults.topAppBarColors(containerColor = Color.Transparent)
                 )
             }
         ) { paddingValues ->
@@ -103,24 +105,50 @@ fun CalendarScreen(
                     .fillMaxSize()
                     .padding(paddingValues)
                     .verticalScroll(rememberScrollState())
+                    .padding(horizontal = 20.dp)
             ) {
-
-                CalendarHeader(
-                    yearMonth = currentYearMonth,
-                    onPreviousMonth = { currentYearMonth = currentYearMonth.minusMonths(1) },
-                    onNextMonth = { currentYearMonth = currentYearMonth.plusMonths(1) }
+                // Journal Header Section
+                Text(
+                    stringResource(R.string.calendar_motivation_quote),
+                    style = StitchTypography.bodyMedium.copy(color = StitchSageDark.copy(alpha = 0.5f), lineHeight = 20.sp),
+                    modifier = Modifier.padding(bottom = 24.dp)
                 )
 
-                // 범례
-                //LegendRow(modifier = Modifier.padding(horizontal = 16.dp, vertical = 4.dp))
+                // Calendar Container
+                Card(
+                    modifier = Modifier.fillMaxWidth().shadow(8.dp, RoundedCornerShape(32.dp), spotColor = StitchSageDark.copy(alpha = 0.05f)),
+                    shape = RoundedCornerShape(32.dp),
+                    colors = CardDefaults.cardColors(containerColor = Color.White),
+                    border = BorderStroke(1.dp, StitchPeach.copy(alpha = 0.1f))
+                ) {
+                    Column(modifier = Modifier.padding(16.dp)) {
+                        CalendarHeader(
+                            yearMonth = currentYearMonth,
+                            onPreviousMonth = { currentYearMonth = currentYearMonth.minusMonths(1) },
+                            onNextMonth = { currentYearMonth = currentYearMonth.plusMonths(1) }
+                        )
 
-                CalendarGrid(
-                    yearMonth = currentYearMonth,
-                    selectedDate = selectedDate,
-                    dateStatusMap = dateStatusMap,
-                    onDateSelected = { selectedDate = it }
+                        Spacer(modifier = Modifier.height(16.dp))
+
+                        CalendarGrid(
+                            yearMonth = currentYearMonth,
+                            selectedDate = selectedDate,
+                            dateStatusMap = dateStatusMap,
+                            onDateSelected = { selectedDate = it }
+                        )
+                    }
+                }
+
+                Spacer(modifier = Modifier.height(32.dp))
+
+                // Daily Log Section Title
+                Text(
+                    stringResource(R.string.calendar_daily_log),
+                    style = StitchTypography.headlineSmall.copy(color = StitchSageDark, fontWeight = FontWeight.Bold),
+                    modifier = Modifier.padding(start = 4.dp, bottom = 16.dp)
                 )
 
+                // Intake History List
                 IntakeHistoryList(
                     intakeHistory = intakeHistory,
                     selectedDate = selectedDate,
@@ -128,13 +156,7 @@ fun CalendarScreen(
                     viewModel = viewModel
                 )
 
-                // 월간 통계 카드
-                MonthlyStatsCard(
-                    yearMonth = currentYearMonth,
-                    stats = monthlyStats,
-                    modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
-                )
-
+                Spacer(modifier = Modifier.height(100.dp))
             }
         }
     }
@@ -146,39 +168,53 @@ fun CalendarHeader(
     onPreviousMonth: () -> Unit,
     onNextMonth: () -> Unit
 ) {
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(16.dp),
-        horizontalArrangement = Arrangement.SpaceBetween,
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        IconButton(onClick = onPreviousMonth) {
-            Icon(Icons.AutoMirrored.Filled.KeyboardArrowLeft, contentDescription = "Previous month")
-        }
-
-        Text(
-            text = yearMonth.format(DateTimeFormatter.ofPattern("yyyy년 M월")),
-            style = MaterialTheme.typography.titleLarge
-        )
-
-        IconButton(onClick = onNextMonth) {
-            Icon(Icons.AutoMirrored.Filled.KeyboardArrowRight, contentDescription = "Next month")
-        }
-    }
-
-    // 요일 헤더
-    Row(
-        modifier = Modifier.fillMaxWidth(),
-        horizontalArrangement = Arrangement.SpaceEvenly
-    ) {
-        DayOfWeek.values().forEach { dayOfWeek ->
+    Column {
+        Row(
+            modifier = Modifier.fillMaxWidth().padding(horizontal = 8.dp),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
             Text(
-                text = dayOfWeek.getDisplayName(TextStyle.SHORT, Locale.getDefault()),
-                modifier = Modifier.weight(1f),
-                textAlign = TextAlign.Center,
-                style = MaterialTheme.typography.bodyMedium
+                text = yearMonth.format(DateTimeFormatter.ofPattern(stringResource(R.string.calendar_month_year_format), Locale.getDefault())),
+                style = StitchTypography.titleLarge.copy(color = StitchSageDark, fontWeight = FontWeight.Bold)
             )
+            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                IconButton(
+                    onClick = onPreviousMonth,
+                    modifier = Modifier.size(36.dp).background(StitchCream, CircleShape)
+                ) {
+                    Icon(Icons.AutoMirrored.Filled.KeyboardArrowLeft, null, tint = StitchSageDark, modifier = Modifier.size(20.dp))
+                }
+                IconButton(
+                    onClick = onNextMonth,
+                    modifier = Modifier.size(36.dp).background(StitchCream, CircleShape)
+                ) {
+                    Icon(Icons.AutoMirrored.Filled.KeyboardArrowRight, null, tint = StitchSageDark, modifier = Modifier.size(20.dp))
+                }
+            }
+        }
+
+        Spacer(modifier = Modifier.height(16.dp))
+
+        // Weekday Headers
+        Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceEvenly) {
+            val days = listOf(
+                stringResource(R.string.day_sun_short),
+                stringResource(R.string.day_mon_short),
+                stringResource(R.string.day_tue_short),
+                stringResource(R.string.day_wed_short),
+                stringResource(R.string.day_thu_short),
+                stringResource(R.string.day_fri_short),
+                stringResource(R.string.day_sat_short)
+            )
+            days.forEach { day ->
+                Text(
+                    text = day,
+                    modifier = Modifier.weight(1f),
+                    textAlign = TextAlign.Center,
+                    style = StitchTypography.labelSmall.copy(color = StitchSageDark.copy(alpha = 0.3f), fontWeight = FontWeight.Bold)
+                )
+            }
         }
     }
 }
@@ -190,28 +226,41 @@ fun CalendarGrid(
     dateStatusMap: Map<LocalDate, DateStatus>,
     onDateSelected: (LocalDate) -> Unit
 ) {
+    val daysInMonth = yearMonth.lengthOfMonth()
     val firstDayOfMonth = yearMonth.atDay(1)
-    val firstDayOfGrid = firstDayOfMonth.minusDays(firstDayOfMonth.dayOfWeek.value.toLong() - 1)
+    val dayOfWeekOffset = firstDayOfMonth.dayOfWeek.value % 7 // Sunday = 0
+    val totalCells = daysInMonth + dayOfWeekOffset
+    val weeks = (totalCells + 6) / 7
 
-    LazyVerticalGrid(
-        columns = GridCells.Fixed(7),
-        modifier = Modifier
-            .fillMaxWidth()
-            .height(320.dp)
-    ) {
-        items(42) { index ->
-            val date = firstDayOfGrid.plusDays(index.toLong())
-            val isSelected = date == selectedDate
-            val isCurrentMonth = date.month == yearMonth.month
-            val status = dateStatusMap[date]
+    Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+        for (i in 0 until weeks) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceEvenly
+            ) {
+                for (j in 0 until 7) {
+                    val dayIndex = i * 7 + j - dayOfWeekOffset + 1
+                    if (dayIndex in 1..daysInMonth) {
+                        val date = yearMonth.atDay(dayIndex)
+                        val isSelected = date == selectedDate
+                        val isCurrentMonth = true // Optimized logic
+                        // Fix for DateStatus logic: user might pass null if no data
+                        val status = dateStatusMap[date]
 
-            CalendarDay(
-                date = date,
-                isSelected = isSelected,
-                isCurrentMonth = isCurrentMonth,
-                status = status,
-                onClick = { onDateSelected(date) }
-            )
+                        Box(modifier = Modifier.weight(1f)) {
+                            CalendarDay(
+                                date = date,
+                                isSelected = isSelected,
+                                isCurrentMonth = isCurrentMonth,
+                                status = status,
+                                onClick = { onDateSelected(date) }
+                            )
+                        }
+                    } else {
+                        Spacer(modifier = Modifier.weight(1f).aspectRatio(1f))
+                    }
+                }
+            }
         }
     }
 }
@@ -224,50 +273,37 @@ fun CalendarDay(
     status: DateStatus?,
     onClick: () -> Unit
 ) {
-    val backgroundColor = when {
-        isSelected -> MaterialTheme.colorScheme.primaryContainer
-        status == DateStatus.TAKEN -> MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.3f)
-        status == DateStatus.SKIPPED -> MaterialTheme.colorScheme.errorContainer.copy(alpha = 0.3f)
-        else -> Color.Transparent
-    }
-
     Box(
         modifier = Modifier
             .aspectRatio(1f)
-            .padding(2.dp)
-            .background(backgroundColor)
-            .border(
-                width = if (isSelected) 2.dp else 0.dp,
-                color = if (isSelected) MaterialTheme.colorScheme.primary else Color.Transparent
-            )
-            .clickable(onClick = onClick),
+            .padding(4.dp)
+            .clip(CircleShape)
+            .background(if (isSelected) StitchTerracotta else Color.Transparent)
+            .clickable(enabled = isCurrentMonth, onClick = onClick),
         contentAlignment = Alignment.Center
     ) {
-        Column(
-            horizontalAlignment = Alignment.CenterHorizontally
-        ) {
+        Column(horizontalAlignment = Alignment.CenterHorizontally) {
             Text(
                 text = date.dayOfMonth.toString(),
-                style = MaterialTheme.typography.bodyMedium,
-                color = when {
-                    !isCurrentMonth -> MaterialTheme.colorScheme.outline
-                    isSelected -> MaterialTheme.colorScheme.onPrimaryContainer
-                    else -> MaterialTheme.colorScheme.onSurface
-                }
+                style = StitchTypography.bodyMedium.copy(
+                    fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Medium,
+                    color = when {
+                        !isCurrentMonth -> Color.Transparent
+                        isSelected -> Color.White
+                        else -> StitchSageDark
+                    }
+                )
             )
-
-            // 상태 표시 점
-            if (status != null && isCurrentMonth) {
+            
+            // Minimal Dot status (Stitch style)
+            if (status != null && isCurrentMonth && !isSelected) {
                 Box(
                     modifier = Modifier
+                        .padding(top = 2.dp)
                         .size(4.dp)
                         .background(
-                            when (status) {
-                                DateStatus.TAKEN -> MaterialTheme.colorScheme.primary
-                                DateStatus.SKIPPED -> MaterialTheme.colorScheme.error
-                                DateStatus.NONE -> Color.Transparent
-                            },
-                            shape = MaterialTheme.shapes.small
+                            if (status == DateStatus.TAKEN) StitchSecondary else StitchPrimary,
+                            CircleShape
                         )
                 )
             }
@@ -282,41 +318,26 @@ fun IntakeHistoryList(
     selectedDate: LocalDate = LocalDate.now(),
     viewModel: CalendarViewModel
 ) {
-    // 디버깅 로그
-    timber.log.Timber.d("IntakeHistoryList: Rendering ${intakeHistory.size} items for date=$selectedDate")
-
-    Card(
-        modifier = modifier.padding(16.dp)
-    ) {
-        Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(16.dp)
+    if (intakeHistory.isEmpty()) {
+        Box(
+            modifier = modifier.fillMaxWidth().height(120.dp),
+            contentAlignment = Alignment.Center
         ) {
-            // 선택된 날짜 표시
             Text(
-                text = "${selectedDate.format(DateTimeFormatter.ofPattern("M월 d일 (E)", java.util.Locale.KOREAN))} 복용 기록",
-                style = MaterialTheme.typography.titleMedium,
-                modifier = Modifier.padding(bottom = 8.dp)
+                stringResource(R.string.msg_no_intake_history),
+                style = StitchTypography.bodyMedium.copy(color = StitchSageDark.copy(alpha = 0.3f))
             )
-
-            if (intakeHistory.isEmpty()) {
-                Text(
-                    text = stringResource(R.string.msg_no_intake_history),
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
-            } else {
-                // LazyColumn 대신 일반 Column 사용 (하루 복용 기록은 많지 않음)
-                Column {
-                    intakeHistory.forEachIndexed { index, historyWithPill ->
-                        IntakeHistoryItem(
-                            historyWithPill = historyWithPill,
-                            isLast = index == intakeHistory.size - 1,
-                            viewModel = viewModel
-                        )
+        }
+    } else {
+        Column(modifier = modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(16.dp)) {
+            intakeHistory.forEach { historyWithPill ->
+                IntakeHistoryItem(
+                    historyWithPill = historyWithPill,
+                    onStatusToggle = { item ->
+                        val newStatus = if (item.history.status == IntakeStatus.TAKEN) IntakeStatus.SKIPPED else IntakeStatus.TAKEN
+                        viewModel.updateIntakeStatus(item.history.id, newStatus)
                     }
-                }
+                )
             }
         }
     }
@@ -325,76 +346,64 @@ fun IntakeHistoryList(
 @Composable
 fun IntakeHistoryItem(
     historyWithPill: IntakeHistoryWithPill,
-    isLast: Boolean,
-    viewModel: CalendarViewModel
+    onStatusToggle: (IntakeHistoryWithPill) -> Unit
 ) {
     val history = historyWithPill.history
-    val pill = historyWithPill.pill
-    var isTaken by remember(history.id, history.status) {
-        mutableStateOf(history.status == com.uhstudio.pillreminder.data.model.IntakeStatus.TAKEN)
-    }
+    val isTaken = history.status == IntakeStatus.TAKEN
 
-    Column(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(vertical = 8.dp)
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(16.dp)
     ) {
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically
+        // Time Display
+        Text(
+            text = history.intakeTime.format(DateTimeFormatter.ofPattern("a hh:mm", Locale.getDefault())),
+            style = StitchTypography.labelMedium.copy(color = StitchSageDark, fontWeight = FontWeight.Bold),
+            modifier = Modifier.width(64.dp)
+        )
+
+        // Pill Card (Stitch Style)
+        Card(
+            modifier = Modifier
+                .weight(1f)
+                .shadow(4.dp, RoundedCornerShape(20.dp), spotColor = StitchSageDark.copy(alpha = 0.05f))
+                .clickable {
+                    onStatusToggle(historyWithPill)
+                },
+            shape = RoundedCornerShape(20.dp),
+            colors = CardDefaults.cardColors(containerColor = Color.White),
+            border = BorderStroke(1.dp, StitchPeach.copy(alpha = 0.1f))
         ) {
-            Column(modifier = Modifier.weight(1f)) {
-                Text(
-                    text = pill.name,
-                    style = MaterialTheme.typography.titleSmall,
-                    color = MaterialTheme.colorScheme.onSurface
-                )
-                Text(
-                    text = history.intakeTime.format(
-                        DateTimeFormatter.ofPattern("a hh:mm")
-                    ),
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
-            }
-
             Row(
-                horizontalArrangement = Arrangement.spacedBy(8.dp),
-                verticalAlignment = Alignment.CenterVertically
+                modifier = Modifier.padding(16.dp),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.SpaceBetween
             ) {
-                Text(
-                    text = if (isTaken) stringResource(R.string.status_taken) else stringResource(R.string.status_skipped),
-                    color = if (isTaken) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.error,
-                    style = MaterialTheme.typography.bodyMedium
-                )
+                Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                    Box(
+                        modifier = Modifier.size(40.dp).background(StitchMint.copy(alpha = 0.2f), RoundedCornerShape(12.dp)),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Icon(Icons.Default.Medication, null, tint = StitchSecondary, modifier = Modifier.size(20.dp))
+                    }
+                    Column {
+                        Text(historyWithPill.pill.name, style = StitchTypography.titleSmall.copy(color = StitchSageDark, fontWeight = FontWeight.Bold))
+                        Text(
+                             if(isTaken) stringResource(R.string.status_taken_label) else stringResource(R.string.status_skipped_label), 
+                             style = StitchTypography.labelSmall.copy(color = StitchSageDark.copy(alpha = 0.4f))
+                        )
+                    }
+                }
 
-                Switch(
-                    checked = isTaken,
-                    onCheckedChange = { checked ->
-                        isTaken = checked
-                        val newStatus = if (checked) {
-                            com.uhstudio.pillreminder.data.model.IntakeStatus.TAKEN
-                        } else {
-                            com.uhstudio.pillreminder.data.model.IntakeStatus.SKIPPED
-                        }
-                        viewModel.updateIntakeStatus(history.id, newStatus)
-                    },
-                    colors = SwitchDefaults.colors(
-                        checkedThumbColor = MaterialTheme.colorScheme.primary,
-                        checkedTrackColor = MaterialTheme.colorScheme.primaryContainer,
-                        uncheckedThumbColor = MaterialTheme.colorScheme.error,
-                        uncheckedTrackColor = MaterialTheme.colorScheme.errorContainer
-                    )
+                // Status Icon
+                Icon(
+                    imageVector = if (isTaken) Icons.Default.CheckCircle else Icons.Default.Cancel,
+                    contentDescription = null,
+                    tint = if (isTaken) StitchSecondary else StitchPrimary,
+                    modifier = Modifier.size(24.dp)
                 )
             }
-        }
-
-        if (!isLast) {
-            HorizontalDivider(
-                modifier = Modifier.padding(top = 8.dp),
-                color = MaterialTheme.colorScheme.outlineVariant
-            )
         }
     }
 }
@@ -406,116 +415,43 @@ fun MonthlyStatsCard(
     modifier: Modifier = Modifier
 ) {
     Card(
-        modifier = modifier.fillMaxWidth()
+        modifier = modifier.fillMaxWidth().shadow(12.dp, RoundedCornerShape(32.dp), spotColor = StitchSageDark.copy(alpha = 0.1f)),
+        shape = RoundedCornerShape(32.dp),
+        colors = CardDefaults.cardColors(containerColor = Color.White),
+        border = BorderStroke(1.dp, StitchTerracotta.copy(alpha = 0.05f))
     ) {
-        Column(
-            modifier = Modifier.padding(16.dp),
-            verticalArrangement = Arrangement.spacedBy(8.dp)
-        ) {
-            Text(
-                text = stringResource(
-                    R.string.calendar_monthly_stats,
-                    yearMonth.format(DateTimeFormatter.ofPattern("M월"))
-                ),
-                style = MaterialTheme.typography.titleMedium
-            )
-
-            if (stats.totalCount > 0) {
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Column {
-                        Text(
-                            text = stringResource(
-                                R.string.calendar_adherence_rate,
-                                stats.adherenceRate.toInt()
-                            ),
-                            style = MaterialTheme.typography.bodyLarge,
-                            color = MaterialTheme.colorScheme.primary
-                        )
-                        Text(
-                            text = stringResource(
-                                R.string.calendar_stats_detail,
-                                stats.takenCount,
-                                stats.skippedCount
-                            ),
-                            style = MaterialTheme.typography.bodyMedium,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
-                        )
-                    }
-
-                    // 복용률 원형 차트
-                    Box(
-                        contentAlignment = Alignment.Center
-                    ) {
-                        CircularProgressIndicator(
-                            progress = { stats.adherenceRate / 100f },
-                            modifier = Modifier.size(60.dp),
-                            strokeWidth = 6.dp,
-                            trackColor = MaterialTheme.colorScheme.surfaceVariant
-                        )
-                        Text(
-                            text = "${stats.adherenceRate.toInt()}%",
-                            style = MaterialTheme.typography.bodySmall
-                        )
-                    }
+        Column(modifier = Modifier.padding(24.dp)) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Column {
+                    Text(
+                        stringResource(R.string.calendar_monthly_review, yearMonth.format(DateTimeFormatter.ofPattern("MMMM", Locale.getDefault()))),
+                        style = StitchTypography.titleLarge.copy(color = StitchSageDark, fontWeight = FontWeight.Bold)
+                    )
+                    Text(
+                        stringResource(R.string.calendar_doses_taken_summary, stats.takenCount, stats.totalCount),
+                        style = StitchTypography.bodySmall.copy(color = StitchSageDark.copy(alpha = 0.4f))
+                    )
                 }
-            } else {
-                Text(
-                    text = stringResource(R.string.msg_no_intake_history),
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
+                
+                // Progress Circle with Gradient
+                Box(contentAlignment = Alignment.Center) {
+                    CircularProgressIndicator(
+                        progress = { stats.adherenceRate / 100f },
+                        modifier = Modifier.size(64.dp),
+                        color = StitchTerracotta,
+                        strokeWidth = 6.dp,
+                        trackColor = StitchCream
+                    )
+                    Text(
+                        "${stats.adherenceRate.toInt()}%",
+                        style = StitchTypography.labelSmall.copy(fontWeight = FontWeight.Bold, color = StitchTerracotta)
+                    )
+                }
             }
-        }
-    }
-}
-
-@Composable
-fun LegendRow(modifier: Modifier = Modifier) {
-    Row(
-        modifier = modifier.fillMaxWidth(),
-        horizontalArrangement = Arrangement.spacedBy(16.dp),
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        Text(
-            text = stringResource(R.string.calendar_legend_title),
-            style = MaterialTheme.typography.bodySmall,
-            color = MaterialTheme.colorScheme.onSurfaceVariant
-        )
-
-        Row(
-            horizontalArrangement = Arrangement.spacedBy(4.dp),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Icon(
-                imageVector = Icons.Default.CheckCircle,
-                contentDescription = null,
-                tint = MaterialTheme.colorScheme.primary,
-                modifier = Modifier.size(16.dp)
-            )
-            Text(
-                text = stringResource(R.string.calendar_legend_taken),
-                style = MaterialTheme.typography.bodySmall
-            )
-        }
-
-        Row(
-            horizontalArrangement = Arrangement.spacedBy(4.dp),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Icon(
-                imageVector = Icons.Default.Cancel,
-                contentDescription = null,
-                tint = MaterialTheme.colorScheme.error,
-                modifier = Modifier.size(16.dp)
-            )
-            Text(
-                text = stringResource(R.string.calendar_legend_skipped),
-                style = MaterialTheme.typography.bodySmall
-            )
         }
     }
 }

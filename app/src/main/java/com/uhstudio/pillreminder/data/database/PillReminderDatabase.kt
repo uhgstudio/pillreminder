@@ -27,7 +27,7 @@ import com.uhstudio.pillreminder.data.model.PillAlarm
         IntakeHistory::class,
         AppSettings::class
     ],
-    version = 6,
+    version = 11,
     exportSchema = true
 )
 @TypeConverters(Converters::class)
@@ -139,6 +139,47 @@ abstract class PillReminderDatabase : RoomDatabase() {
             }
         }
 
+        private val MIGRATION_6_7 = object : Migration(6, 7) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                // 첫 실행 시간 및 광고 유예 기간 컬럼 추가
+                db.execSQL("ALTER TABLE app_settings ADD COLUMN firstLaunchTime INTEGER")
+                db.execSQL("ALTER TABLE app_settings ADD COLUMN adGracePeriodHours INTEGER NOT NULL DEFAULT 24")
+            }
+        }
+
+        private val MIGRATION_7_8 = object : Migration(7, 8) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                // 광고 설정값 업데이트 (테스트용: 유예 기간 0, 임계값 1)
+                db.execSQL("UPDATE app_settings SET adGracePeriodHours = 0")
+                db.execSQL("UPDATE app_settings SET adOnAlarmCountThreshold = 1")
+                db.execSQL("UPDATE app_settings SET adOnAppLaunchThreshold = 1")
+            }
+        }
+
+        private val MIGRATION_8_9 = object : Migration(8, 9) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                // 마지막 앱 오프닝 광고 표시 시간 컬럼 추가
+                db.execSQL("ALTER TABLE app_settings ADD COLUMN lastAppOpenAdShownTime INTEGER")
+            }
+        }
+
+// MIGRATION_9_10 removed
+        private val MIGRATION_9_10 = object : Migration(9, 10) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                // Pill 테이블에 type, dosage 컬럼 추가
+                db.execSQL("ALTER TABLE pills ADD COLUMN type TEXT NOT NULL DEFAULT 'Capsule'")
+                db.execSQL("ALTER TABLE pills ADD COLUMN dosage TEXT NOT NULL DEFAULT ''")
+            }
+        }
+
+        private val MIGRATION_10_11 = object : Migration(10, 11) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                // Pill 테이블에 quantity, lowStockThreshold 컬럼 추가
+                db.execSQL("ALTER TABLE pills ADD COLUMN quantity INTEGER NOT NULL DEFAULT 30")
+                db.execSQL("ALTER TABLE pills ADD COLUMN lowStockThreshold INTEGER NOT NULL DEFAULT 5")
+            }
+        }
+
         fun getDatabase(context: Context): PillReminderDatabase {
             return INSTANCE ?: synchronized(this) {
                 val instance = Room.databaseBuilder(
@@ -146,7 +187,7 @@ abstract class PillReminderDatabase : RoomDatabase() {
                     PillReminderDatabase::class.java,
                     "pill_reminder_database"
                 )
-                    .addMigrations(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4, MIGRATION_4_5, MIGRATION_5_6)
+                    .addMigrations(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4, MIGRATION_4_5, MIGRATION_5_6, MIGRATION_6_7, MIGRATION_7_8, MIGRATION_8_9, MIGRATION_9_10, MIGRATION_10_11)
                     .build()
                 INSTANCE = instance
                 instance

@@ -3,6 +3,7 @@ package com.uhstudio.pillreminder.ui.home
 import android.app.Application
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
+import com.uhstudio.pillreminder.ads.AdManager
 import com.uhstudio.pillreminder.data.database.PillReminderDatabase
 import com.uhstudio.pillreminder.data.model.IntakeStatus
 import com.uhstudio.pillreminder.data.model.Pill
@@ -53,8 +54,20 @@ class HomeViewModel(application: Application) : AndroidViewModel(application) {
     private val pillDao = database.pillDao()
     private val alarmDao = database.pillAlarmDao()
     private val historyDao = database.intakeHistoryDao()
+    private val adManager = AdManager.getInstance(application)
+
+    // 광고 표시 여부 상태
+    private val _shouldShowAd = MutableStateFlow(false)
+    val shouldShowAd: StateFlow<Boolean> = _shouldShowAd.asStateFlow()
+
+    fun onAdShown() {
+        _shouldShowAd.value = false
+    }
 
     val pills: Flow<List<Pill>> = pillDao.getAllPills()
+    
+    // 재고 부족 약 목록
+    val lowStockPills: Flow<List<Pill>> = pillDao.getLowStockPills()
 
     private val _todayAlarms = MutableStateFlow<List<TodayAlarm>>(emptyList())
     val todayAlarms: StateFlow<List<TodayAlarm>> = _todayAlarms.asStateFlow()
@@ -166,9 +179,17 @@ class HomeViewModel(application: Application) : AndroidViewModel(application) {
         }
     }
 
-    fun deletePill(pill: Pill) {
+    fun deletePill(pill: Pill, onShowAd: () -> Unit = {}) {
         viewModelScope.launch {
             pillDao.deletePill(pill)
+
+            // 삭제 완료 후 광고 표시 체크
+            val shouldShow = adManager.incrementAndCheckAlarmRegistration()
+            if (shouldShow) {
+                adManager.loadInterstitialAd {
+                    onShowAd()
+                }
+            }
         }
     }
 

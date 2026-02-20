@@ -98,6 +98,13 @@
     <string name="msg_add_alarm_hint">点击 + 按钮添加提醒。</string>
     <string name="msg_no_intake_history">暂无服用记录。</string>
 
+    <!-- 药品详情 - 服用记录 -->
+    <string name="pill_detail_intake_history">服用记录</string>
+    <string name="pill_detail_history_count">条</string>
+    <string name="pill_detail_no_history">暂无服用记录。</string>
+    <string name="pill_detail_show_more">+%d条更多</string>
+    <string name="pill_detail_show_less">收起</string>
+
     <string name="calendar_monthly_stats">%s 服用概况</string>
     <string name="calendar_adherence_rate">服用率: %d%%</string>
     <string name="calendar_stats_detail">服用: %1$d | 跳过: %2$d</string>
@@ -152,4 +159,62 @@
     <string name="loading">加载中…</string>
     <string name="ok">确定</string>
     <string name="close">关闭</string>
+
+    <!-- 星期 (简写) -->
+    <string name="day_mon_short">一</string>
+    <string name="day_tue_short">二</string>
+    <string name="day_wed_short">三</string>
+    <string name="day_thu_short">四</string>
+    <string name="day_fri_short">五</string>
+    <string name="day_sat_short">六</string>
+    <string name="day_sun_short">日</string>
+
+    <!-- 星期 (全称) -->
+    <string name="day_mon_full">星期一</string>
+    <string name="day_tue_full">星期二</string>
+    <string name="day_wed_full">星期三</string>
+    <string name="day_thu_full">星期四</string>
+    <string name="day_fri_full">星期五</string>
+    <string name="day_sat_full">星期六</string>
+    <string name="day_sun_full">星期日</string>
+
+    <!-- 日程说明 -->
+    <string name="schedule_no_repeat">不重复</string>
+    <string name="schedule_every_n_days">每 %d 天</string>
+    <string name="schedule_specific_dates_count">特定日期 (%d个)</string>
+    <string name="schedule_specific_dates_none">特定日期 (未设置)</string>
+    <string name="schedule_custom">自定义</string>
+
+    <!-- UI文本 -->
+    <string name="btn_collapse">收起</string>
+    <string name="btn_expand">展开</string>
+    <string name="label_today">今天</string>
+    <string name="label_yesterday">昨天</string>
+    <string name="label_later">稍后</string>
+    <string name="label_start_date">开始日期</string>
+    <string name="label_end_date">结束日期</string>
+    <string name="label_not_set">未设置</string>
+    <string name="label_alarm_sound">提醒铃声</string>
+    <string name="btn_clear">清除</string>
+    <string name="label_every">每</string>
+    <string name="label_interval_suffix">天</string>
+    <string name="label_edit">编辑</string>
+    <string name="default_pill_name">药品</string>
+
+    <!-- 日期格式 -->
+    <string name="date_format_ymd">yyyy年MM月dd日</string>
+
+    <!-- 权限相关 -->
+    <string name="btn_go_to_settings">前往设置</string>
+
+    <!-- 广告宽限期设置 -->
+    <string name="settings_ad_grace_period">广告宽限期</string>
+    <string name="settings_ad_grace_period_status">状态: %s</string>
+    <string name="settings_ad_grace_period_active">宽限期中 (剩余%d小时)</string>
+    <string name="settings_ad_grace_period_expired">宽限期已结束</string>
+    <string name="settings_ad_grace_period_not_set">未设置</string>
+    <string name="btn_reset_grace_period">重置宽限期 (测试)</string>
+    <string name="btn_skip_grace_period">跳过宽限期 (测试)</string>
+    <string name="msg_grace_period_reset">广告宽限期已重置。</string>
+    <string name="settings_ad_grace_period_skipped">已跳过宽限期。广告将开始显示。</string>
 </resources>

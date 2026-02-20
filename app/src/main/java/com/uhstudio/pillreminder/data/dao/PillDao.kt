@@ -26,4 +26,22 @@ interface PillDao {
 
     @Delete
     suspend fun deletePill(pill: Pill)
+
+    /**
+     * 약 수량 감소 (복용 시 호출)
+     */
+    @Query("UPDATE pills SET quantity = quantity - 1 WHERE id = :pillId AND quantity > 0")
+    suspend fun decrementQuantity(pillId: String)
+
+    /**
+     * 약 수량 업데이트
+     */
+    @Query("UPDATE pills SET quantity = :quantity WHERE id = :pillId")
+    suspend fun updateQuantity(pillId: String, quantity: Int)
+
+    /**
+     * 재고 부족 약 목록 조회 (quantity <= lowStockThreshold)
+     */
+    @Query("SELECT * FROM pills WHERE quantity <= lowStockThreshold AND quantity > 0")
+    fun getLowStockPills(): Flow<List<Pill>>
 } 

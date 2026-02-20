@@ -98,6 +98,13 @@
     <string name="msg_add_alarm_hint">Tap + to add an alarm.</string>
     <string name="msg_no_intake_history">No intake history.</string>
 
+    <!-- Pill Detail - Intake History -->
+    <string name="pill_detail_intake_history">Intake History</string>
+    <string name="pill_detail_history_count"> records</string>
+    <string name="pill_detail_no_history">No intake history yet.</string>
+    <string name="pill_detail_show_more">+%d more</string>
+    <string name="pill_detail_show_less">Show less</string>
+
     <string name="calendar_monthly_stats">%s Stats</string>
     <string name="calendar_adherence_rate">Rate: %d%%</string>
     <string name="calendar_stats_detail">Taken: %1$d | Skipped: %2$d</string>
@@ -152,4 +159,62 @@
     <string name="loading">Loading…</string>
     <string name="ok">OK</string>
     <string name="close">Close</string>
+
+    <!-- Days of Week (Short) -->
+    <string name="day_mon_short">Mon</string>
+    <string name="day_tue_short">Tue</string>
+    <string name="day_wed_short">Wed</string>
+    <string name="day_thu_short">Thu</string>
+    <string name="day_fri_short">Fri</string>
+    <string name="day_sat_short">Sat</string>
+    <string name="day_sun_short">Sun</string>
+
+    <!-- Days of Week (Full) -->
+    <string name="day_mon_full">Monday</string>
+    <string name="day_tue_full">Tuesday</string>
+    <string name="day_wed_full">Wednesday</string>
+    <string name="day_thu_full">Thursday</string>
+    <string name="day_fri_full">Friday</string>
+    <string name="day_sat_full">Saturday</string>
+    <string name="day_sun_full">Sunday</string>
+
+    <!-- Schedule Descriptions -->
+    <string name="schedule_no_repeat">No repeat</string>
+    <string name="schedule_every_n_days">Every %d days</string>
+    <string name="schedule_specific_dates_count">Specific dates (%d)</string>
+    <string name="schedule_specific_dates_none">Specific dates (not set)</string>
+    <string name="schedule_custom">Custom</string>
+
+    <!-- UI Text -->
+    <string name="btn_collapse">Collapse</string>
+    <string name="btn_expand">Expand</string>
+    <string name="label_today">Today</string>
+    <string name="label_yesterday">Yesterday</string>
+    <string name="label_later">Later</string>
+    <string name="label_start_date">Start Date</string>
+    <string name="label_end_date">End Date</string>
+    <string name="label_not_set">Not set</string>
+    <string name="label_alarm_sound">Alarm Sound</string>
+    <string name="btn_clear">Clear</string>
+    <string name="label_every">Every</string>
+    <string name="label_interval_suffix">days</string>
+    <string name="label_edit">Edit</string>
+    <string name="default_pill_name">Pill</string>
+
+    <!-- Date Format -->
+    <string name="date_format_ymd">MMM dd, yyyy</string>
+
+    <!-- Permissions -->
+    <string name="btn_go_to_settings">Go to Settings</string>
+
+    <!-- Ad Grace Period Settings -->
+    <string name="settings_ad_grace_period">Ad Grace Period</string>
+    <string name="settings_ad_grace_period_status">Status: %s</string>
+    <string name="settings_ad_grace_period_active">Grace period active (%d hours left)</string>
+    <string name="settings_ad_grace_period_expired">Grace period expired</string>
+    <string name="settings_ad_grace_period_not_set">Not set</string>
+    <string name="btn_reset_grace_period">Reset Grace Period (Test)</string>
+    <string name="btn_skip_grace_period">Skip Grace Period (Test)</string>
+    <string name="msg_grace_period_reset">Ad grace period has been reset.</string>
+    <string name="settings_ad_grace_period_skipped">Grace period skipped. Ads will now appear.</string>
 </resources>

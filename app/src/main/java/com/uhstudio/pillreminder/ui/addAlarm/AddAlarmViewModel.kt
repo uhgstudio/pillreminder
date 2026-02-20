@@ -11,6 +11,8 @@ import com.uhstudio.pillreminder.data.model.ScheduleType
 import com.uhstudio.pillreminder.util.AlarmManagerUtil
 import com.uhstudio.pillreminder.util.ValidationResult
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import timber.log.Timber
@@ -29,6 +31,13 @@ class AddAlarmViewModel(application: Application) : AndroidViewModel(application
         ignoreUnknownKeys = true
         isLenient = true
     }
+
+    // 로딩 상태 (광고 로드 중 등)
+    private val _isLoading = MutableStateFlow(false)
+    val isLoading: StateFlow<Boolean> = _isLoading
+
+    // 중복 저장 방지
+    private var isSaving = false
 
     suspend fun getAlarm(alarmId: String): PillAlarm? {
         return alarmDao.getAlarmById(alarmId)
@@ -86,10 +95,20 @@ class AddAlarmViewModel(application: Application) : AndroidViewModel(application
         onShowAd: () -> Unit = {},
         onError: (String) -> Unit = {}
     ) {
+        // 중복 저장 방지
+        if (isSaving) {
+            Timber.w("이미 저장 중입니다")
+            return
+        }
+        isSaving = true
+
         viewModelScope.launch {
+            _isLoading.value = true
             try {
                 // 시간 검증
                 if (hour !in 0..23 || minute !in 0..59) {
+                    isSaving = false
+                    _isLoading.value = false
                     onError("유효하지 않은 시간입니다.")
                     return@launch
                 }
@@ -98,6 +117,8 @@ class AddAlarmViewModel(application: Application) : AndroidViewModel(application
                 val scheduleConfigJson = json.encodeToString(scheduleConfig)
 
                 val now = LocalDateTime.now()
+                val isEditMode = alarmId != null
+                
                 val alarm = PillAlarm(
                     id = alarmId ?: UUID.randomUUID().toString(),
                     pillId = pillId,
@@ -117,8 +138,8 @@ class AddAlarmViewModel(application: Application) : AndroidViewModel(application
                 Timber.d("Saving alarm with schedule: type=$scheduleType, config=$scheduleConfigJson")
 
                 // 기존 알람이 있으면 먼저 취소
-                if (alarmId != null) {
-                    alarmDao.getAlarmById(alarmId)?.let { oldAlarm ->
+                if (isEditMode) {
+                    alarmDao.getAlarmById(alarmId!!)?.let { oldAlarm ->
                         alarmManager.cancelAlarm(oldAlarm)
                     }
                 }
@@ -129,21 +150,40 @@ class AddAlarmViewModel(application: Application) : AndroidViewModel(application
                 if (!scheduled) {
                     Timber.w("Failed to schedule alarm, may have no next occurrence")
                 }
-
-                // 알람 등록 카운터 증가 및 광고 표시 체크 (신규 알람만)
-                if (alarmId == null) {
-                    val shouldShow = adManager.incrementAndCheckAlarmRegistration()
-                    if (shouldShow) {
-                        adManager.loadInterstitialAd {
-                            onShowAd()
-                        }
-                    }
+                
+                // 생성 모드일 때는 광고 체크 없이 바로 종료 (Speed Optimization)
+                if (!isEditMode) {
+                   _isLoading.value = false
+                   onComplete()
+                   return@launch
                 }
 
-                onComplete()
+                // 수정 모드일 때만 광고 체크
+                val shouldShow = adManager.incrementAndCheckAlarmRegistration()
+                if (shouldShow) {
+                    // 광고 로드 후 표시
+                    adManager.loadInterstitialAd(
+                        onAdLoaded = {
+                            _isLoading.value = false
+                            onShowAd()
+                        },
+                        onAdFailed = {
+                            // 광고 로드 실패 시 바로 화면 종료
+                            _isLoading.value = false
+                            onComplete()
+                        }
+                    )
+                } else {
+                    // 광고 표시 안함 - 바로 화면 종료
+                    _isLoading.value = false
+                    onComplete()
+                }
             } catch (e: Exception) {
                 Timber.e(e, "Failed to save alarm")
+                _isLoading.value = false
                 onError("알람 저장 실패: ${e.message}")
+            } finally {
+                isSaving = false
             }
         }
     }
