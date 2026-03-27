@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Gentle Alarm Settings</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "sage": {
+                            50: "#f4f7f4",
+                            100: "#e5ede5",
+                            200: "#cbdccb",
+                            600: "#7a967a",
+                            800: "#4a5d4a",
+                        },
+                        "terracotta": {
+                            50: "#fdf8f6",
+                            100: "#fbede8",
+                            200: "#f7ddd4",
+                            500: "#d98d73",
+                            600: "#c2755d",
+                        },
+                        "warm-sand": "#f9f6f1",
+                        "soft-cream": "#fffcf9",
+                    },
+                    fontFamily: {
+                        "sans": ["Quicksand", "sans-serif"]
+                    },
+                    borderRadius: {
+                        "2xl": "1.25rem",
+                        "3xl": "1.75rem",
+                        "full": "9999px"
+                    },
+                },
+            },
+        }
+    </script>
+<style type="text/tailwindcss">
+        @layer base {
+            body {
+                @apply bg-warm-sand text-sage-800 antialiased;
+                font-family: 'Quicksand', sans-serif;
+            }
+        }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .soft-shadow {
+            box-shadow: 0 10px 25px -5px rgba(122, 150, 122, 0.1), 0 8px 10px -6px rgba(122, 150, 122, 0.05);
+        }
+        .toggle-checked .toggle-dot {
+            transform: translateX(20px);
+            background-color: white;
+        }
+        .toggle-checked {
+            background-color: #7a967a;
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="min-h-screen">
+<div class="relative mx-auto max-w-md min-h-screen flex flex-col">
+<header class="sticky top-0 z-50 flex items-center bg-warm-sand/90 backdrop-blur-lg px-6 py-5 justify-between">
+<div class="flex size-10 shrink-0 items-center justify-center cursor-pointer bg-white rounded-full soft-shadow text-sage-600">
+<span class="material-symbols-outlined text-xl">chevron_left</span>
+</div>
+<div class="flex flex-col items-center flex-1">
+<h2 class="text-sage-800 text-lg font-bold">Atorvastatin</h2>
+<p class="text-sage-600/70 text-xs font-medium tracking-wide">10mg • Daily Wellness</p>
+</div>
+<div class="w-10 flex justify-end">
+<button class="flex items-center justify-center size-10 bg-white rounded-full soft-shadow text-sage-600">
+<span class="material-symbols-outlined text-xl">settings</span>
+</button>
+</div>
+</header>
+<main class="flex-1 px-5 pb-32">
+<div class="mb-8">
+<div class="bg-soft-cream rounded-3xl p-6 soft-shadow border border-sage-100 flex items-center gap-5">
+<div class="size-14 rounded-2xl bg-terracotta-100 flex items-center justify-center text-terracotta-500">
+<span class="material-symbols-outlined text-3xl">pill</span>
+</div>
+<div>
+<h3 class="text-sage-800 font-bold text-base leading-tight">Your Routine</h3>
+<p class="text-sage-600/80 text-sm mt-0.5">3 gentle reminders today</p>
+</div>
+</div>
+</div>
+<div class="space-y-6">
+<div class="flex items-center justify-between px-1">
+<h3 class="text-sage-800 text-xl font-bold">Daily Alarms</h3>
+<span class="text-[10px] uppercase tracking-widest bg-sage-100 text-sage-600 px-3 py-1 rounded-full font-bold">Enabled</span>
+</div>
+<div class="space-y-4">
+<div class="flex items-center gap-4 bg-white p-5 justify-between rounded-3xl soft-shadow border border-sage-50/50">
+<div class="flex items-center gap-4">
+<div class="text-sage-600 flex items-center justify-center rounded-2xl bg-sage-50 shrink-0 size-12">
+<span class="material-symbols-outlined text-2xl">wb_sunny</span>
+</div>
+<div class="flex flex-col">
+<p class="text-sage-800 text-2xl font-bold tracking-tight">08:00<span class="text-base font-medium ml-1 text-sage-400 uppercase">am</span></p>
+<p class="text-sage-500 text-sm font-medium">Every morning</p>
+</div>
+</div>
+<div class="shrink-0">
+<label class="relative flex h-7 w-12 cursor-pointer items-center rounded-full bg-sage-100 p-1 transition-colors duration-300 has-[:checked]:bg-sage-600">
+<input checked="" class="peer sr-only" type="checkbox"/>
+<div class="h-5 w-5 rounded-full bg-white shadow-sm transition-transform duration-300 peer-checked:translate-x-5"></div>
+</label>
+</div>
+</div>
+<div class="flex items-center gap-4 bg-white p-5 justify-between rounded-3xl soft-shadow border border-sage-50/50">
+<div class="flex items-center gap-4">
+<div class="text-terracotta-500 flex items-center justify-center rounded-2xl bg-terracotta-50 shrink-0 size-12">
+<span class="material-symbols-outlined text-2xl">wb_twilight</span>
+</div>
+<div class="flex flex-col">
+<p class="text-sage-800 text-2xl font-bold tracking-tight">02:00<span class="text-base font-medium ml-1 text-sage-400 uppercase">pm</span></p>
+<p class="text-sage-500 text-sm font-medium">Mon, Wed, Fri</p>
+</div>
+</div>
+<div class="shrink-0">
+<label class="relative flex h-7 w-12 cursor-pointer items-center rounded-full bg-sage-100 p-1 transition-colors duration-300 has-[:checked]:bg-sage-600">
+<input checked="" class="peer sr-only" type="checkbox"/>
+<div class="h-5 w-5 rounded-full bg-white shadow-sm transition-transform duration-300 peer-checked:translate-x-5"></div>
+</label>
+</div>
+</div>
+<div class="flex items-center gap-4 bg-white/60 p-5 justify-between rounded-3xl border border-dashed border-sage-200">
+<div class="flex items-center gap-4 opacity-60">
+<div class="text-sage-400 flex items-center justify-center rounded-2xl bg-sage-50/50 shrink-0 size-12">
+<span class="material-symbols-outlined text-2xl">bedtime</span>
+</div>
+<div class="flex flex-col">
+<p class="text-sage-800 text-2xl font-bold tracking-tight">09:00<span class="text-base font-medium ml-1 text-sage-400 uppercase">pm</span></p>
+<p class="text-sage-400 text-sm font-medium">Weekend nights</p>
+</div>
+</div>
+<div class="shrink-0">
+<label class="relative flex h-7 w-12 cursor-pointer items-center rounded-full bg-sage-100/50 p-1 transition-colors duration-300 has-[:checked]:bg-sage-600">
+<input class="peer sr-only" type="checkbox"/>
+<div class="h-5 w-5 rounded-full bg-white shadow-sm transition-transform duration-300 peer-checked:translate-x-5"></div>
+</label>
+</div>
+</div>
+</div>
+</div>
+<div class="mt-10 px-4">
+<button class="w-full flex items-center justify-center gap-3 bg-sage-600 text-white font-bold text-base py-5 rounded-3xl shadow-lg shadow-sage-600/20 active:scale-[0.97] transition-all">
+<span class="material-symbols-outlined font-bold">add</span>
+                    New Reminder
+                </button>
+<p class="text-sage-500 text-center text-xs mt-6 leading-relaxed px-6">
+                    Taking your medication consistently is a small act of kindness to yourself.
+                </p>
+</div>
+</main>
+<nav class="fixed bottom-0 left-0 right-0 mx-auto max-w-md bg-white/80 backdrop-blur-xl border-t border-sage-100 px-8 pb-8 pt-4 flex justify-between items-center z-50">
+<div class="flex flex-col items-center gap-1.5 text-sage-300">
+<span class="material-symbols-outlined text-[26px]">home</span>
+<span class="text-[10px] font-bold tracking-wide">Home</span>
+</div>
+<div class="flex flex-col items-center gap-1.5 text-sage-600">
+<span class="material-symbols-outlined text-[26px]" style="font-variation-settings: 'FILL' 1">notifications_active</span>
+<span class="text-[10px] font-bold tracking-wide">Alarms</span>
+</div>
+<div class="flex flex-col items-center gap-1.5 text-sage-300">
+<span class="material-symbols-outlined text-[26px]">favorite</span>
+<span class="text-[10px] font-bold tracking-wide">Health</span>
+</div>
+<div class="flex flex-col items-center gap-1.5 text-sage-300">
+<span class="material-symbols-outlined text-[26px]">face</span>
+<span class="text-[10px] font-bold tracking-wide">Me</span>
+</div>
+</nav>
+<div class="fixed top-1/2 -right-16 -z-10 opacity-[0.03] pointer-events-none">
+<span class="material-symbols-outlined text-[300px] text-sage-800 rotate-12">spa</span>
+</div>
+</div>
+
+</body></html>

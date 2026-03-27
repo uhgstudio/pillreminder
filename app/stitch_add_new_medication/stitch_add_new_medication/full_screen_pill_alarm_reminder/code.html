@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Soft Full Screen Reminder</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<style type="text/tailwindcss">
+        :root {
+            --bg-soft: #FCF9F7;
+            --primary-warm: #FF7F6E;--secondary-warm: #68B0AB;--text-main: #4A3F3B;
+            --glow-color: rgba(255, 127, 110, 0.15);
+        }
+        body {
+            font-family: 'Quicksand', sans-serif;
+            background-color: var(--bg-soft);
+            color: var(--text-main);
+            overflow: hidden;
+        }
+        .soft-glow-background {
+            background: radial-gradient(circle at center, var(--glow-color) 0%, transparent 70%);
+            animation: softFading 4s ease-in-out infinite;
+        }
+        @keyframes softFading {
+            0%, 100% { opacity: 0.4; transform: scale(1); }
+            50% { opacity: 1; transform: scale(1.1); }
+        }
+        .pill-shadow {
+            box-shadow: 0 20px 40px rgba(74, 63, 59, 0.1);
+        }
+    </style>
+<script id="tailwind-config">
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'soft-bg': '#FCF9F7',
+                        'coral-warm': '#FF7F6E',
+                        'sage-warm': '#68B0AB',
+                        'warm-gray': '#4A3F3B',
+                    },
+                    borderRadius: {
+                        '4xl': '2rem',
+                        '5xl': '2.5rem',
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="antialiased">
+<div class="relative flex h-screen w-full flex-col overflow-hidden bg-soft-bg">
+<div class="absolute inset-0 z-0 flex items-center justify-center">
+<div class="soft-glow-background w-[150%] h-[80%] rounded-full blur-3xl"></div>
+</div>
+<div class="relative z-10 flex flex-col items-center pt-16 px-8 text-center">
+<span class="inline-flex items-center gap-1.5 text-sage-warm font-bold tracking-wide text-sm uppercase mb-2">
+<span class="size-2 bg-sage-warm rounded-full"></span>
+                Scheduled Dose
+            </span>
+<h2 class="text-warm-gray text-opacity-60 text-lg font-medium">Time for your wellness</h2>
+</div>
+<div class="relative z-10 flex-1 flex flex-col justify-center items-center px-10">
+<div class="relative w-full max-w-[280px] aspect-square">
+<div class="absolute inset-0 -m-6 rounded-full border border-coral-warm/10 bg-coral-warm/5"></div>
+<div class="relative w-full h-full rounded-full border-[10px] border-white pill-shadow overflow-hidden bg-white">
+<div class="w-full h-full bg-cover bg-center" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuCSqETZ9O_0oHD4BhYJTksiEnb063_o9qchdvFsjszajtt1oeGRA9AER3_2gaFupuWFtdzUCiNl4Z9rFq7oVLJKyzdXmKfvbQ8vLQ-S1K_F7-_o3iMq4gwWHFq5XVip2S_wvIJgifGSA3ypSZyNzckzqai4MJAFA5OKUPN11NeyB7i30ZWw5jb2Hp3a9hPX5IpSVHfpzBOwuH0bAYgMLbQlXY8wA2NH5i3FhMgeaw-wdKGqxUwdU7mfJogcJZTHyzs0vL-9ic-lUR4");'></div>
+</div>
+<div class="absolute -bottom-2 left-1/2 -translate-x-1/2 bg-white text-warm-gray px-6 py-2 rounded-full shadow-lg border border-warm-gray/5">
+<p class="text-xl font-bold">8:00 AM</p>
+</div>
+</div>
+<div class="mt-14 text-center">
+<h1 class="text-warm-gray text-4xl font-bold leading-tight mb-2">
+                    Morning Multivitamin
+                </h1>
+<p class="text-warm-gray/60 text-lg">
+                    1 Capsule with water
+                </p>
+</div>
+</div>
+<div class="relative z-10 p-8 pb-14 space-y-4 max-w-md mx-auto w-full">
+<button class="flex items-center justify-center w-full h-20 rounded-4xl bg-coral-warm text-white shadow-lg shadow-coral-warm/25 transition-transform active:scale-95">
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined text-3xl font-medium">done_all</span>
+<span class="text-xl font-bold">Take Now</span>
+</div>
+</button>
+<div class="grid grid-cols-2 gap-4">
+<button class="flex items-center justify-center h-16 rounded-3xl bg-white border border-warm-gray/10 text-warm-gray font-semibold transition-transform active:scale-95">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-xl">snooze</span>
+<span>Snooze</span>
+</div>
+</button>
+<button class="flex items-center justify-center h-16 rounded-3xl bg-white border border-warm-gray/10 text-warm-gray font-semibold transition-transform active:scale-95">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-xl">more_time</span>
+<span>1 Hour</span>
+</div>
+</button>
+</div>
+<div class="pt-4 flex flex-col items-center opacity-40">
+<span class="material-symbols-outlined mb-1">keyboard_double_arrow_up</span>
+<p class="text-[10px] font-bold uppercase tracking-[0.2em]">Swipe up to dismiss</p>
+</div>
+</div>
+<div class="absolute bottom-2 left-1/2 -translate-x-1/2 w-32 h-1.5 bg-warm-gray/10 rounded-full"></div>
+</div>
+
+</body></html>

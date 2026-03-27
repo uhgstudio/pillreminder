@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Add New Medication</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<style type="text/tailwindcss">
+        :root {
+            --bg-warm: #FFF9F2;
+            --primary-soft: #FF9E7D;
+            --accent-warm: #FFD6A5;
+            --text-main: #5D4037;
+            --text-light: #8D6E63;
+            --card-bg: #FFFFFF;
+            --input-bg: #FFFBF7;
+            --pastel-pink: #FFB7B2;
+            --pastel-mint: #B2F2BB;
+            --pastel-lavender: #E0C3FC;
+            --pastel-yellow: #FFEEAD;
+            --pastel-blue: #BAE1FF;
+        }
+        body {
+            font-family: 'Quicksand', sans-serif;
+            background-color: var(--bg-warm);
+            color: var(--text-main);
+        }
+        .soft-shadow {
+            box-shadow: 0 8px 30px rgba(255, 158, 125, 0.1);
+        }
+        .no-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .no-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+    </style>
+<script id="tailwind-config">
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        "warm-orange": "#FF9E7D",
+                        "soft-pink": "#FFB7B2",
+                        "soft-beige": "#FFF9F2",
+                        "clay": "#5D4037"
+                    },
+                    borderRadius: {
+                        "2xl": "1.5rem",
+                        "3xl": "2rem",
+                        "full": "9999px"
+                    }
+                },
+            },
+        }
+    </script>
+<style>
+        body {
+            min-height: max(884px, 100dvh);
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="min-h-screen flex justify-center">
+<div class="w-full max-w-[480px] min-h-screen flex flex-col relative bg-[var(--bg-warm)]">
+<div class="sticky top-0 z-20 bg-[var(--bg-warm)]/90 backdrop-blur-md px-6 pt-4 pb-2 flex items-center justify-between">
+<button class="w-10 h-10 flex items-center justify-center rounded-full bg-white/50 text-clay">
+<span class="material-symbols-outlined">arrow_back_ios_new</span>
+</button>
+<h1 class="text-xl font-bold text-clay">New Medication</h1>
+<button class="text-warm-orange font-bold text-lg">Done</button>
+</div>
+<div class="flex-1 overflow-y-auto px-6 pb-32">
+<div class="mt-4 mb-6">
+<div class="relative w-full aspect-[4/3] rounded-3xl bg-[#FFEBD6] border-4 border-white flex flex-col items-center justify-center overflow-hidden soft-shadow group transition-all" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuBm2z9kER1K467YzC1PJhVJlIYDepkqk-iQEiKZZr0pzobNYwm0Qp1sysgKaFEayLxZGoN_deGFCcYT1vuxqgkur92QAWMvGcSSVYyFTtWrVzWvQ9DUF_Yc6I_YDWYswzVZcmRSxMz-0ACMBlddOT2qZM9dOiCbr9pheaieT11R4RnFVtSfFCIp_f28x2pAN50yRfHx7ek2Uy1-buUMoh5YfW5wWUbsBlqLTsQMUeQbcmvhQh-fwS2UX_7u_VorD5jPUD_eGFewy5M'); background-size: cover; background-position: center;">
+<div class="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent"></div>
+<div class="relative flex flex-col items-center gap-3">
+<div class="w-16 h-16 rounded-full bg-white/90 backdrop-blur-sm flex items-center justify-center text-warm-orange shadow-lg">
+<span class="material-symbols-outlined text-3xl">add_a_photo</span>
+</div>
+<span class="bg-white/90 backdrop-blur-sm px-4 py-1.5 rounded-full text-xs font-bold text-clay shadow-sm">Add a photo of the box</span>
+</div>
+</div>
+</div>
+<div class="space-y-6">
+<div class="space-y-2">
+<label class="text-xs font-bold uppercase tracking-widest text-text-light ml-2">Medication Name</label>
+<input class="w-full h-16 px-6 rounded-3xl border-none bg-white text-lg placeholder:text-stone-300 focus:ring-4 focus:ring-warm-orange/10 soft-shadow outline-none" placeholder="e.g. Daily Vitamins" type="text"/>
+</div>
+<div class="space-y-3">
+<label class="text-xs font-bold uppercase tracking-widest text-text-light ml-2">Medication Type</label>
+<div class="flex overflow-x-auto gap-4 pb-4 no-scrollbar -mx-2 px-2">
+<button class="flex-shrink-0 flex flex-col items-center gap-2 group">
+<div class="w-20 h-20 rounded-3xl bg-[var(--pastel-pink)] flex items-center justify-center shadow-sm border-4 border-white group-hover:scale-105 transition-transform">
+<span class="material-symbols-outlined text-4xl text-white fill-1">pill</span>
+</div>
+<span class="text-xs font-bold text-clay">Capsule</span>
+</button>
+<button class="flex-shrink-0 flex flex-col items-center gap-2 group">
+<div class="w-20 h-20 rounded-3xl bg-[var(--pastel-mint)] flex items-center justify-center shadow-sm border-4 border-white group-hover:scale-105 transition-transform">
+<span class="material-symbols-outlined text-4xl text-white fill-1">fiber_manual_record</span>
+</div>
+<span class="text-xs font-bold text-clay text-opacity-60">Tablet</span>
+</button>
+<button class="flex-shrink-0 flex flex-col items-center gap-2 group">
+<div class="w-20 h-20 rounded-3xl bg-[var(--pastel-lavender)] flex items-center justify-center shadow-sm border-4 border-white group-hover:scale-105 transition-transform">
+<span class="material-symbols-outlined text-4xl text-white fill-1">prescriptions</span>
+</div>
+<span class="text-xs font-bold text-clay text-opacity-60">Syrup</span>
+</button>
+<button class="flex-shrink-0 flex flex-col items-center gap-2 group">
+<div class="w-20 h-20 rounded-3xl bg-[var(--pastel-yellow)] flex items-center justify-center shadow-sm border-4 border-white group-hover:scale-105 transition-transform">
+<span class="material-symbols-outlined text-4xl text-white fill-1">sanitizer</span>
+</div>
+<span class="text-xs font-bold text-clay text-opacity-60">Cream</span>
+</button>
+<button class="flex-shrink-0 flex flex-col items-center gap-2 group">
+<div class="w-20 h-20 rounded-3xl bg-[var(--pastel-blue)] flex items-center justify-center shadow-sm border-4 border-white group-hover:scale-105 transition-transform">
+<span class="material-symbols-outlined text-4xl text-white fill-1">air</span>
+</div>
+<span class="text-xs font-bold text-clay text-opacity-60">Spray</span>
+</button>
+</div>
+</div>
+<div class="space-y-2">
+<label class="text-xs font-bold uppercase tracking-widest text-text-light ml-2">Instructions</label>
+<textarea class="w-full min-h-[120px] p-6 rounded-3xl border-none bg-white text-base placeholder:text-stone-300 focus:ring-4 focus:ring-warm-orange/10 soft-shadow outline-none resize-none" placeholder="Take after breakfast with a warm drink..."></textarea>
+</div>
+<div class="space-y-2">
+<label class="text-xs font-bold uppercase tracking-widest text-text-light ml-2">Schedule</label>
+<div class="bg-white rounded-3xl p-5 soft-shadow flex items-center justify-between">
+<div class="flex items-center gap-4">
+<div class="w-12 h-12 rounded-2xl bg-orange-50 flex items-center justify-center text-warm-orange">
+<span class="material-symbols-outlined text-2xl">alarm</span>
+</div>
+<div>
+<div class="text-xl font-bold text-clay">08:30 AM</div>
+<div class="text-xs text-text-light">Every day</div>
+</div>
+</div>
+<button class="bg-orange-50 text-warm-orange px-4 py-2 rounded-2xl font-bold text-sm">Change</button>
+</div>
+</div>
+<div class="flex justify-between items-center gap-2 py-2">
+<div class="flex flex-col items-center gap-2">
+<div class="w-11 h-11 rounded-2xl flex items-center justify-center bg-warm-orange text-white font-bold shadow-lg shadow-warm-orange/30">M</div>
+<span class="text-[10px] font-bold text-warm-orange uppercase">Mon</span>
+</div>
+<div class="flex flex-col items-center gap-2">
+<div class="w-11 h-11 rounded-2xl flex items-center justify-center bg-warm-orange text-white font-bold shadow-lg shadow-warm-orange/30">T</div>
+<span class="text-[10px] font-bold text-warm-orange uppercase">Tue</span>
+</div>
+<div class="flex flex-col items-center gap-2">
+<div class="w-11 h-11 rounded-2xl flex items-center justify-center bg-warm-orange text-white font-bold shadow-lg shadow-warm-orange/30">W</div>
+<span class="text-[10px] font-bold text-warm-orange uppercase">Wed</span>
+</div>
+<div class="flex flex-col items-center gap-2">
+<div class="w-11 h-11 rounded-2xl flex items-center justify-center bg-white text-stone-300 font-bold border border-stone-100">T</div>
+<span class="text-[10px] font-bold text-stone-300 uppercase">Thu</span>
+</div>
+<div class="flex flex-col items-center gap-2">
+<div class="w-11 h-11 rounded-2xl flex items-center justify-center bg-white text-stone-300 font-bold border border-stone-100">F</div>
+<span class="text-[10px] font-bold text-stone-300 uppercase">Fri</span>
+</div>
+<div class="flex flex-col items-center gap-2">
+<div class="w-11 h-11 rounded-2xl flex items-center justify-center bg-white text-stone-300 font-bold border border-stone-100">S</div>
+<span class="text-[10px] font-bold text-stone-300 uppercase">Sat</span>
+</div>
+<div class="flex flex-col items-center gap-2">
+<div class="w-11 h-11 rounded-2xl flex items-center justify-center bg-white text-stone-300 font-bold border border-stone-100">S</div>
+<span class="text-[10px] font-bold text-stone-300 uppercase">Sun</span>
+</div>
+</div>
+<div class="bg-white rounded-3xl overflow-hidden soft-shadow">
+<div class="flex items-center justify-between p-5 border-b border-stone-50">
+<div class="flex items-center gap-4">
+<span class="material-symbols-outlined text-soft-pink">medication</span>
+<span class="font-semibold">Pill dosage</span>
+</div>
+<div class="flex items-center text-text-light">
+<span class="text-sm mr-1">1 unit</span>
+<span class="material-symbols-outlined text-xl">chevron_right</span>
+</div>
+</div>
+<div class="flex items-center justify-between p-5">
+<div class="flex items-center gap-4">
+<span class="material-symbols-outlined text-soft-pink">notifications_active</span>
+<span class="font-semibold">Gentle Reminder</span>
+</div>
+<div class="flex items-center text-text-light">
+<span class="text-sm mr-1">Birdsong</span>
+<span class="material-symbols-outlined text-xl">chevron_right</span>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="fixed bottom-0 left-0 right-0 max-w-[480px] mx-auto p-6 bg-gradient-to-t from-[var(--bg-warm)] via-[var(--bg-warm)] to-transparent pointer-events-none">
+<button class="w-full bg-warm-orange text-white font-bold py-5 rounded-[2.5rem] shadow-xl shadow-warm-orange/30 active:scale-95 transition-all pointer-events-auto text-lg flex items-center justify-center gap-2">
+<span class="material-symbols-outlined">check_circle</span>
+            Save Medication
+        </button>
+<div class="h-4"></div>
+</div>
+</div>
+
+</body></html>

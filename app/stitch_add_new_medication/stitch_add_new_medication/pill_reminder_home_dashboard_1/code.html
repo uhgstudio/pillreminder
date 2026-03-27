@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Warm Home - Pill Reminder</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@400;500;600;700&amp;family=Fredoka:wght@400;500;600&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#FF9A8B",
+                        "secondary": "#B4E1D1",
+                        "cream": "#FFF9F2",
+                        "warm-gray": "#7D6E66",
+                        "peach": "#FFD6C2",
+                        "mint": "#D6EFE5",
+                    },
+                    fontFamily: {
+                        "display": ["Fredoka", "sans-serif"],
+                        "body": ["Quicksand", "sans-serif"]
+                    },
+                    borderRadius: {
+                        "2xl": "1.5rem",
+                        "3xl": "2.25rem",
+                        "4xl": "3rem"
+                    },
+                },
+            },
+        }
+    </script>
+<style type="text/tailwindcss">
+        :root {
+            --cream-bg: #FFF9F2;
+            --soft-shadow: 0 10px 25px -5px rgba(125, 110, 102, 0.08);
+            --organic-radius: 40% 60% 60% 40% / 30% 30% 70% 70%;
+        }
+        .organic-shape {
+            border-radius: var(--organic-radius);
+        }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 1, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        body {
+            background-color: var(--cream-bg);
+            font-family: 'Quicksand', sans-serif;
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="text-warm-gray">
+<div class="relative flex h-screen w-full flex-col overflow-hidden max-w-[430px] mx-auto bg-cream">
+<div class="flex items-center px-6 pt-12 pb-4 justify-between">
+<div class="flex items-center gap-3">
+<div class="bg-center bg-no-repeat aspect-square bg-cover rounded-3xl size-12 border-2 border-peach shadow-sm" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuDvl0wx7lgrAvC1iA3QEXxdItBxcv9NVTTHAvLcrXNaXyXDwE1Eg5U8RWBjuqeQjYC4mFkILsWnlY0Xm0n9oCZs5a6-e-IJJL3su6ODwG_UFiDqcnR-lHVYt9W5WSDDovWcfTUCGqe9ChZy3sKYglr83TVS8Tc07Gu-jYllQrD8wrA2Yy93iZaHJqOERrEuKcCggQ-qKmg0C9tzT3714gPvOBXKZ1igRbKIHTwnRUxaei_HWwwVDVLrOaWokj2YSxZtCm5tmNbOngI");'></div>
+<div class="flex flex-col">
+<h2 class="text-warm-gray font-display text-xl font-semibold leading-tight">Hi, Sam</h2>
+<p class="text-warm-gray/60 text-xs font-medium">Monday, Oct 23</p>
+</div>
+</div>
+<button class="flex items-center justify-center rounded-2xl h-11 w-11 bg-white shadow-sm text-primary transition-transform active:scale-90">
+<span class="material-symbols-outlined">calendar_today</span>
+</button>
+</div>
+<div class="px-6 py-4">
+<div class="bg-white rounded-3xl p-6 shadow-[var(--soft-shadow)] border border-peach/20 relative overflow-hidden">
+<div class="absolute -right-4 -top-4 w-24 h-24 bg-mint/30 rounded-full blur-2xl"></div>
+<div class="flex justify-between items-start mb-4">
+<div>
+<h3 class="font-display text-lg text-warm-gray">Daily Goal</h3>
+<p class="text-warm-gray/60 text-sm">3 of 5 doses taken</p>
+</div>
+<div class="flex items-baseline gap-1">
+<span class="text-primary text-3xl font-display">60</span>
+<span class="text-primary/60 text-lg font-display">%</span>
+</div>
+</div>
+<div class="w-full bg-cream rounded-full h-4 p-1 shadow-inner">
+<div class="h-full rounded-full bg-gradient-to-r from-primary to-peach shadow-sm transition-all duration-1000" style="width: 60%;"></div>
+</div>
+</div>
+</div>
+<div class="flex-1 overflow-y-auto px-6 pb-32">
+<div class="flex items-center justify-between py-4">
+<h3 class="font-display text-lg text-warm-gray">Your Schedule</h3>
+<button class="text-primary text-sm font-semibold">View all</button>
+</div>
+<div class="space-y-4">
+<div class="flex items-center gap-4 bg-white/60 px-5 py-4 rounded-3xl border border-white/50 shadow-sm opacity-70">
+<div class="bg-mint text-secondary flex items-center justify-center organic-shape shrink-0 size-14">
+<span class="material-symbols-outlined text-2xl">pill</span>
+</div>
+<div class="flex flex-col flex-1">
+<p class="text-warm-gray font-semibold text-base line-clamp-1">Lisinopril</p>
+<p class="text-warm-gray/50 text-xs">8:00 AM • Done</p>
+</div>
+<div class="size-8 bg-mint rounded-full flex items-center justify-center text-secondary">
+<span class="material-symbols-outlined text-xl">check</span>
+</div>
+</div>
+<div class="flex items-center gap-4 bg-white px-5 py-4 rounded-3xl shadow-[var(--soft-shadow)] border border-peach/10">
+<div class="bg-peach text-primary flex items-center justify-center organic-shape shrink-0 size-14">
+<span class="material-symbols-outlined text-2xl">medication</span>
+</div>
+<div class="flex flex-col flex-1">
+<p class="text-warm-gray font-semibold text-base">Vitamin D3</p>
+<p class="text-warm-gray/60 text-xs">2:00 PM • 1 softgel</p>
+</div>
+<button class="bg-primary hover:bg-primary/90 text-white font-semibold py-2 px-5 rounded-2xl text-sm transition-all active:scale-95">
+                    Take
+                </button>
+</div>
+<div class="flex items-center gap-4 bg-white px-5 py-4 rounded-3xl shadow-[var(--soft-shadow)] border border-peach/10">
+<div class="bg-mint text-secondary flex items-center justify-center organic-shape shrink-0 size-14">
+<span class="material-symbols-outlined text-2xl">vaccines</span>
+</div>
+<div class="flex flex-col flex-1">
+<p class="text-warm-gray font-semibold text-base">Metformin</p>
+<p class="text-warm-gray/60 text-xs">8:00 PM • 500mg</p>
+</div>
+<button class="bg-cream border border-peach/30 text-warm-gray/60 font-medium py-2 px-4 rounded-2xl text-sm">
+                    Remind
+                </button>
+</div>
+</div>
+<div class="mt-8 bg-[#FFF2F0] rounded-3xl p-5 border border-primary/10 flex items-start gap-4">
+<div class="bg-primary/20 p-2 rounded-2xl text-primary">
+<span class="material-symbols-outlined">notifications_active</span>
+</div>
+<div>
+<p class="text-warm-gray font-semibold text-sm">Running Low</p>
+<p class="text-warm-gray/60 text-xs mt-0.5 leading-relaxed">Amoxicillin: 2 doses left. Tap to order more.</p>
+</div>
+</div>
+</div>
+<div class="absolute bottom-28 right-6">
+<button class="flex size-16 items-center justify-center rounded-3xl bg-primary text-white shadow-lg shadow-primary/30 hover:scale-105 active:scale-95 transition-transform organic-shape">
+<span class="material-symbols-outlined text-3xl font-bold">add</span>
+</button>
+</div>
+<div class="absolute bottom-0 w-full bg-white/80 backdrop-blur-xl border-t border-peach/10 px-8 pb-10 pt-4 flex justify-between items-center rounded-t-4xl">
+<div class="flex flex-col items-center gap-1.5 text-primary">
+<span class="material-symbols-outlined text-2xl">home</span>
+<span class="text-[10px] font-bold font-display">Home</span>
+</div>
+<div class="flex flex-col items-center gap-1.5 text-warm-gray/40 hover:text-primary transition-colors cursor-pointer">
+<span class="material-symbols-outlined text-2xl">medication_liquid</span>
+<span class="text-[10px] font-bold font-display">Meds</span>
+</div>
+<div class="flex flex-col items-center gap-1.5 text-warm-gray/40 hover:text-primary transition-colors cursor-pointer">
+<span class="material-symbols-outlined text-2xl">history</span>
+<span class="text-[10px] font-bold font-display">Logs</span>
+</div>
+<div class="flex flex-col items-center gap-1.5 text-warm-gray/40 hover:text-primary transition-colors cursor-pointer">
+<span class="material-symbols-outlined text-2xl">face_6</span>
+<span class="text-[10px] font-bold font-display">Me</span>
+</div>
+</div>
+</div>
+
+</body></html>

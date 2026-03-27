@@ -1,0 +1,43 @@
+> Task :app:checkKotlinGradlePluginConfigurationErrors
+> Task :app:preBuild UP-TO-DATE
+> Task :app:preDebugBuild UP-TO-DATE
+> Task :app:generateDebugBuildConfig UP-TO-DATE
+> Task :app:checkDebugAarMetadata UP-TO-DATE
+> Task :app:processDebugNavigationResources
+> Task :app:compileDebugNavigationResources UP-TO-DATE
+> Task :app:generateDebugResValues UP-TO-DATE
+> Task :app:mapDebugSourceSetPaths
+> Task :app:generateDebugResources
+> Task :app:packageDebugResources
+> Task :app:createDebugCompatibleScreenManifests UP-TO-DATE
+> Task :app:extractDeepLinksDebug UP-TO-DATE
+> Task :app:processDebugMainManifest UP-TO-DATE
+> Task :app:processDebugManifest UP-TO-DATE
+> Task :app:processDebugManifestForPackage UP-TO-DATE
+> Task :app:parseDebugLocalResources
+> Task :app:mergeDebugResources
+warn: removing resource com.uhstudio.pillreminder:string/msg_grace_period_skipped without required default value.
+
+> Task :app:processDebugResources
+> Task :app:kspDebugKotlin
+
+> Task :app:compileDebugKotlin
+w: file:///D:/project-app/yactime/app/src/main/java/com/uhstudio/pillreminder/ads/BannerAdView.kt:53:24 Parameter 'adView' is never used, could be renamed to _
+w: file:///D:/project-app/yactime/app/src/main/java/com/uhstudio/pillreminder/data/export/EntityExtensions.kt:41:27 'repeatDays: Set<DayOfWeek>' is deprecated. Use scheduleType and scheduleConfig instead
+w: file:///D:/project-app/yactime/app/src/main/java/com/uhstudio/pillreminder/data/repository/AlarmRepository.kt:111:77 'repeatDays: Set<DayOfWeek>' is deprecated. Use scheduleType and scheduleConfig instead
+w: file:///D:/project-app/yactime/app/src/main/java/com/uhstudio/pillreminder/data/repository/AlarmRepository.kt:151:77 'repeatDays: Set<DayOfWeek>' is deprecated. Use scheduleType and scheduleConfig instead
+w: file:///D:/project-app/yactime/app/src/main/java/com/uhstudio/pillreminder/ui/addAlarm/EditAlarmViewModel.kt:38:42 'repeatDays: Set<DayOfWeek>' is deprecated. Use scheduleType and scheduleConfig instead
+w: file:///D:/project-app/yactime/app/src/main/java/com/uhstudio/pillreminder/ui/alarm/AlarmActivity.kt:79:48 'FLAG_DISMISS_KEYGUARD: Int' is deprecated. Deprecated in Java
+w: file:///D:/project-app/yactime/app/src/main/java/com/uhstudio/pillreminder/ui/alarm/AlarmScreen.kt:179:178 'repeatDays: Set<DayOfWeek>' is deprecated. Use scheduleType and scheduleConfig instead
+w: file:///D:/project-app/yactime/app/src/main/java/com/uhstudio/pillreminder/ui/alarm/AlarmScreen.kt:204:100 'repeatDays: Set<DayOfWeek>' is deprecated. Use scheduleType and scheduleConfig instead
+w: file:///D:/project-app/yactime/app/src/main/java/com/uhstudio/pillreminder/ui/alarms/AlarmsScreen.kt:391:179 'repeatDays: Set<DayOfWeek>' is deprecated. Use scheduleType and scheduleConfig instead
+w: file:///D:/project-app/yactime/app/src/main/java/com/uhstudio/pillreminder/ui/alarms/AlarmsScreen.kt:416:101 'repeatDays: Set<DayOfWeek>' is deprecated. Use scheduleType and scheduleConfig instead
+w: file:///D:/project-app/yactime/app/src/main/java/com/uhstudio/pillreminder/ui/home/HomeScreen.kt:62:9 Variable 'missedAlarmsCount' is never used
+w: file:///D:/project-app/yactime/app/src/main/java/com/uhstudio/pillreminder/ui/pillDetail/PillDetailScreen.kt:559:177 'repeatDays: Set<DayOfWeek>' is deprecated. Use scheduleType and scheduleConfig instead
+w: file:///D:/project-app/yactime/app/src/main/java/com/uhstudio/pillreminder/ui/pillDetail/PillDetailScreen.kt:583:99 'repeatDays: Set<DayOfWeek>' is deprecated. Use scheduleType and scheduleConfig instead
+w: file:///D:/project-app/yactime/app/src/main/java/com/uhstudio/pillreminder/ui/theme/Theme.kt:36:5 Parameter 'darkTheme' is never used
+w: file:///D:/project-app/yactime/app/src/main/java/com/uhstudio/pillreminder/ui/theme/Theme.kt:37:5 Parameter 'dynamicColor' is never used
+w: file:///D:/project-app/yactime/app/src/main/java/com/uhstudio/pillreminder/ui/theme/Theme.kt:48:20 'setter for statusBarColor: Int' is deprecated. Deprecated in Java
+
+BUILD SUCCESSFUL in 24s
+19 actionable tasks: 10 executed, 9 up-to-date

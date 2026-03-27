@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Pill Buddy Widgets</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#ea7b53",
+                        "background-light": "#fdf8f6",
+                        "background-dark": "#211511",
+                        "soft-peach": "#fff1ec",
+                        "soft-blue": "#e8f4fd",
+                        "soft-pink": "#fdeef3"
+                    },
+                    fontFamily: {
+                        "display": ["Plus Jakarta Sans", "sans-serif"]
+                    },
+                    borderRadius: {"DEFAULT": "1.5rem", "lg": "2rem", "xl": "3rem", "full": "9999px"},
+                },
+            },
+        }
+    </script>
+<style>
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+        }
+        .widget-shadow {
+            box-shadow: 0 10px 25px -5px rgba(234, 123, 83, 0.1), 0 8px 10px -6px rgba(234, 123, 83, 0.1);
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background-light dark:bg-background-dark min-h-screen">
+<div class="relative flex h-auto min-h-screen w-full flex-col group/design-root overflow-x-hidden font-display">
+<!-- Top App Bar -->
+<div class="flex items-center bg-white/80 dark:bg-background-dark/80 backdrop-blur-md sticky top-0 z-10 p-4 pb-2 justify-between">
+<div class="text-[#181311] dark:text-white flex size-12 shrink-0 items-center cursor-pointer" data-icon="ArrowLeft">
+<span class="material-symbols-outlined text-3xl">arrow_back</span>
+</div>
+<h2 class="text-[#181311] dark:text-white text-lg font-bold leading-tight tracking-[-0.015em] flex-1 text-center pr-12">Widget Styles</h2>
+</div>
+<div class="px-6 pt-6">
+<p class="text-[#886d63] dark:text-stone-400 text-sm font-medium">PREVIEW ON HOME SCREEN</p>
+</div>
+<!-- Medium Widget (2x2 / Rectangle) -->
+<h2 class="text-[#181311] dark:text-white text-[22px] font-bold leading-tight tracking-[-0.015em] px-6 pb-3 pt-5">Next Dose Reminder</h2>
+<div class="p-6 @container">
+<div class="flex flex-col overflow-hidden items-stretch justify-start rounded-xl shadow-lg bg-white dark:bg-stone-900 border border-primary/10">
+<div class="relative w-full bg-soft-peach dark:bg-primary/10 aspect-[2/1] flex items-center justify-center overflow-hidden">
+<!-- Character and Pill Icon -->
+<div class="absolute inset-0 flex items-center justify-between px-8">
+<div class="flex flex-col items-center">
+<span class="material-symbols-outlined text-6xl text-primary animate-bounce">wb_sunny</span>
+<div class="h-2 w-10 bg-black/5 rounded-full mt-2 blur-[2px]"></div>
+</div>
+<div class="bg-white dark:bg-stone-800 p-4 rounded-full shadow-sm">
+<span class="material-symbols-outlined text-4xl text-primary">pill</span>
+</div>
+</div>
+<!-- Decorative patterns -->
+<div class="absolute -top-4 -right-4 w-24 h-24 bg-primary/5 rounded-full"></div>
+<div class="absolute -bottom-8 -left-8 w-32 h-32 bg-primary/10 rounded-full"></div>
+</div>
+<div class="flex w-full grow flex-col items-stretch justify-center gap-2 p-5">
+<div class="flex justify-between items-center">
+<div>
+<p class="text-primary text-sm font-bold uppercase tracking-wider">Coming Up</p>
+<p class="text-[#181311] dark:text-white text-xl font-bold leading-tight">10:30 AM</p>
+</div>
+<button class="flex h-10 px-5 bg-primary text-white rounded-full items-center justify-center font-bold text-sm shadow-md shadow-primary/30">
+                            Log Dose
+                        </button>
+</div>
+<div class="flex items-center gap-2 pt-1">
+<span class="material-symbols-outlined text-stone-400 text-lg">medical_services</span>
+<p class="text-[#886d63] dark:text-stone-400 text-base font-normal">Multivitamin • 1 capsule</p>
+</div>
+</div>
+</div>
+</div>
+<!-- Small Widget (1x1 / Square) -->
+<h2 class="text-[#181311] dark:text-white text-[22px] font-bold leading-tight tracking-[-0.015em] px-6 pb-3 pt-5">Daily Progress</h2>
+<div class="grid grid-cols-2 gap-4 p-6">
+<!-- Progress Circle Widget -->
+<div class="aspect-square bg-white dark:bg-stone-900 rounded-xl p-4 shadow-lg flex flex-col items-center justify-between border border-primary/10">
+<div class="relative flex items-center justify-center w-full grow">
+<!-- Circular Progress Mockup -->
+<svg class="w-full h-full max-w-[100px]" viewbox="0 0 100 100">
+<circle class="dark:stroke-stone-800" cx="50" cy="50" fill="transparent" r="40" stroke="#fdf8f6" stroke-width="12"></circle>
+<circle cx="50" cy="50" fill="transparent" r="40" stroke="#ea7b53" stroke-dasharray="251.2" stroke-dashoffset="125.6" stroke-linecap="round" stroke-width="12"></circle>
+</svg>
+<div class="absolute inset-0 flex items-center justify-center">
+<span class="material-symbols-outlined text-primary text-3xl font-variation-fill-1">favorite</span>
+</div>
+</div>
+<div class="text-center">
+<p class="text-[#181311] dark:text-white text-2xl font-bold">2/4</p>
+<p class="text-[#886d63] dark:text-stone-400 text-xs font-medium uppercase tracking-tighter">Done Today</p>
+</div>
+</div>
+<!-- Alternate Mood Widget -->
+<div class="aspect-square bg-primary rounded-xl p-5 shadow-lg flex flex-col items-start justify-between text-white">
+<span class="material-symbols-outlined text-4xl">sentiment_satisfied</span>
+<div class="flex flex-col">
+<p class="text-white/80 text-xs font-medium uppercase">Current Status</p>
+<p class="text-xl font-bold leading-tight">Feeling Great!</p>
+</div>
+</div>
+</div>
+<!-- Mini Tracking Section -->
+<div class="px-6 py-4">
+<div class="bg-soft-blue dark:bg-sky-950/30 rounded-lg p-5 flex items-center gap-4">
+<div class="bg-white dark:bg-stone-800 p-3 rounded-full shadow-sm text-sky-500">
+<span class="material-symbols-outlined text-2xl">water_drop</span>
+</div>
+<div class="flex-1">
+<h4 class="text-[#181311] dark:text-white font-bold text-base">Stay Hydrated</h4>
+<p class="text-[#886d63] dark:text-stone-400 text-sm">Drink water with your meds</p>
+</div>
+<span class="material-symbols-outlined text-stone-400">chevron_right</span>
+</div>
+</div>
+<div class="h-20"></div>
+<!-- Floating Action for the main app -->
+<div class="fixed bottom-8 right-6">
+<button class="bg-primary text-white w-16 h-16 rounded-full shadow-xl flex items-center justify-center">
+<span class="material-symbols-outlined text-3xl">add</span>
+</button>
+</div>
+</div>
+</body></html>

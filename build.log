@@ -1,0 +1,71 @@
+> Task :app:checkKotlinGradlePluginConfigurationErrors
+> Task :app:preBuild UP-TO-DATE
+> Task :app:preDebugBuild UP-TO-DATE
+> Task :app:generateDebugBuildConfig UP-TO-DATE
+> Task :app:checkDebugAarMetadata UP-TO-DATE
+> Task :app:processDebugNavigationResources UP-TO-DATE
+> Task :app:compileDebugNavigationResources UP-TO-DATE
+> Task :app:generateDebugResValues UP-TO-DATE
+> Task :app:mapDebugSourceSetPaths UP-TO-DATE
+> Task :app:generateDebugResources UP-TO-DATE
+> Task :app:mergeDebugResources UP-TO-DATE
+> Task :app:packageDebugResources UP-TO-DATE
+> Task :app:parseDebugLocalResources UP-TO-DATE
+> Task :app:createDebugCompatibleScreenManifests UP-TO-DATE
+> Task :app:extractDeepLinksDebug UP-TO-DATE
+> Task :app:processDebugMainManifest UP-TO-DATE
+> Task :app:processDebugManifest UP-TO-DATE
+> Task :app:processDebugManifestForPackage UP-TO-DATE
+> Task :app:processDebugResources UP-TO-DATE
+
+> Task :app:kspDebugKotlin FAILED
+e: [ksp] D:/project-app/yactime/app/src/main/java/com/uhstudio/pillreminder/ui/addAlarm/AddAlarmScreen.kt: (824, 25): Function declaration must have a name
+e: Error occurred in KSP, check log for detail
+e: file:///D:/project-app/yactime/app/src/main/java/com/uhstudio/pillreminder/ui/addAlarm/AddAlarmScreen.kt:824:5 Expecting a top level declaration
+e: file:///D:/project-app/yactime/app/src/main/java/com/uhstudio/pillreminder/ui/addAlarm/AddAlarmScreen.kt:824:8 Expecting a top level declaration
+e: file:///D:/project-app/yactime/app/src/main/java/com/uhstudio/pillreminder/ui/addAlarm/AddAlarmScreen.kt:824:9 Expecting a top level declaration
+e: file:///D:/project-app/yactime/app/src/main/java/com/uhstudio/pillreminder/ui/addAlarm/AddAlarmScreen.kt:824:23 Expecting a top level declaration
+e: file:///D:/project-app/yactime/app/src/main/java/com/uhstudio/pillreminder/ui/addAlarm/AddAlarmScreen.kt:824:25 Expecting a top level declaration
+e: file:///D:/project-app/yactime/app/src/main/java/com/uhstudio/pillreminder/ui/addAlarm/AddAlarmScreen.kt:838:5 Expecting a top level declaration
+e: file:///D:/project-app/yactime/app/src/main/java/com/uhstudio/pillreminder/ui/addAlarm/AddAlarmScreen.kt:838:8 Expecting a top level declaration
+e: file:///D:/project-app/yactime/app/src/main/java/com/uhstudio/pillreminder/ui/addAlarm/AddAlarmScreen.kt:838:9 Expecting a top level declaration
+e: file:///D:/project-app/yactime/app/src/main/java/com/uhstudio/pillreminder/ui/addAlarm/AddAlarmScreen.kt:838:24 Expecting a top level declaration
+e: file:///D:/project-app/yactime/app/src/main/java/com/uhstudio/pillreminder/ui/addAlarm/AddAlarmScreen.kt:838:26 Expecting a top level declaration
+e: file:///D:/project-app/yactime/app/src/main/java/com/uhstudio/pillreminder/ui/addAlarm/AddAlarmScreen.kt:850:5 Expecting a top level declaration
+e: file:///D:/project-app/yactime/app/src/main/java/com/uhstudio/pillreminder/ui/addAlarm/AddAlarmScreen.kt:850:8 Expecting a top level declaration
+e: file:///D:/project-app/yactime/app/src/main/java/com/uhstudio/pillreminder/ui/addAlarm/AddAlarmScreen.kt:850:9 Expecting a top level declaration
+e: file:///D:/project-app/yactime/app/src/main/java/com/uhstudio/pillreminder/ui/addAlarm/AddAlarmScreen.kt:850:29 Expecting a top level declaration
+e: file:///D:/project-app/yactime/app/src/main/java/com/uhstudio/pillreminder/ui/addAlarm/AddAlarmScreen.kt:850:31 Expecting a top level declaration
+e: file:///D:/project-app/yactime/app/src/main/java/com/uhstudio/pillreminder/ui/addAlarm/AddAlarmScreen.kt:886:5 Expecting a top level declaration
+e: file:///D:/project-app/yactime/app/src/main/java/com/uhstudio/pillreminder/ui/addAlarm/AddAlarmScreen.kt:886:8 Expecting a top level declaration
+e: file:///D:/project-app/yactime/app/src/main/java/com/uhstudio/pillreminder/ui/addAlarm/AddAlarmScreen.kt:886:9 Expecting a top level declaration
+e: file:///D:/project-app/yactime/app/src/main/java/com/uhstudio/pillreminder/ui/addAlarm/AddAlarmScreen.kt:886:24 Expecting a top level declaration
+e: file:///D:/project-app/yactime/app/src/main/java/com/uhstudio/pillreminder/ui/addAlarm/AddAlarmScreen.kt:886:26 Expecting a top level declaration
+e: file:///D:/project-app/yactime/app/src/main/java/com/uhstudio/pillreminder/ui/addAlarm/AddAlarmScreen.kt:900:5 Expecting a top level declaration
+e: file:///D:/project-app/yactime/app/src/main/java/com/uhstudio/pillreminder/ui/addAlarm/AddAlarmScreen.kt:900:8 Expecting a top level declaration
+e: file:///D:/project-app/yactime/app/src/main/java/com/uhstudio/pillreminder/ui/addAlarm/AddAlarmScreen.kt:900:9 Expecting a top level declaration
+e: file:///D:/project-app/yactime/app/src/main/java/com/uhstudio/pillreminder/ui/addAlarm/AddAlarmScreen.kt:900:23 Expecting a top level declaration
+e: file:///D:/project-app/yactime/app/src/main/java/com/uhstudio/pillreminder/ui/addAlarm/AddAlarmScreen.kt:900:25 Expecting a top level declaration
+e: file:///D:/project-app/yactime/app/src/main/java/com/uhstudio/pillreminder/ui/addAlarm/AddAlarmScreen.kt:926:1 Expecting a top level declaration
+e: file:///D:/project-app/yactime/app/src/main/java/com/uhstudio/pillreminder/ui/home/HomeScreen.kt:163:5 Expecting a top level declaration
+e: file:///D:/project-app/yactime/app/src/main/java/com/uhstudio/pillreminder/ui/home/HomeScreen.kt:163:17 Expecting a top level declaration
+e: file:///D:/project-app/yactime/app/src/main/java/com/uhstudio/pillreminder/ui/home/HomeScreen.kt:163:19 Expecting a top level declaration
+e: file:///D:/project-app/yactime/app/src/main/java/com/uhstudio/pillreminder/ui/home/HomeScreen.kt:163:23 Expecting a top level declaration
+e: file:///D:/project-app/yactime/app/src/main/java/com/uhstudio/pillreminder/ui/home/HomeScreen.kt:163:30 Unexpected tokens (use ';' to separate expressions on the same line)
+e: file:///D:/project-app/yactime/app/src/main/java/com/uhstudio/pillreminder/ui/home/HomeScreen.kt:192:1 Expecting a top level declaration
+
+FAILURE: Build failed with an exception.
+
+* What went wrong:
+Execution failed for task ':app:kspDebugKotlin'.
+> A failure occurred while executing org.jetbrains.kotlin.compilerRunner.GradleCompilerRunnerWithWorkers$GradleKotlinCompilerWorkAction
+   > Compilation error. See log for more details
+
+* Try:
+> Run with --stacktrace option to get the stack trace.
+> Run with --info or --debug option to get more log output.
+> Run with --scan to get full insights.
+> Get more help at https://help.gradle.org.
+
+BUILD FAILED in 2s
+18 actionable tasks: 2 executed, 16 up-to-date
