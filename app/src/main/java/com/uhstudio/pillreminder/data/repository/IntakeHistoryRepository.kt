@@ -56,7 +56,7 @@ class IntakeHistoryRepository(
     fun getIntakeDates(
         startDate: LocalDateTime,
         endDate: LocalDateTime
-    ): Flow<List<LocalDateTime>> {
+    ): Flow<List<String>> {
         return intakeHistoryDao.getIntakeDates(startDate, endDate)
     }
 
@@ -143,13 +143,8 @@ class IntakeHistoryRepository(
         endDate: LocalDateTime
     ): Result<IntakeStats> {
         return try {
-            // 기간 내 전체 복용 기록 조회
-            val allHistory = intakeHistoryDao.getAllHistoryOnce()
-            val filteredHistory = allHistory.filter { history ->
-                history.pillId == pillId &&
-                !history.intakeTime.isBefore(startDate) &&
-                !history.intakeTime.isAfter(endDate)
-            }
+            // SQL에서 직접 필터링 (성능 개선)
+            val filteredHistory = intakeHistoryDao.getHistoryForPillAndDateRange(pillId, startDate, endDate)
 
             val totalCount = filteredHistory.size
             val takenCount = filteredHistory.count { it.status == IntakeStatus.TAKEN }

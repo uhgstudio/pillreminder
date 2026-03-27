@@ -49,8 +49,8 @@ class AddPillViewModel(application: Application) : AndroidViewModel(application)
     private val _isLoading = MutableStateFlow(false)
     val isLoading: StateFlow<Boolean> = _isLoading
 
-    // 중복 저장 방지
-    private var isSaving = false
+    // 중복 저장 방지 (thread-safe)
+    private val _isSaving = MutableStateFlow(false)
 
     fun loadPill(pillId: String) {
         viewModelScope.launch {
@@ -139,7 +139,7 @@ class AddPillViewModel(application: Application) : AndroidViewModel(application)
         onError: (String) -> Unit = {}
     ) {
         // 중복 저장 방지
-        if (isSaving) {
+        if (_isSaving.value) {
             Timber.w("이미 저장 중입니다")
             return
         }
@@ -174,7 +174,7 @@ class AddPillViewModel(application: Application) : AndroidViewModel(application)
         }
 
         val validatedName = nameValidation.getOrNull() ?: return
-        isSaving = true
+        _isSaving.value = true
         viewModelScope.launch {
             _isLoading.value = true
             try {
@@ -268,7 +268,7 @@ class AddPillViewModel(application: Application) : AndroidViewModel(application)
                 _isLoading.value = false
                 onError("저장 중 오류가 발생했습니다: ${e.message}")
             } finally {
-                isSaving = false
+                _isSaving.value = false
             }
         }
     }

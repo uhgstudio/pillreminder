@@ -144,7 +144,7 @@ fun <T> List<Result<T>>.combine(): Result<List<T>> {
 /**
  * suspend 함수를 Result로 감싸서 실행
  */
-suspend fun <T> runCatching(block: suspend () -> T): Result<T> {
+suspend fun <T> runSafely(block: suspend () -> T): Result<T> {
     return try {
         Result.Success(block())
     } catch (e: Exception) {

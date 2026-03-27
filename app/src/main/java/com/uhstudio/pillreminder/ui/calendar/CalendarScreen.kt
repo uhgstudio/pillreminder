@@ -78,12 +78,17 @@ fun CalendarScreen(
     var selectedDate by remember { mutableStateOf(LocalDate.now()) }
     var currentYearMonth by remember { mutableStateOf(YearMonth.from(selectedDate)) }
 
-    val intakeHistory by viewModel.getIntakeHistoryForDate(selectedDate)
-        .collectAsState(initial = emptyList())
-    val dateStatusMap by viewModel.getDateStatusMap(
-        currentYearMonth.atDay(1),
-        currentYearMonth.atEndOfMonth()
-    ).collectAsState(initial = emptyMap())
+    val intakeHistoryFlow = remember(selectedDate) {
+        viewModel.getIntakeHistoryForDate(selectedDate)
+    }
+    val intakeHistory by intakeHistoryFlow.collectAsState(initial = emptyList())
+    val dateStatusFlow = remember(currentYearMonth) {
+        viewModel.getDateStatusMap(
+            currentYearMonth.atDay(1),
+            currentYearMonth.atEndOfMonth()
+        )
+    }
+    val dateStatusMap by dateStatusFlow.collectAsState(initial = emptyMap())
 
     Box(modifier = Modifier.fillMaxSize().background(Color(0xFFFDFCF8))) { // Paper Background
         Scaffold(

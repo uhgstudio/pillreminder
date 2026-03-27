@@ -163,7 +163,6 @@ abstract class PillReminderDatabase : RoomDatabase() {
             }
         }
 
-// MIGRATION_9_10 removed
         private val MIGRATION_9_10 = object : Migration(9, 10) {
             override fun migrate(db: SupportSQLiteDatabase) {
                 // Pill 테이블에 type, dosage 컬럼 추가

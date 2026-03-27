@@ -13,7 +13,9 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
+import timber.log.Timber
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.LocalTime
@@ -82,8 +84,8 @@ class HomeViewModel(application: Application) : AndroidViewModel(application) {
         loadTodayAlarms()
         // todayAlarms가 로드된 후에 stats 계산
         viewModelScope.launch {
-            _todayAlarms.collect {
-                loadTodayStats()
+            _todayAlarms.collectLatest {
+                updateTodayStats()
             }
         }
     }
@@ -135,47 +137,42 @@ class HomeViewModel(application: Application) : AndroidViewModel(application) {
         }
     }
 
-    private fun loadTodayStats() {
-        viewModelScope.launch {
-            try {
-                val today = LocalDateTime.now()
-                val startOfDay = today.toLocalDate().atStartOfDay()
-                val endOfDay = today.toLocalDate().plusDays(1).atStartOfDay()
+    private suspend fun updateTodayStats() {
+        try {
+            val today = LocalDateTime.now()
+            val startOfDay = today.toLocalDate().atStartOfDay()
+            val endOfDay = today.toLocalDate().plusDays(1).atStartOfDay()
 
-                // 오늘의 모든 복용 기록 조회
-                val histories = historyDao.getHistoryForDate(startOfDay, endOfDay)
+            // one-shot 쿼리로 오늘의 복용 기록 조회
+            val historyList = historyDao.getHistoryForDateOnce(startOfDay, endOfDay)
+            val totalAlarms = _todayAlarms.value.size
 
-                // Flow를 collect하여 통계 계산
-                histories.collect { historyList ->
-                    val totalAlarms = _todayAlarms.value.size
+            // 알람별로 중복 제거: 같은 alarmId는 한 번만 카운트
+            val uniqueTaken = historyList
+                .filter { it.status == IntakeStatus.TAKEN }
+                .distinctBy { it.alarmId }
+                .size
 
-                    // 알람별로 중복 제거: 같은 alarmId는 한 번만 카운트
-                    val uniqueTaken = historyList
-                        .filter { it.status == IntakeStatus.TAKEN }
-                        .distinctBy { it.alarmId }
-                        .size
+            val uniqueSkipped = historyList
+                .filter { it.status == IntakeStatus.SKIPPED }
+                .distinctBy { it.alarmId }
+                .size
 
-                    val uniqueSkipped = historyList
-                        .filter { it.status == IntakeStatus.SKIPPED }
-                        .distinctBy { it.alarmId }
-                        .size
-
-                    val adherenceRate = if (totalAlarms > 0) {
-                        (uniqueTaken.toFloat() / totalAlarms.toFloat()) * 100f
-                    } else {
-                        0f
-                    }
-
-                    _todayStats.value = IntakeStats(
-                        totalCount = totalAlarms,
-                        takenCount = uniqueTaken,
-                        skippedCount = uniqueSkipped,
-                        adherenceRate = adherenceRate
-                    )
-                }
-            } catch (e: Exception) {
-                _todayStats.value = IntakeStats()
+            val adherenceRate = if (totalAlarms > 0) {
+                (uniqueTaken.toFloat() / totalAlarms.toFloat()) * 100f
+            } else {
+                0f
             }
+
+            _todayStats.value = IntakeStats(
+                totalCount = totalAlarms,
+                takenCount = uniqueTaken,
+                skippedCount = uniqueSkipped,
+                adherenceRate = adherenceRate
+            )
+        } catch (e: Exception) {
+            Timber.e(e, "Failed to update today stats")
+            _todayStats.value = IntakeStats()
         }
     }
 
@@ -195,6 +192,6 @@ class HomeViewModel(application: Application) : AndroidViewModel(application) {
 
     fun refreshData() {
         loadTodayAlarms()
-        loadTodayStats()
+        // updateTodayStats()는 _todayAlarms collectLatest에 의해 자동 트리거됨
     }
 } 

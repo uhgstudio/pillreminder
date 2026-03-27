@@ -1,6 +1,5 @@
 package com.uhstudio.pillreminder.ui.pillDetail
 
-import android.content.Context
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.expandVertically
 import androidx.compose.animation.fadeIn
@@ -77,8 +76,6 @@ import com.uhstudio.pillreminder.R
 import com.uhstudio.pillreminder.data.model.IntakeHistory
 import com.uhstudio.pillreminder.data.model.IntakeStatus
 import com.uhstudio.pillreminder.data.model.PillAlarm
-import com.uhstudio.pillreminder.data.model.ScheduleConfig
-import com.uhstudio.pillreminder.data.model.ScheduleType
 import com.uhstudio.pillreminder.ui.components.AlarmCreationDialog
 import com.uhstudio.pillreminder.ui.theme.StitchCream
 import com.uhstudio.pillreminder.ui.theme.StitchPeach
@@ -86,8 +83,6 @@ import com.uhstudio.pillreminder.ui.theme.StitchPrimary
 import com.uhstudio.pillreminder.ui.theme.StitchSageDark
 import com.uhstudio.pillreminder.ui.theme.StitchSecondary
 import com.uhstudio.pillreminder.ui.theme.StitchTerracotta
-import com.uhstudio.pillreminder.util.toKoreanShort
-import kotlinx.serialization.json.Json
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 import java.util.Locale
@@ -596,87 +591,4 @@ fun PillDetailScreen(
 }
 
 
-private fun getScheduleDescriptionInternal(
-    alarm: PillAlarm,
-    context: Context,
-    dailyText: String,
-    noRepeatText: String,
-    customText: String,
-    specificDatesNoneText: String,
-    specificDatesText: String
-): String {
-    timber.log.Timber.d("PillDetail getScheduleDescription: alarmId=${alarm.id}, scheduleType=${alarm.scheduleType}, scheduleConfig=${alarm.scheduleConfig}, repeatDays=${alarm.repeatDays}")
-
-    return try {
-        when (alarm.scheduleType) {
-            ScheduleType.DAILY -> {
-                timber.log.Timber.d("PillDetail: DAILY type")
-                dailyText
-            }
-            ScheduleType.WEEKLY -> {
-                timber.log.Timber.d("PillDetail: WEEKLY type")
-
-                // 먼저 scheduleConfig 시도
-                val days = if (alarm.scheduleConfig != null && alarm.scheduleConfig.isNotBlank()) {
-                    try {
-                        val config = Json { ignoreUnknownKeys = true }.decodeFromString<ScheduleConfig.Weekly>(alarm.scheduleConfig)
-                        val parsedDays = config.toDayOfWeekSet()
-                        timber.log.Timber.d("PillDetail: Parsed days from scheduleConfig: $parsedDays")
-                        parsedDays
-                    } catch (e: Exception) {
-                        timber.log.Timber.e(e, "PillDetail: Failed to parse scheduleConfig, falling back to repeatDays")
-                        @Suppress("DEPRECATION")
-                        alarm.repeatDays
-                    }
-                } else {
-                    timber.log.Timber.d("PillDetail: No scheduleConfig, using repeatDays: ${alarm.repeatDays}")
-                    @Suppress("DEPRECATION")
-                    alarm.repeatDays
-                }
-
-                timber.log.Timber.d("PillDetail: Final days for WEEKLY: $days")
-                when {
-                    days.isEmpty() -> {
-                        timber.log.Timber.w("PillDetail: Days is empty!")
-                        noRepeatText
-                    }
-                    days.size == 7 -> dailyText
-                    else -> days.sortedBy { it.value }.joinToString(" ") { it.toKoreanShort() }
-                }
-            }
-            ScheduleType.INTERVAL_DAYS -> {
-                timber.log.Timber.d("PillDetail: INTERVAL_DAYS type")
-                if (alarm.scheduleConfig == null || alarm.scheduleConfig.isBlank()) {
-                    return context.getString(R.string.schedule_every_n_days, 0)
-                }
-                val config = Json { ignoreUnknownKeys = true }.decodeFromString<ScheduleConfig.IntervalDays>(alarm.scheduleConfig)
-                context.getString(R.string.schedule_every_n_days, config.intervalDays)
-            }
-            ScheduleType.SPECIFIC_DATES -> {
-                timber.log.Timber.d("PillDetail: SPECIFIC_DATES type")
-                if (alarm.scheduleConfig == null || alarm.scheduleConfig.isBlank()) {
-                    return specificDatesText
-                }
-                val config = Json { ignoreUnknownKeys = true }.decodeFromString<ScheduleConfig.SpecificDates>(alarm.scheduleConfig)
-                val dates = config.getDatesAsLocalDateSet()
-                if (dates.isEmpty()) {
-                    specificDatesNoneText
-                } else {
-                    context.getString(R.string.schedule_specific_dates_count, dates.size)
-                }
-            }
-            ScheduleType.CUSTOM -> customText
-        }
-    } catch (e: Exception) {
-        timber.log.Timber.e(e, "PillDetail: Exception in getScheduleDescription")
-        // 파싱 실패 시 레거시 방식으로 fallback
-        @Suppress("DEPRECATION")
-        val days = alarm.repeatDays
-        timber.log.Timber.d("PillDetail: Fallback to repeatDays: $days")
-        when {
-            days.isEmpty() -> noRepeatText
-            days.size == 7 -> dailyText
-            else -> days.sortedBy { it.value }.joinToString(" ") { it.toKoreanShort() }
-        }
-    }
-} 
+ 

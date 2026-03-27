@@ -30,9 +30,15 @@ object ImageUtil {
             val inputStream = context.contentResolver.openInputStream(sourceUri)
             inputStream?.use { stream ->
                 val bitmap = BitmapFactory.decodeStream(stream)
-                bitmap?.let { 
-                    val resizedBitmap = resizeBitmap(it, MAX_IMAGE_SIZE)
-                    saveImageToFile(context, resizedBitmap)
+                bitmap?.let { original ->
+                    val resizedBitmap = resizeBitmap(original, MAX_IMAGE_SIZE)
+                    val result = saveImageToFile(context, resizedBitmap)
+                    // 리사이즈된 경우 원본과 리사이즈 비트맵 모두 recycle
+                    if (resizedBitmap !== original) {
+                        original.recycle()
+                    }
+                    resizedBitmap.recycle()
+                    result
                 }
             }
         } catch (e: Exception) {

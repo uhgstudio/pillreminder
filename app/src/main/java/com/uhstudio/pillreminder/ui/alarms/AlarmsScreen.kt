@@ -368,7 +368,7 @@ private fun getScheduleDescriptionComposable(alarm: PillAlarm): String {
     val specificDatesText = stringResource(R.string.schedule_specific_dates)
 
     return remember(alarm) {
-        getScheduleDescriptionInternal(
+        com.uhstudio.pillreminder.util.ScheduleDescriptionUtil.getScheduleDescription(
             alarm = alarm,
             context = context,
             dailyText = dailyText,
@@ -377,91 +377,5 @@ private fun getScheduleDescriptionComposable(alarm: PillAlarm): String {
             specificDatesNoneText = specificDatesNoneText,
             specificDatesText = specificDatesText
         )
-    }
-}
-
-private fun getScheduleDescriptionInternal(
-    alarm: PillAlarm,
-    context: android.content.Context,
-    dailyText: String,
-    noRepeatText: String,
-    customText: String,
-    specificDatesNoneText: String,
-    specificDatesText: String
-): String {
-    timber.log.Timber.d("AlarmsScreen getScheduleDescription: alarmId=${alarm.id}, scheduleType=${alarm.scheduleType}, scheduleConfig=${alarm.scheduleConfig}, repeatDays=${alarm.repeatDays}")
-
-    return try {
-        Log.d("AlarmsScreen", "AlarmItem: scheduleType=${alarm.scheduleType}")
-        when (alarm.scheduleType) {
-            ScheduleType.DAILY -> {
-                timber.log.Timber.d("AlarmsScreen: DAILY type")
-                dailyText
-            }
-            ScheduleType.WEEKLY -> {
-                timber.log.Timber.d("AlarmsScreen: WEEKLY type, trying to parse scheduleConfig")
-
-                // 먼저 scheduleConfig 시도
-                val days = if (alarm.scheduleConfig != null && alarm.scheduleConfig.isNotBlank()) {
-                    try {
-                        val config = Json { ignoreUnknownKeys = true }.decodeFromString<ScheduleConfig.Weekly>(alarm.scheduleConfig)
-                        val parsedDays = config.toDayOfWeekSet()
-                        timber.log.Timber.d("AlarmsScreen: Parsed days from scheduleConfig: $parsedDays")
-                        parsedDays
-                    } catch (e: Exception) {
-                        timber.log.Timber.e(e, "AlarmsScreen: Failed to parse scheduleConfig, falling back to repeatDays")
-                        @Suppress("DEPRECATION")
-                        alarm.repeatDays
-                    }
-                } else {
-                    timber.log.Timber.d("AlarmsScreen: No scheduleConfig, using repeatDays: ${alarm.repeatDays}")
-                    @Suppress("DEPRECATION")
-                    alarm.repeatDays
-                }
-
-                timber.log.Timber.d("AlarmsScreen: Final days for WEEKLY: $days")
-                when {
-                    days.isEmpty() -> {
-                        timber.log.Timber.w("AlarmsScreen: Days is empty!")
-                        noRepeatText
-                    }
-                    days.size == 7 -> dailyText
-                    else -> days.sortedBy { it.value }.joinToString(" ") { it.toKoreanShort() }
-                }
-            }
-            ScheduleType.INTERVAL_DAYS -> {
-                timber.log.Timber.d("AlarmsScreen: INTERVAL_DAYS type")
-                if (alarm.scheduleConfig == null || alarm.scheduleConfig.isBlank()) {
-                    return context.getString(R.string.schedule_every_n_days, 0)
-                }
-                val config = Json { ignoreUnknownKeys = true }.decodeFromString<ScheduleConfig.IntervalDays>(alarm.scheduleConfig)
-                context.getString(R.string.schedule_every_n_days, config.intervalDays)
-            }
-            ScheduleType.SPECIFIC_DATES -> {
-                timber.log.Timber.d("AlarmsScreen: SPECIFIC_DATES type")
-                if (alarm.scheduleConfig == null || alarm.scheduleConfig.isBlank()) {
-                    return specificDatesText
-                }
-                val config = Json { ignoreUnknownKeys = true }.decodeFromString<ScheduleConfig.SpecificDates>(alarm.scheduleConfig)
-                val dates = config.getDatesAsLocalDateSet()
-                if (dates.isEmpty()) {
-                    specificDatesNoneText
-                } else {
-                    context.getString(R.string.schedule_specific_dates_count, dates.size)
-                }
-            }
-            ScheduleType.CUSTOM -> customText
-        }
-    } catch (e: Exception) {
-        timber.log.Timber.e(e, "AlarmsScreen: Exception in getScheduleDescription")
-        // 파싱 실패 시 레거시 방식으로 fallback
-        @Suppress("DEPRECATION")
-        val days = alarm.repeatDays
-        timber.log.Timber.d("AlarmsScreen: Fallback to repeatDays: $days")
-        when {
-            days.isEmpty() -> noRepeatText
-            days.size == 7 -> dailyText
-            else -> days.sortedBy { it.value }.joinToString(" ") { it.toKoreanShort() }
-        }
     }
 }

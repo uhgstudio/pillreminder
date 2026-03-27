@@ -99,7 +99,9 @@ class ExportRepository(private val database: PillReminderDatabase) {
      * 전체 교체 방식으로 가져오기
      */
     private suspend fun importWithReplace(data: ExportData, errors: MutableList<String>) {
-        // 기존 데이터 삭제는 CASCADE로 자동 처리됨
+        // 기존 데이터 전체 삭제 (CASCADE로 알람, 기록도 삭제됨)
+        database.pillDao().deleteAllPills()
+
         // 순서: Pills → Alarms → History (외래키 제약 준수)
 
         // Pills 삽입
@@ -191,6 +193,10 @@ class ExportRepository(private val database: PillReminderDatabase) {
             errors.add("약 이름이 비어있는 항목이 있습니다.")
         }
 
+        // ID 집합을 미리 추출하여 O(n) 조회
+        val pillIds = data.pills.map { it.id }.toSet()
+        val alarmIds = data.alarms.map { it.id }.toSet()
+
         // Alarms 검증
         data.alarms.forEach { alarm ->
             if (alarm.hour !in 0..23) {
@@ -199,17 +205,17 @@ class ExportRepository(private val database: PillReminderDatabase) {
             if (alarm.minute !in 0..59) {
                 errors.add("잘못된 분 값 (ID: ${alarm.id})")
             }
-            if (alarm.pillId !in data.pills.map { it.id }) {
+            if (alarm.pillId !in pillIds) {
                 errors.add("알람의 약 ID가 존재하지 않습니다 (Alarm ID: ${alarm.id})")
             }
         }
 
         // History 검증
         data.history.forEach { history ->
-            if (history.pillId !in data.pills.map { it.id }) {
+            if (history.pillId !in pillIds) {
                 errors.add("복용 기록의 약 ID가 존재하지 않습니다 (History ID: ${history.id})")
             }
-            if (history.alarmId !in data.alarms.map { it.id }) {
+            if (history.alarmId !in alarmIds) {
                 errors.add("복용 기록의 알람 ID가 존재하지 않습니다 (History ID: ${history.id})")
             }
         }

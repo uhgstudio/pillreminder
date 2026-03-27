@@ -1,10 +1,10 @@
 package com.uhstudio.pillreminder.ui.alarm
 
-import android.util.Log
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material3.*
@@ -14,17 +14,11 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
-import android.content.Context
 import com.uhstudio.pillreminder.data.model.PillAlarm
-import com.uhstudio.pillreminder.data.model.ScheduleConfig
-import com.uhstudio.pillreminder.data.model.ScheduleType
-import com.uhstudio.pillreminder.util.toKoreanShort
-import kotlinx.serialization.json.Json
 import java.time.DayOfWeek
 import java.time.format.TextStyle
 import java.util.*
 import com.uhstudio.pillreminder.R
-import timber.log.Timber
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -45,7 +39,7 @@ fun AlarmScreen(
                 navigationIcon = {
                     IconButton(onClick = onNavigateUp) {
                         Icon(
-                            imageVector = Icons.Default.Add,
+                            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
                             contentDescription = stringResource(R.string.btn_back)
                         )
                     }
@@ -155,7 +149,7 @@ private fun getScheduleDescriptionComposable(alarm: PillAlarm): String {
     val specificDatesText = stringResource(R.string.schedule_specific_dates)
 
     return remember(alarm) {
-        getScheduleDescriptionInternal(
+        com.uhstudio.pillreminder.util.ScheduleDescriptionUtil.getScheduleDescription(
             alarm = alarm,
             context = context,
             dailyText = dailyText,
@@ -164,92 +158,6 @@ private fun getScheduleDescriptionComposable(alarm: PillAlarm): String {
             specificDatesNoneText = specificDatesNoneText,
             specificDatesText = specificDatesText
         )
-    }
-}
-
-private fun getScheduleDescriptionInternal(
-    alarm: PillAlarm,
-    context: Context,
-    dailyText: String,
-    noRepeatText: String,
-    customText: String,
-    specificDatesNoneText: String,
-    specificDatesText: String
-): String {
-    timber.log.Timber.d("AlarmScreen getScheduleDescription: alarmId=${alarm.id}, scheduleType=${alarm.scheduleType}, scheduleConfig=${alarm.scheduleConfig}, repeatDays=${alarm.repeatDays}")
-
-    return try {
-        Log.d("AlarmScreen", "AlarmItem: scheduleType=${alarm.scheduleType}")
-        when (alarm.scheduleType) {
-            ScheduleType.DAILY -> {
-                timber.log.Timber.d("AlarmScreen: DAILY type")
-                dailyText
-            }
-            ScheduleType.WEEKLY -> {
-                timber.log.Timber.d("AlarmScreen: WEEKLY type, trying to parse scheduleConfig")
-
-                // 먼저 scheduleConfig 시도
-                val days = if (alarm.scheduleConfig != null && alarm.scheduleConfig.isNotBlank()) {
-                    try {
-                        val config = Json { ignoreUnknownKeys = true }.decodeFromString<ScheduleConfig.Weekly>(alarm.scheduleConfig)
-                        val parsedDays = config.toDayOfWeekSet()
-                        timber.log.Timber.d("AlarmScreen: Parsed days from scheduleConfig: $parsedDays")
-                        parsedDays
-                    } catch (e: Exception) {
-                        timber.log.Timber.e(e, "AlarmScreen: Failed to parse scheduleConfig, falling back to repeatDays")
-                        @Suppress("DEPRECATION")
-                        alarm.repeatDays
-                    }
-                } else {
-                    timber.log.Timber.d("AlarmScreen: No scheduleConfig, using repeatDays: ${alarm.repeatDays}")
-                    @Suppress("DEPRECATION")
-                    alarm.repeatDays
-                }
-
-                timber.log.Timber.d("AlarmScreen: Final days for WEEKLY: $days")
-                when {
-                    days.isEmpty() -> {
-                        timber.log.Timber.w("AlarmScreen: Days is empty!")
-                        noRepeatText
-                    }
-                    days.size == 7 -> dailyText
-                    else -> days.sortedBy { it.value }.joinToString(" ") { it.toKoreanShort() }
-                }
-            }
-            ScheduleType.INTERVAL_DAYS -> {
-                timber.log.Timber.d("AlarmScreen: INTERVAL_DAYS type")
-                if (alarm.scheduleConfig == null || alarm.scheduleConfig.isBlank()) {
-                    return context.getString(R.string.schedule_every_n_days, 0)
-                }
-                val config = Json { ignoreUnknownKeys = true }.decodeFromString<ScheduleConfig.IntervalDays>(alarm.scheduleConfig)
-                context.getString(R.string.schedule_every_n_days, config.intervalDays)
-            }
-            ScheduleType.SPECIFIC_DATES -> {
-                timber.log.Timber.d("AlarmScreen: SPECIFIC_DATES type")
-                if (alarm.scheduleConfig == null || alarm.scheduleConfig.isBlank()) {
-                    return specificDatesText
-                }
-                val config = Json { ignoreUnknownKeys = true }.decodeFromString<ScheduleConfig.SpecificDates>(alarm.scheduleConfig)
-                val dates = config.getDatesAsLocalDateSet()
-                if (dates.isEmpty()) {
-                    specificDatesNoneText
-                } else {
-                    context.getString(R.string.schedule_specific_dates_count, dates.size)
-                }
-            }
-            ScheduleType.CUSTOM -> customText
-        }
-    } catch (e: Exception) {
-        timber.log.Timber.e(e, "AlarmScreen: Exception in getScheduleDescription")
-        // 파싱 실패 시 레거시 방식으로 fallback
-        @Suppress("DEPRECATION")
-        val days = alarm.repeatDays
-        timber.log.Timber.d("AlarmScreen: Fallback to repeatDays: $days")
-        when {
-            days.isEmpty() -> noRepeatText
-            days.size == 7 -> dailyText
-            else -> days.sortedBy { it.value }.joinToString(" ") { it.toKoreanShort() }
-        }
     }
 }
 

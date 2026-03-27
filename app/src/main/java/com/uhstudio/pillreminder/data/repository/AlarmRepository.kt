@@ -3,6 +3,7 @@ package com.uhstudio.pillreminder.data.repository
 import android.content.Context
 import com.uhstudio.pillreminder.data.dao.PillAlarmDao
 import com.uhstudio.pillreminder.data.model.PillAlarm
+import com.uhstudio.pillreminder.data.model.ScheduleType
 import com.uhstudio.pillreminder.util.AlarmManagerUtil
 import com.uhstudio.pillreminder.util.Result
 import com.uhstudio.pillreminder.util.ValidationResult
@@ -70,11 +71,14 @@ class AlarmRepository(
 
     /**
      * 알람 입력값 검증
+     * scheduleType에 따라 분기하여 검증
      */
     private fun validateAlarmInput(
         hour: Int,
         minute: Int,
-        repeatDays: Set<DayOfWeek>
+        scheduleType: ScheduleType,
+        repeatDays: Set<DayOfWeek>,
+        scheduleConfig: String?
     ): ValidationResult<Unit> {
         val errors = mutableListOf<String>()
 
@@ -90,10 +94,29 @@ class AlarmRepository(
             Timber.w("Invalid minute: $minute")
         }
 
-        // 반복 요일 검증 (빈 Set 아님)
-        if (repeatDays.isEmpty()) {
-            errors.add("최소 하나의 요일을 선택해야 합니다.")
-            Timber.w("Empty repeatDays")
+        // scheduleType에 따른 분기 검증
+        when (scheduleType) {
+            ScheduleType.WEEKLY -> {
+                @Suppress("DEPRECATION")
+                if (repeatDays.isEmpty() && scheduleConfig == null) {
+                    errors.add("최소 하나의 요일을 선택해야 합니다.")
+                    Timber.w("Empty repeatDays for WEEKLY alarm")
+                }
+            }
+            ScheduleType.INTERVAL_DAYS -> {
+                if (scheduleConfig == null) {
+                    errors.add("반복 간격 설정이 필요합니다.")
+                    Timber.w("Missing scheduleConfig for INTERVAL_DAYS")
+                }
+            }
+            ScheduleType.SPECIFIC_DATES -> {
+                if (scheduleConfig == null) {
+                    errors.add("특정 날짜 설정이 필요합니다.")
+                    Timber.w("Missing scheduleConfig for SPECIFIC_DATES")
+                }
+            }
+            ScheduleType.DAILY -> { /* 추가 검증 불필요 */ }
+            ScheduleType.CUSTOM -> { /* 향후 구현 */ }
         }
 
         return if (errors.isEmpty()) {
@@ -108,7 +131,10 @@ class AlarmRepository(
      */
     suspend fun addAlarm(alarm: PillAlarm): Result<Unit> {
         // 입력 검증
-        val validation = validateAlarmInput(alarm.hour, alarm.minute, alarm.repeatDays)
+        @Suppress("DEPRECATION")
+        val validation = validateAlarmInput(
+            alarm.hour, alarm.minute, alarm.scheduleType, alarm.repeatDays, alarm.scheduleConfig
+        )
         if (validation.isInvalid) {
             val errorMessage = validation.errorMessages().joinToString("\n")
             Timber.e("Alarm validation failed: $errorMessage")
@@ -148,7 +174,10 @@ class AlarmRepository(
      */
     suspend fun updateAlarm(alarm: PillAlarm): Result<Unit> {
         // 입력 검증
-        val validation = validateAlarmInput(alarm.hour, alarm.minute, alarm.repeatDays)
+        @Suppress("DEPRECATION")
+        val validation = validateAlarmInput(
+            alarm.hour, alarm.minute, alarm.scheduleType, alarm.repeatDays, alarm.scheduleConfig
+        )
         if (validation.isInvalid) {
             val errorMessage = validation.errorMessages().joinToString("\n")
             Timber.e("Alarm validation failed: $errorMessage")

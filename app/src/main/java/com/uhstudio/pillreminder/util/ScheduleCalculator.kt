@@ -139,6 +139,11 @@ object ScheduleCalculator {
             return null
         }
 
+        if (config.intervalDays <= 0) {
+            Timber.w("calculateIntervalDays: invalid intervalDays=${config.intervalDays}")
+            return null
+        }
+
         val startDate = config.getStartDateAsLocalDate()
         val daysSinceStart = ChronoUnit.DAYS.between(startDate, from.toLocalDate())
 

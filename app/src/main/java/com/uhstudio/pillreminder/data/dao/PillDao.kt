@@ -27,6 +27,9 @@ interface PillDao {
     @Delete
     suspend fun deletePill(pill: Pill)
 
+    @Query("DELETE FROM pills")
+    suspend fun deleteAllPills()
+
     /**
      * 약 수량 감소 (복용 시 호출)
      */

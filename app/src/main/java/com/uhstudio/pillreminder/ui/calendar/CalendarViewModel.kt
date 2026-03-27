@@ -39,8 +39,8 @@ class CalendarViewModel(application: Application) : AndroidViewModel(application
         return intakeHistoryDao.getIntakeDates(
             startDate.atStartOfDay(),
             endDate.atTime(LocalTime.MAX)
-        ).map { dates ->
-            dates.map { it.toLocalDate() }.toSet()
+        ).map { dateStrings ->
+            dateStrings.mapNotNull { try { LocalDate.parse(it) } catch (e: Exception) { null } }.toSet()
         }
     }
 

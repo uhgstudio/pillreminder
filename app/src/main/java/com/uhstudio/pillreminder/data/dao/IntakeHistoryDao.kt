@@ -31,6 +31,13 @@ interface IntakeHistoryDao {
     """)
     fun getHistoryForDate(startOfDay: LocalDateTime, endOfDay: LocalDateTime): Flow<List<IntakeHistory>>
 
+    @Query("""
+        SELECT * FROM intake_history
+        WHERE intakeTime >= :startOfDay AND intakeTime < :endOfDay
+        ORDER BY intakeTime DESC
+    """)
+    suspend fun getHistoryForDateOnce(startOfDay: LocalDateTime, endOfDay: LocalDateTime): List<IntakeHistory>
+
     @Transaction
     @Query("""
         SELECT intake_history.* FROM intake_history
@@ -66,7 +73,16 @@ interface IntakeHistoryDao {
     """)
     suspend fun getIntakeCountForAlarm(alarmId: String, startOfDay: LocalDateTime, endOfDay: LocalDateTime): Int
 
-    @Transaction
+    @Query("""
+        SELECT * FROM intake_history
+        WHERE pillId = :pillId
+        AND intakeTime >= :startDate AND intakeTime <= :endDate
+        ORDER BY intakeTime DESC
+    """)
+    suspend fun getHistoryForPillAndDateRange(
+        pillId: String, startDate: LocalDateTime, endDate: LocalDateTime
+    ): List<IntakeHistory>
+
     @Query("""
         SELECT DISTINCT date(intakeTime) as date
         FROM intake_history
@@ -74,5 +90,5 @@ interface IntakeHistoryDao {
         AND date(intakeTime) >= date(:startDate)
         AND date(intakeTime) <= date(:endDate)
     """)
-    fun getIntakeDates(startDate: LocalDateTime, endDate: LocalDateTime): Flow<List<LocalDateTime>>
+    fun getIntakeDates(startDate: LocalDateTime, endDate: LocalDateTime): Flow<List<String>>
 } 

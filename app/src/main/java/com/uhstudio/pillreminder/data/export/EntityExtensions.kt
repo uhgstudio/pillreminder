@@ -4,7 +4,9 @@ import com.uhstudio.pillreminder.data.model.IntakeHistory
 import com.uhstudio.pillreminder.data.model.IntakeStatus
 import com.uhstudio.pillreminder.data.model.Pill
 import com.uhstudio.pillreminder.data.model.PillAlarm
+import com.uhstudio.pillreminder.data.model.ScheduleType
 import java.time.DayOfWeek
+import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 
@@ -18,7 +20,11 @@ fun Pill.toExport(): PillExport {
         id = this.id,
         name = this.name,
         imageUri = this.imageUri,
-        memo = this.memo
+        memo = this.memo,
+        type = this.type,
+        dosage = this.dosage,
+        quantity = this.quantity,
+        lowStockThreshold = this.lowStockThreshold
     )
 }
 
@@ -27,12 +33,17 @@ fun PillExport.toPill(): Pill {
         id = this.id,
         name = this.name,
         imageUri = this.imageUri,
-        memo = this.memo
+        memo = this.memo,
+        type = this.type,
+        dosage = this.dosage,
+        quantity = this.quantity,
+        lowStockThreshold = this.lowStockThreshold
     )
 }
 
 // PillAlarm 변환
 fun PillAlarm.toExport(): PillAlarmExport {
+    @Suppress("DEPRECATION")
     return PillAlarmExport(
         id = this.id,
         pillId = this.pillId,
@@ -40,7 +51,13 @@ fun PillAlarm.toExport(): PillAlarmExport {
         minute = this.minute,
         repeatDays = this.repeatDays.map { it.name },
         enabled = this.enabled,
-        alarmSoundUri = this.alarmSoundUri
+        alarmSoundUri = this.alarmSoundUri,
+        scheduleType = this.scheduleType.name,
+        scheduleConfig = this.scheduleConfig,
+        startDate = this.startDate?.toString(),
+        endDate = this.endDate?.toString(),
+        createdAt = this.createdAt.format(DateTimeFormatter.ISO_LOCAL_DATE_TIME),
+        updatedAt = this.updatedAt.format(DateTimeFormatter.ISO_LOCAL_DATE_TIME)
     )
 }
 
@@ -58,7 +75,21 @@ fun PillAlarmExport.toPillAlarm(): PillAlarm {
             }
         }.toSet(),
         enabled = this.enabled,
-        alarmSoundUri = this.alarmSoundUri
+        alarmSoundUri = this.alarmSoundUri,
+        scheduleType = try {
+            ScheduleType.valueOf(this.scheduleType)
+        } catch (e: IllegalArgumentException) {
+            ScheduleType.WEEKLY
+        },
+        scheduleConfig = this.scheduleConfig,
+        startDate = this.startDate?.let { LocalDate.parse(it) },
+        endDate = this.endDate?.let { LocalDate.parse(it) },
+        createdAt = this.createdAt?.let {
+            LocalDateTime.parse(it, DateTimeFormatter.ISO_LOCAL_DATE_TIME)
+        } ?: LocalDateTime.now(),
+        updatedAt = this.updatedAt?.let {
+            LocalDateTime.parse(it, DateTimeFormatter.ISO_LOCAL_DATE_TIME)
+        } ?: LocalDateTime.now()
     )
 }
 

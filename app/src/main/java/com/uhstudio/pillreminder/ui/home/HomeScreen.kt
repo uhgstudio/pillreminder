@@ -94,6 +94,8 @@ fun HomeScreen(
     val pills by viewModel.pills.collectAsState(initial = emptyList())
     val lowStockPills by viewModel.lowStockPills.collectAsState(initial = emptyList())
     val todayStats by viewModel.todayStats.collectAsState()
+    val todayAlarms by viewModel.todayAlarms.collectAsState()
+    val timeFormatter = remember { java.time.format.DateTimeFormatter.ofPattern("hh:mm a") }
     var pillToDelete by remember { mutableStateOf<Pill?>(null) }
 
     Box(modifier = Modifier.fillMaxSize().background(StitchCream)) {
@@ -132,7 +134,7 @@ fun HomeScreen(
                         style = MaterialTheme.typography.labelLarge.copy(
                             color = StitchPrimary
                         ),
-                        modifier = Modifier.clickable { /* View All */ }
+                        modifier = Modifier.clickable { onCalendarClick() }
                     )
                 }
                 
@@ -148,8 +150,10 @@ fun HomeScreen(
                     EmptyPillList(modifier = Modifier.padding(vertical = 32.dp))
                 } else {
                     pills.forEach { pill ->
+                        val nextAlarm = todayAlarms.firstOrNull { it.pill.id == pill.id && !it.isTaken }
                         StitchPillItem(
                             pill = pill,
+                            nextDoseTime = nextAlarm?.time?.format(timeFormatter),
                             onPillClick = { onPillClick(pill.id) }
                         )
                         Spacer(modifier = Modifier.height(16.dp))
@@ -324,6 +328,7 @@ fun DailyGoalCard(stats: com.uhstudio.pillreminder.ui.home.IntakeStats) {
 @Composable
 fun StitchPillItem(
     pill: Pill,
+    nextDoseTime: String? = null,
     onPillClick: () -> Unit
 ) {
     // Choose a blob color based on pill ID or type (from Stitch system)
@@ -387,12 +392,14 @@ fun StitchPillItem(
                             color = StitchWarmGray
                         )
                     )
-                    Text(
-                        text = stringResource(R.string.home_next_dose, "08:00 AM"),
-                        style = MaterialTheme.typography.bodySmall.copy(
-                            color = StitchWarmGray.copy(alpha = 0.5f)
+                    if (nextDoseTime != null) {
+                        Text(
+                            text = stringResource(R.string.home_next_dose, nextDoseTime),
+                            style = MaterialTheme.typography.bodySmall.copy(
+                                color = StitchWarmGray.copy(alpha = 0.5f)
+                            )
                         )
-                    )
+                    }
                 }
             }
             

@@ -70,23 +70,11 @@ class AlarmManagerUtil(private val context: Context) {
         )
 
         // 정확한 알람 설정 (Doze 모드에서도 작동)
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-            alarmManager.setAlarmClock(
-                AlarmManager.AlarmClockInfo(triggerTimeMillis, pendingIntent),
-                pendingIntent
-            )
-        } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-            alarmManager.setAlarmClock(
-                AlarmManager.AlarmClockInfo(triggerTimeMillis, pendingIntent),
-                pendingIntent
-            )
-        } else {
-            alarmManager.setExact(
-                AlarmManager.RTC_WAKEUP,
-                triggerTimeMillis,
-                pendingIntent
-            )
-        }
+        // setAlarmClock은 API 21+, minSdk 26이므로 항상 사용 가능
+        alarmManager.setAlarmClock(
+            AlarmManager.AlarmClockInfo(triggerTimeMillis, pendingIntent),
+            pendingIntent
+        )
 
         return true
     }

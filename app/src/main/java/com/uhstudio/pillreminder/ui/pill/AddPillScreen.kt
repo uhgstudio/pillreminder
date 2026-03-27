@@ -492,7 +492,14 @@ fun AddPillScreen(
                     val scheduleConfig = when (scheduleType) {
                         ScheduleType.DAILY -> ScheduleConfig.Daily
                         ScheduleType.WEEKLY -> ScheduleConfig.Weekly.from(selectedDays)
-                        else -> ScheduleConfig.Daily
+                        ScheduleType.INTERVAL_DAYS -> ScheduleConfig.IntervalDays(
+                            intervalDays = intervalDays,
+                            startDate = (startDate ?: LocalDate.now()).toString()
+                        )
+                        ScheduleType.SPECIFIC_DATES -> ScheduleConfig.SpecificDates(
+                            dates = specificDates.map { it.toString() }.toSet()
+                        )
+                        ScheduleType.CUSTOM -> ScheduleConfig.Daily
                     }
 
                     viewModel.savePill(

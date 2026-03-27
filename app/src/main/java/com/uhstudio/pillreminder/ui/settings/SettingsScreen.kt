@@ -2,6 +2,7 @@ package com.uhstudio.pillreminder.ui.settings
 
 import android.app.Activity
 import android.content.pm.ApplicationInfo
+import com.uhstudio.pillreminder.BuildConfig
 import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
@@ -633,7 +634,7 @@ fun AboutSection() {
                     style = MaterialTheme.typography.bodyMedium
                 )
                 Text(
-                    text = "1.0.5",
+                    text = BuildConfig.VERSION_NAME,
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )

@@ -36,8 +36,8 @@ class AddAlarmViewModel(application: Application) : AndroidViewModel(application
     private val _isLoading = MutableStateFlow(false)
     val isLoading: StateFlow<Boolean> = _isLoading
 
-    // 중복 저장 방지
-    private var isSaving = false
+    // 중복 저장 방지 (thread-safe)
+    private val _isSaving = MutableStateFlow(false)
 
     suspend fun getAlarm(alarmId: String): PillAlarm? {
         return alarmDao.getAlarmById(alarmId)
@@ -96,18 +96,18 @@ class AddAlarmViewModel(application: Application) : AndroidViewModel(application
         onError: (String) -> Unit = {}
     ) {
         // 중복 저장 방지
-        if (isSaving) {
+        if (_isSaving.value) {
             Timber.w("이미 저장 중입니다")
             return
         }
-        isSaving = true
+        _isSaving.value = true
 
         viewModelScope.launch {
             _isLoading.value = true
             try {
                 // 시간 검증
                 if (hour !in 0..23 || minute !in 0..59) {
-                    isSaving = false
+                    _isSaving.value = false
                     _isLoading.value = false
                     onError("유효하지 않은 시간입니다.")
                     return@launch
@@ -183,7 +183,7 @@ class AddAlarmViewModel(application: Application) : AndroidViewModel(application
                 _isLoading.value = false
                 onError("알람 저장 실패: ${e.message}")
             } finally {
-                isSaving = false
+                _isSaving.value = false
             }
         }
     }

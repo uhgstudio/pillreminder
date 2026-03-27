@@ -268,14 +268,13 @@ fun AddAlarmScreen(
             onDismissRequest = { showPermissionDialog = false },
             title = {
                 Text(
-                    text = "정확한 알람 권한 필요",
+                    text = stringResource(R.string.dialog_alarm_permission_title),
                     style = MaterialTheme.typography.titleLarge
                 )
             },
             text = {
                 Text(
-                    text = "약 복용 알람이 정확한 시간에 울리려면 \"정확한 알람\" 권한이 필요합니다.\n\n" +
-                            "설정으로 이동하여 권한을 허용해주세요.",
+                    text = stringResource(R.string.dialog_alarm_permission_text),
                     style = MaterialTheme.typography.bodyMedium
                 )
             },
@@ -287,7 +286,7 @@ fun AddAlarmScreen(
                         alarmUtil.requestExactAlarmPermission()
                     }
                 ) {
-                    Text("설정으로 이동")
+                    Text(stringResource(R.string.btn_go_to_settings))
                 }
             },
             dismissButton = {

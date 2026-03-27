@@ -7,7 +7,11 @@ import com.uhstudio.pillreminder.data.database.PillReminderDatabase
 import com.uhstudio.pillreminder.util.AlarmManagerUtil
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.TimeoutCancellationException
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withTimeout
+import timber.log.Timber
 
 /**
  * 기기 부팅 완료 후 모든 활성화된 알람을 다시 스케줄링하는 BroadcastReceiver
@@ -17,12 +21,21 @@ class BootReceiver : BroadcastReceiver() {
     override fun onReceive(context: Context, intent: Intent) {
         if (intent.action == Intent.ACTION_BOOT_COMPLETED) {
             val pendingResult = goAsync()
+            val job = SupervisorJob()
+            val scope = CoroutineScope(Dispatchers.IO + job)
 
-            CoroutineScope(Dispatchers.IO).launch {
+            scope.launch {
                 try {
-                    rescheduleAllAlarms(context)
+                    withTimeout(9_000) {
+                        rescheduleAllAlarms(context)
+                    }
+                } catch (e: TimeoutCancellationException) {
+                    Timber.e("BootReceiver timed out while rescheduling alarms")
+                } catch (e: Exception) {
+                    Timber.e(e, "Error in BootReceiver")
                 } finally {
                     pendingResult.finish()
+                    job.cancel()
                 }
             }
         }

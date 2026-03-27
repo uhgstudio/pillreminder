@@ -4,7 +4,7 @@ package com.uhstudio.pillreminder.data.export
  * 전체 데이터를 내보내기/가져오기 위한 최상위 데이터 모델
  */
 data class ExportData(
-    val exportVersion: Int = 1,
+    val exportVersion: Int = 2,
     val exportDate: String,  // ISO 날짜-시간 형식
     val pills: List<PillExport>,
     val alarms: List<PillAlarmExport>,
@@ -18,7 +18,11 @@ data class PillExport(
     val id: String,
     val name: String,
     val imageUri: String?,
-    val memo: String?
+    val memo: String?,
+    val type: String = "Capsule",
+    val dosage: String = "",
+    val quantity: Int = 30,
+    val lowStockThreshold: Int = 5
 )
 
 /**
@@ -31,7 +35,13 @@ data class PillAlarmExport(
     val minute: Int,
     val repeatDays: List<String>,  // ["MONDAY", "TUESDAY", ...]
     val enabled: Boolean,
-    val alarmSoundUri: String?
+    val alarmSoundUri: String?,
+    val scheduleType: String = "WEEKLY",
+    val scheduleConfig: String? = null,
+    val startDate: String? = null,
+    val endDate: String? = null,
+    val createdAt: String? = null,
+    val updatedAt: String? = null
 )
 
 /**

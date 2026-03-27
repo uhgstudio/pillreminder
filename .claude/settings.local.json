@@ -11,7 +11,9 @@
       "Bash(del NUL)",
       "Bash(if exist NUL del NUL)",
       "Bash(.gradlew.bat assembleDebug)",
-      "Bash(cd:*)"
+      "Bash(cd:*)",
+      "Bash(git push:*)",
+      "Bash(./gradlew assembleDebug:*)"
     ],
     "deny": [],
     "ask": []

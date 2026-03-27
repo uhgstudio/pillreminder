@@ -7,6 +7,8 @@ import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.os.Build
+import androidx.core.app.NotificationCompat
+import com.uhstudio.pillreminder.PillReminderApplication
 import com.uhstudio.pillreminder.R
 import com.uhstudio.pillreminder.data.database.PillReminderDatabase
 import com.uhstudio.pillreminder.data.model.IntakeHistory
@@ -15,7 +17,10 @@ import com.uhstudio.pillreminder.util.AlarmManagerUtil
 import com.uhstudio.pillreminder.util.RequestCodeUtil
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.TimeoutCancellationException
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withTimeout
 import timber.log.Timber
 import java.time.LocalDateTime
 import java.util.UUID
@@ -35,20 +40,27 @@ class AlarmReceiver : BroadcastReceiver() {
 
     override fun onReceive(context: Context, intent: Intent) {
         val pendingResult = goAsync()
+        val job = SupervisorJob()
+        val scope = CoroutineScope(Dispatchers.IO + job)
 
-        CoroutineScope(Dispatchers.IO).launch {
+        scope.launch {
             try {
-                Timber.d("AlarmReceiver.onReceive: action=${intent.action}")
-                when (intent.action) {
-                    ACTION_TAKE_PILL -> handleIntake(context, intent, IntakeStatus.TAKEN)
-                    ACTION_SKIP_PILL -> handleIntake(context, intent, IntakeStatus.SKIPPED)
-                    ACTION_SNOOZE -> handleSnooze(context, intent)
-                    else -> showNotification(context, intent)
+                withTimeout(9_000) {
+                    Timber.d("AlarmReceiver.onReceive: action=${intent.action}")
+                    when (intent.action) {
+                        ACTION_TAKE_PILL -> handleIntake(context, intent, IntakeStatus.TAKEN)
+                        ACTION_SKIP_PILL -> handleIntake(context, intent, IntakeStatus.SKIPPED)
+                        ACTION_SNOOZE -> handleSnooze(context, intent)
+                        else -> showNotification(context, intent)
+                    }
                 }
+            } catch (e: TimeoutCancellationException) {
+                Timber.e("AlarmReceiver timed out: action=${intent.action}")
             } catch (e: Exception) {
                 Timber.e(e, "Error in AlarmReceiver.onReceive: action=${intent.action}")
             } finally {
                 pendingResult.finish()
+                job.cancel()
             }
         }
     }
@@ -129,19 +141,12 @@ class AlarmReceiver : BroadcastReceiver() {
 
             val snoozeTime = System.currentTimeMillis() + (SNOOZE_MINUTES * 60 * 1000)
 
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-                alarmManager.setExactAndAllowWhileIdle(
-                    AlarmManager.RTC_WAKEUP,
-                    snoozeTime,
-                    pendingIntent
-                )
-            } else {
-                alarmManager.setExact(
-                    AlarmManager.RTC_WAKEUP,
-                    snoozeTime,
-                    pendingIntent
-                )
-            }
+            // minSdk 26 >= M, setExactAndAllowWhileIdle 직접 사용
+            alarmManager.setExactAndAllowWhileIdle(
+                AlarmManager.RTC_WAKEUP,
+                snoozeTime,
+                pendingIntent
+            )
             Timber.d("Snooze scheduled: alarmId=$alarmId, snoozeTime=${SNOOZE_MINUTES}min")
         } catch (e: Exception) {
             Timber.e(e, "Failed to handle snooze: alarmId=$alarmId")
@@ -199,13 +204,70 @@ class AlarmReceiver : BroadcastReceiver() {
                 }
             }
 
-            // 전체 화면 알람 Activity 실행
-            try {
-                context.startActivity(alarmActivityIntent)
-                Timber.d("AlarmActivity started successfully for alarmId=$alarmId")
-            } catch (e: Exception) {
-                Timber.e(e, "Failed to start AlarmActivity for alarmId=$alarmId")
+            // fullScreenIntent를 통해 Activity 실행 (Android 10+ 대응)
+            val fullScreenPendingIntent = PendingIntent.getActivity(
+                context,
+                RequestCodeUtil.generateRequestCode(alarmId),
+                alarmActivityIntent,
+                PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+            )
+
+            val notificationManager = context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+
+            val takeIntent = Intent(context, AlarmReceiver::class.java).apply {
+                action = ACTION_TAKE_PILL
+                putExtra(EXTRA_ALARM_ID, alarmId)
+                putExtra(EXTRA_PILL_ID, pillId)
             }
+            val takePendingIntent = PendingIntent.getBroadcast(
+                context,
+                RequestCodeUtil.generateRequestCodeWithPrefix("take", alarmId),
+                takeIntent,
+                PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+            )
+
+            val skipIntent = Intent(context, AlarmReceiver::class.java).apply {
+                action = ACTION_SKIP_PILL
+                putExtra(EXTRA_ALARM_ID, alarmId)
+                putExtra(EXTRA_PILL_ID, pillId)
+            }
+            val skipPendingIntent = PendingIntent.getBroadcast(
+                context,
+                RequestCodeUtil.generateRequestCodeWithPrefix("skip", alarmId),
+                skipIntent,
+                PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+            )
+
+            val snoozeIntent = Intent(context, AlarmReceiver::class.java).apply {
+                action = ACTION_SNOOZE
+                putExtra(EXTRA_ALARM_ID, alarmId)
+                putExtra(EXTRA_PILL_ID, pillId)
+            }
+            val snoozePendingIntent = PendingIntent.getBroadcast(
+                context,
+                RequestCodeUtil.generateRequestCodeWithPrefix("snooze", alarmId),
+                snoozeIntent,
+                PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+            )
+
+            val notification = NotificationCompat.Builder(context, PillReminderApplication.CHANNEL_ID)
+                .setSmallIcon(R.drawable.ic_notification)
+                .setContentTitle(context.getString(R.string.alarm_notification_title))
+                .setContentText(context.getString(R.string.alarm_notification_text, pill.name))
+                .setPriority(NotificationCompat.PRIORITY_MAX)
+                .setCategory(NotificationCompat.CATEGORY_ALARM)
+                .setAutoCancel(true)
+                .setFullScreenIntent(fullScreenPendingIntent, true)
+                .addAction(R.drawable.ic_check, context.getString(R.string.btn_take_pill), takePendingIntent)
+                .addAction(R.drawable.ic_skip, context.getString(R.string.btn_skip_pill), skipPendingIntent)
+                .addAction(R.drawable.ic_snooze, context.getString(R.string.btn_snooze), snoozePendingIntent)
+                .build()
+
+            notificationManager.notify(
+                RequestCodeUtil.generateRequestCode(alarmId),
+                notification
+            )
+            Timber.d("Full-screen notification posted for alarmId=$alarmId")
         } catch (e: Exception) {
             Timber.e(e, "Failed to show alarm: pillId=$pillId, alarmId=$alarmId")
         }
